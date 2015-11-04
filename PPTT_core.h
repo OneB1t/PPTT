@@ -145,7 +145,11 @@ void PrintAbsEnergy(Medium * m);
 void WriteAbsorbedEnergyToFile(Medium * m);
 void WritePhotonFluenceToFile(Medium * m);
 void WriteAbsorbedEnergyToFile_Time(Medium * m);
+
+// Thread and Performance helper functions
 void CreateNewThread(Medium * m, Source * s, long numPhotons);
+float RandomNumber(); // from 0 to 1
+inline int int_floor(float x);
 
 #endif	/* PPTT_CORE_H */
 

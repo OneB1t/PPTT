@@ -40,7 +40,7 @@ void Source::Collimated_launch(float set_x, float set_y, float set_z, float set_
     z = set_z * units;
     ux = set_ux / temp;
     uy = set_uy / temp;
-    uz = set_uz / temp;    
+    uz = set_uz / temp;
 }
 
 void Source::Isotropic_point_source(float set_x, float set_y, float set_z)  // parameters in mm
@@ -48,18 +48,18 @@ void Source::Isotropic_point_source(float set_x, float set_y, float set_z)  // p
     x = set_x * units;
     y = set_y * units;
     z = set_z * units;
-    
-    float cosTheta = 2 * ((float)rand() / RAND_MAX) - 1;
+
+    float cosTheta = 2 * RandomNumber() - 1;
     float sinTheta = sqrt(1 - cosTheta*cosTheta);
-    
-    float phi = 2 * PI * ((float)rand() / RAND_MAX);
+
+    float phi = 2 * PI * RandomNumber();
     float sinPhi, cosPhi = cos(phi);
-    
+
     if(phi < PI)
         sinPhi = sqrt(1 - cosPhi * cosPhi);
-    else 
+    else
         sinPhi = -sqrt(1 - cosPhi * cosPhi);
-    
+
     ux = sinTheta * sinPhi;
     uy = sinTheta * cosPhi;
     uz = cosTheta;
@@ -69,21 +69,21 @@ void Source::Collimated_gaussian_beam(float set_x, float set_y, float set_z, flo
 {
     set_x = set_x * units;
     set_y = set_y * units;
-    set_z = set_z * units;    
+    set_z = set_z * units;
     radius = radius * units;
-    
+
     float temp = sqrt(set_ux*set_ux + set_uy*set_uy + set_uz*set_uz);
     ux = set_ux / temp;
     uy = set_uy / temp;
     uz = set_uz / temp;
-    
-    float phi = 2*PI*((float)rand() / RAND_MAX);
-    float r = radius * sqrt(-log((float)rand() / RAND_MAX));
-    
+
+    float phi = 2 * PI*(RandomNumber());
+    float r = radius * sqrt(-log(RandomNumber()));
+
     x = set_x + r * cos(phi);
     y = set_y + r * sin(phi);
     z = set_z;
-    
+
     //cout << "Parameters of the source are: " << endl;
     //cout << "x = " << x << " y = " << y << " z = " << z << endl;
 }
@@ -94,10 +94,10 @@ void Source::Circular_flat_beam(float set_x, float set_y, float set_z, float rad
     set_y *= units;
     set_z *= units;
     radius *= units;
-    
-    float phi = 2 * PI * ((float)rand() / RAND_MAX);
-    float r = radius * sqrt((float)rand() / RAND_MAX);
-    
+
+    float phi = 2 * PI * (RandomNumber());
+    float r = radius * sqrt(RandomNumber());
+
     x = set_x + r * cos(phi);
     y = set_y + r * sin(phi);
     z = set_z;
@@ -117,19 +117,19 @@ void Source::TimeProfile_flat(float pulse_duration)
 // Photon class
 /////////////////////////////
 
-Photon::Photon() 
+Photon::Photon()
 {
-	// cout << "Photon inicialization..." << endl;
-	x = y = 10;
-	z = 0;
-	ux = uy = 0;
-	uz = 1;
-	w = 1;
-        round_x = floor(x);
-        round_y = floor(y);
-        round_z = floor(z);
-		time_of_flight = 0;
-		timeId = 0;
+    // cout << "Photon inicialization..." << endl;
+    x = y = 10;
+    z = 0;
+    ux = uy = 0;
+    uz = 1;
+    w = 1;
+    round_x = floor(x);
+    round_y = floor(y);
+    round_z = floor(z);
+    time_of_flight = 0;
+    timeId = 0;
 }
 
 Photon::~Photon()
@@ -151,71 +151,71 @@ void Photon::GetSourceParameters(Source * s)
 
 float Photon::GenStep(float invAlbedo)
 {
-	float temp = -log((float)rand() / RAND_MAX) * invAlbedo;
-	return temp;
+    float temp = -log(RandomNumber()) * invAlbedo;
+    return temp;
 }
 
 void Photon::UpdatePos(Medium * m)
 {
-	float temp = GenStep(m->inv_albedo[regId]);
-	
-	x = x + ux * temp;
-	y = y + uy * temp;
-	z = z + uz * temp;
+    float temp = GenStep(m->inv_albedo[regId]);
+
+    x = x + ux * temp;
+    y = y + uy * temp;
+    z = z + uz * temp;
 }
 
 float Photon::FindEdgeDistance()
 {
     float temp_x, temp_y, temp_z;
     //  Calculate distances
-    if (ux > 0.0)
-            temp_x = ((round_x + 1 - x) / ux);
-    else 
+    if(ux > 0.0)
+        temp_x = ((round_x + 1 - x) / ux);
+    else
     {
-        if (ux < 0.0)
+        if(ux < 0.0)
         {
             if(round_x != x) temp_x = ((round_x - x) / ux);
             else temp_x = (-1 / ux);
         }
         else temp_x = 0.0;
     }
-    if (uy > 0.0)
-            temp_y = ((round_y + 1 - y) / uy);
-    else 
+    if(uy > 0.0)
+        temp_y = ((round_y + 1 - y) / uy);
+    else
     {
-        if (uy < 0.0)
+        if(uy < 0.0)
         {
             if(round_y != y) temp_y = ((round_y - y) / uy);
             else temp_y = (-1 / uy);
         }
         else temp_y = 0.0;
     }
-    if (uz > 0.0)
-            temp_z = ((round_z + 1 - z) / uz);
-    else 
+    if(uz > 0.0)
+        temp_z = ((round_z + 1 - z) / uz);
+    else
     {
-        if (uz < 0.0)
+        if(uz < 0.0)
         {
-            if(round_z != z) temp_z = ((round_z - z)/ uz);
+            if(round_z != z) temp_z = ((round_z - z) / uz);
             else temp_z = (-1 / uz);
         }
         else temp_z = 0.0;
     }
-    
+
     /*cout << "Direction vectors and distances to the edges are: " << endl;
     cout << "   ux = " << ux << "   dx = " << temp_x << endl;
     cout << "   uy = " << uy << "   dy = " << temp_y << endl;
     cout << "   uz = " << uz << "   dz = " << temp_z << endl;*/
-    
+
     float temp_first = 0, temp_second = 0, temp_third = 0;
-    
-    if (temp_x == 0 && temp_y == 0 && temp_z == 0)
+
+    if(temp_x == 0 && temp_y == 0 && temp_z == 0)
         return 1.0;
     else
     {
-        if (temp_x < temp_y)
+        if(temp_x < temp_y)
         {
-            if (temp_z < temp_x)
+            if(temp_z < temp_x)
             {
                 temp_first = temp_z;
                 temp_second = temp_x;
@@ -229,7 +229,7 @@ float Photon::FindEdgeDistance()
                     temp_second = temp_z;
                     temp_third = temp_y;
                 }
-                else 
+                else
                 {
                     temp_second = temp_y;
                     temp_third = temp_z;
@@ -238,7 +238,7 @@ float Photon::FindEdgeDistance()
         }
         else
         {
-            if (temp_z < temp_y)
+            if(temp_z < temp_y)
             {
                 temp_first = temp_z;
                 temp_second = temp_y;
@@ -252,7 +252,7 @@ float Photon::FindEdgeDistance()
                     temp_second = temp_z;
                     temp_third = temp_x;
                 }
-                else 
+                else
                 {
                     temp_second = temp_x;
                     temp_third = temp_z;
@@ -261,7 +261,7 @@ float Photon::FindEdgeDistance()
         }
     }
     //cout << "Temp_first " << temp_first << " Temp_second " << temp_second << " Temp _third " << temp_third << endl;
-    if(temp_first != 0) 
+    if(temp_first != 0)
         return temp_first;
     else
     {
@@ -278,16 +278,16 @@ void Photon::Move(Medium * m)
     remStep *= (m->us[lastRegId] / m->us[regId]);
     //cout << "Old scattering " << m->us[lastRegId] << " New scattering " << m->us[regId] << endl;
     //cout << "Remaining step size " << remStep << endl;
-    
-    if (temp_step > remStep)
+
+    if(temp_step > remStep)
     {
         step = remStep;
         // cout << "Making " << step << " step" << endl;
         x = x + ux * step;
-		y = y + uy * step;
-		z = z + uz * step;
-		time_of_flight += GetTOF(m, step);
-             //   cout << "Time of flight is " << time_of_flight << endl;
+        y = y + uy * step;
+        z = z + uz * step;
+        time_of_flight += GetTOF(m, step);
+        //   cout << "Time of flight is " << time_of_flight << endl;
         remStep = GenStep(m->inv_albedo[regId]);
         UpdateDir(m);
         RoundPosition();
@@ -297,10 +297,10 @@ void Photon::Move(Medium * m)
         step = temp_step;
         //cout << "Making " << step << " step" << endl;
         x = x + ux * step;
-		y = y + uy * step;
-		z = z + uz * step;
-		time_of_flight += GetTOF(m, step);
-          //      cout << "Time of flight is " << time_of_flight << endl;
+        y = y + uy * step;
+        z = z + uz * step;
+        time_of_flight += GetTOF(m, step);
+        //      cout << "Time of flight is " << time_of_flight << endl;
         remStep -= temp_step;
         if(remStep > 0)
             RoundPosition();
@@ -316,37 +316,37 @@ void Photon::Move(Medium * m)
 
 float Photon::GetTOF(Medium * m, float step_size)
 {
-	return step_size * m->n[regId] / (light_speed * units);
+    return step_size * m->n[regId] / (light_speed * units);
 }
 
 int Photon::GetTimeId()
 {
-	return (int)floor(time_of_flight / time_step);
+	return int_floor(time_of_flight / time_step);
 }
 
 int Photon::CheckTOF(float end)
 {
-	if (time_of_flight < end) return 0;
-	else return 1;
+    if(time_of_flight < end) return 0;
+    else return 1;
 }
-void Photon::PosAndDir() 
+void Photon::PosAndDir()
 {
-	cout << "Current position is (" << x << " " << y << " "<< z << ")" << endl;	
-	cout << "Propagation direction is (" << ux << " " << uy << " " << uz << ")" << endl;
+    cout << "Current position is (" << x << " " << y << " " << z << ")" << endl;
+    cout << "Propagation direction is (" << ux << " " << uy << " " << uz << ")" << endl;
 }
 
 void Photon::RoundPosition()
 {
-	round_x = (int)floor(x);
-	round_y = (int)floor(y);
-	round_z = (int)floor(z);
+    round_x = int_floor(x);
+    round_y = int_floor(y);
+    round_z = int_floor(z);
 }
 
 int Photon::CheckBoundaries()
 {
-    if (z > 0 && z < voxels_z)
-		if (y > 0 && y < voxels_y)
-            if (x > 0 && x < voxels_x)
+    if(z > 0 && z < voxels_z)
+        if(y > 0 && y < voxels_y)
+            if(x > 0 && x < voxels_x)
                 return 0;
             else return 1;
         else return 1;
@@ -354,11 +354,13 @@ int Photon::CheckBoundaries()
 }
 void Photon::GenDir(float g) // generate cos(theta) and phi based on anisotropy parameter g
 {
-	if (g != 0)
-		cosTheta = 1.0 / (2.0 * g) * (1 + g*g - pow((1 - g*g) / (1 - g + 2 * g * ((float)rand() / RAND_MAX)), 2));
-	else
-		cosTheta = 2 * ((float)rand() / RAND_MAX) - 1;
-	phi = 2 * PI * ((float)rand() / RAND_MAX);
+    if(g != 0)
+    {
+        cosTheta = 1.0 / (2.0 * g) * (1 + g*g - pow((1 - g*g) / (1 - g + 2 * g * RandomNumber()), 2));
+    }
+    else
+        cosTheta = 2 * RandomNumber() - 1;
+    phi = 2 * PI * RandomNumber();
 }
 
 void Photon::UpdateDir(Medium * m)
@@ -479,7 +481,7 @@ void Medium::PrintMediumProperties()
 
 int Medium::RetRegId(Photon * p)
 {
-	return structure[(int)floor(p->x)][(int)floor(p->y)][(int)floor(p->z)];
+	return structure[int_floor(p->x)][int_floor(p->y)][int_floor(p->z)];
 }
 
 void Medium::CreateCube(int start_x, int start_y, int start_z, int dim_x, int dim_y, int dim_z, float set_ua, float set_us, float set_g, float set_n)
@@ -620,7 +622,7 @@ void RunPhoton(Medium * m)
 void RunPhotonNew(Medium * m, Source * s)
 {
     Photon * p = new Photon;
-	s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+	//s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
 	s->TimeProfile_flat(pulseDuration);
     p->GetSourceParameters(s);
         p->regId = m->RetRegId(p);
@@ -731,4 +733,20 @@ void CreateNewThread(Medium * m, Source * s, long numPhotons)
     {
         RunPhotonNew(m,s);
     }
+}
+
+inline int int_floor(float x)
+{
+    int i = (int)x; /* truncate */
+    return i - (i > x); /* convert trunc to floor */
+}
+
+float RandomNumber()
+{
+    union {
+        uint32_t d;
+        float f;
+    } u;
+    u.d = (((uint32_t)rand() & 0x7fff) << 8) | 0x3f800000;
+    return u.f - 1.0f;
 }

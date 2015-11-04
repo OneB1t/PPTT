@@ -16,8 +16,8 @@
 using namespace std;
 
 int e;
-const long numPhotons = 1000000;
-const int numThreads = 2;
+const long numPhotons = 800000;
+const int numThreads = 8;
 std::thread myThreads[numThreads];
 
 int main() {
@@ -27,6 +27,8 @@ int main() {
     start = clock();
     Medium * m = new Medium;
     Heat * h = new Heat;
+    
+    thread tList[numThreads];
 
     //  inserting brain layers
     m->CreateCube(0, 0, 0, 10, 10, 10, 0.019, 7.8, 0.89, 1.37);		// scalp and skull
@@ -42,18 +44,15 @@ int main() {
     //m->PrintMediumProperties();
 
     Source * s = new Source;
-    
-    //     for(long i = 0; i < numPhotons; i++)
-      //       RunPhotonNew(m, s);
-
+    s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0); // this causing crash with big number of photons if used for each of them so moved back to main
     for(long i = 0; i < numThreads; i++)
     {
-        myThreads[i] = thread(CreateNewThread, m, s, (long)floor(numPhotons / numThreads));
+        tList[i] = thread(CreateNewThread, m, s, (long)floor(numPhotons / numThreads));
     }
 
     for(long i = 0; i < numThreads; i++)
     {
-        myThreads[i].join();
+        tList[i].join();
     }
 
     m->RescaleEnergy_Time(numPhotons, time_step);
