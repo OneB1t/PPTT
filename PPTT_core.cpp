@@ -25,6 +25,7 @@ Source::Source()
 {
     x = y = z = 0;
     ux = uy = uz = 0;
+	release_time = 0;
 }
 
 Source::~Source()
@@ -102,6 +103,16 @@ void Source::Circular_flat_beam(float set_x, float set_y, float set_z, float rad
     z = set_z;
 }
 
+void Source::TimeProfile_infiniteSharp()
+{
+	release_time = 0;
+}
+
+void Source::TimeProfile_flat(float pulse_duration)
+{
+	release_time = ((float)rand() / RAND_MAX) * pulse_duration;
+}
+
 /////////////////////////////
 // Photon class
 /////////////////////////////
@@ -134,6 +145,8 @@ void Photon::GetSourceParameters(Source * s)
     ux = s->ux;
     uy = s->uy;
     uz = s->uz;
+
+	time_of_flight = s->release_time;
 }
 
 float Photon::GenStep(float invAlbedo)
@@ -607,7 +620,8 @@ void RunPhoton(Medium * m)
 void RunPhotonNew(Medium * m, Source * s)
 {
     Photon * p = new Photon;
-      
+	s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+	s->TimeProfile_flat(pulseDuration);
     p->GetSourceParameters(s);
         p->regId = m->RetRegId(p);
         p->lastRegId = p->regId;

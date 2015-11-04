@@ -26,7 +26,8 @@ const int units = 10;               // voxels per mm
 
 const float time_start = 0;
 const float time_step = 0.05;	// in ns
-const float time_end = 0.1;
+const float time_end = 0.3;
+const float pulseDuration = 0.2;
 
 class Source;
 class Photon;
@@ -41,12 +42,15 @@ public:
         enum beam_type{collimated_launch, isotropic_point_source, collimated_gaussian_beam, focused_gaussian_beam, circular_flat_field}; // beam type from Optical-Thermal Response of Laser-irradiated tissue
 	float x, y, z;	// entering position
 	float ux, uy, uz; // direction
-        
+	float release_time;
+
         void Collimated_launch(float x, float y, float z, float ux, float uy, float uz);
         void Isotropic_point_source(float x, float y, float z);
         void Collimated_gaussian_beam(float x, float y, float z, float radius, float ux, float uy, float uz); // radius 1/e
         void Focused_gaussian_beam(float x, float y, float z, float radius, float focus_z, float ux, float uy, float uz);
         void Circular_flat_beam(float x, float y, float z, float radius, float ux, float uy, float uz);
+		void TimeProfile_infiniteSharp();
+		void TimeProfile_flat(float pulse_duration); // in ns
 };
 
 class Photon 

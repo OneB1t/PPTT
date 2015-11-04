@@ -16,7 +16,7 @@
 using namespace std;
 
 int e;
-const long numPhotons = 100000;
+const long numPhotons = 1000000;
 const int numThreads = 2;
 std::thread myThreads[numThreads];
 
@@ -42,7 +42,7 @@ int main() {
     //m->PrintMediumProperties();
 
     Source * s = new Source;
-    s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+    
     //     for(long i = 0; i < numPhotons; i++)
       //       RunPhotonNew(m, s);
 
@@ -59,7 +59,7 @@ int main() {
     m->RescaleEnergy_Time(numPhotons, time_step);
     //m->RecordFluence();
 
-    //WriteAbsorbedEnergyToFile_Time(m);
+    WriteAbsorbedEnergyToFile_Time(m);
    // WritePhotonFluenceToFile(m);
 
     delete m;
