@@ -12,6 +12,8 @@
 #include <ctime>
 #include <thread>
 #include "PPTT_core.h"
+#include <arrayfire.h>
+#include <af/util.h>
 
 using namespace std;
 
@@ -20,14 +22,14 @@ const long numPhotons = 800000;
 const int numThreads = 8;
 std::thread myThreads[numThreads];
 
-int main() {
+int main(int argc, char *argv[]) {
 
     clock_t start, end;
 
     start = clock();
     Medium * m = new Medium;
     Heat * h = new Heat;
-    
+
     thread tList[numThreads];
 
     //  inserting brain layers
@@ -45,6 +47,18 @@ int main() {
 
     Source * s = new Source;
     s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0); // this causing crash with big number of photons if used for each of them so moved back to main
+
+    try {
+        // Select a device and display arrayfire info
+        int device = argc > 1 ? atoi(argv[1]) : 0;
+        af::setDevice(device);
+        af::info();
+    }
+    catch(af::exception& e) {
+        fprintf(stderr, "%s\n", e.what());
+        throw;
+    }
+
     for(long i = 0; i < numThreads; i++)
     {
         tList[i] = thread(CreateNewThread, m, s, (long)floor(numPhotons / numThreads));
@@ -59,7 +73,7 @@ int main() {
     //m->RecordFluence();
 
     WriteAbsorbedEnergyToFile_Time(m);
-   // WritePhotonFluenceToFile(m);
+    // WritePhotonFluenceToFile(m);
 
     delete m;
     delete s;

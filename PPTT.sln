@@ -1,26 +1,32 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PPTT", "PPTT\PPTT.vcxproj", "{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PPTT", "PPTT.vcxproj", "{9AA8C867-BECF-4952-B2C5-D39EF89F7036}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+		Debug|CPU_x64 = Debug|CPU_x64
+		Debug|CUDA_x64 = Debug|CUDA_x64
+		Debug|OpenCL_x64 = Debug|OpenCL_x64
+		Release|CPU_x64 = Release|CPU_x64
+		Release|CUDA_x64 = Release|CUDA_x64
+		Release|OpenCL_x64 = Release|OpenCL_x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Debug|x64.ActiveCfg = Debug|x64
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Debug|x64.Build.0 = Debug|x64
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Debug|x86.ActiveCfg = Debug|Win32
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Debug|x86.Build.0 = Debug|Win32
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Release|x64.ActiveCfg = Release|x64
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Release|x64.Build.0 = Release|x64
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Release|x86.ActiveCfg = Release|Win32
-		{8140AFBA-ADFC-4573-8A15-E4EE2DDA3A15}.Release|x86.Build.0 = Release|Win32
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Debug|CPU_x64.ActiveCfg = CPU_Debug|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Debug|CPU_x64.Build.0 = CPU_Debug|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Debug|CUDA_x64.ActiveCfg = CUDA_Debug|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Debug|CUDA_x64.Build.0 = CUDA_Debug|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Debug|OpenCL_x64.ActiveCfg = OpenCL_Debug|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Debug|OpenCL_x64.Build.0 = OpenCL_Debug|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Release|CPU_x64.ActiveCfg = CPU_Release|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Release|CPU_x64.Build.0 = CPU_Release|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Release|CUDA_x64.ActiveCfg = CUDA_Release|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Release|CUDA_x64.Build.0 = CUDA_Release|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Release|OpenCL_x64.ActiveCfg = OpenCL_Release|x64
+		{9AA8C867-BECF-4952-B2C5-D39EF89F7036}.Release|OpenCL_x64.Build.0 = OpenCL_Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

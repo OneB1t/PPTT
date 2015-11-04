@@ -14,6 +14,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <sstream>
+#include <arrayfire.h>
+#include <af/util.h>
 
 using namespace std;
 
