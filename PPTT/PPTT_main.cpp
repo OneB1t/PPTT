@@ -7,13 +7,17 @@
 /* PPTT_main is a main source file calling the whole      */
 /* program												  */
 /**********************************************************/
-
+#define VIENNACL_WITH_OPENCL
 #include <iostream>
 #include <ctime>
 #include <thread>
 #include "PPTT_core.h"
+#include "viennacl/scalar.hpp"
+#include "viennacl/vector.hpp"
+
 
 using namespace std;
+using namespace viennacl;
 
 int e;
 const long numPhotons = 800000;
@@ -45,6 +49,17 @@ int main(int argc, char *argv[]) {
 
     Source * s = new Source;
     s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0); // this causing crash with big number of photons if used for each of them so moved back to main
+
+
+    // fully working viennacl
+    viennacl::scalar<float> vcl_s1;
+    viennacl::scalar<float> vcl_s2 = 1.0;
+    viennacl::scalar<float> vcl_s3 = 1.0;
+
+    vcl_s1 = vcl_s2 + vcl_s3;
+    std::cout << "GPU scalar vcl_s2: " << vcl_s1 << std::endl;
+
+
 
     for(long i = 0; i < numThreads; i++)
     {
