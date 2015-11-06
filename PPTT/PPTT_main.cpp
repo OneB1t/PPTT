@@ -12,15 +12,13 @@
 #include <ctime>
 #include <thread>
 #include "PPTT_core.h"
-#include <arrayfire.h>
-#include <af/util.h>
 
 using namespace std;
 
 int e;
 const long numPhotons = 800000;
 const int numThreads = 8;
-std::thread myThreads[numThreads];
+thread myThreads[numThreads];
 
 int main(int argc, char *argv[]) {
 
@@ -47,17 +45,6 @@ int main(int argc, char *argv[]) {
 
     Source * s = new Source;
     s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0); // this causing crash with big number of photons if used for each of them so moved back to main
-
-    try {
-        // Select a device and display arrayfire info
-        int device = argc > 1 ? atoi(argv[1]) : 0;
-        af::setDevice(device);
-        af::info();
-    }
-    catch(af::exception& e) {
-        fprintf(stderr, "%s\n", e.what());
-        throw;
-    }
 
     for(long i = 0; i < numThreads; i++)
     {
