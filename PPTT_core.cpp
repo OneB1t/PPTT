@@ -108,9 +108,19 @@ void Source::TimeProfile_infiniteSharp()
 	release_time = 0;
 }
 
+void Source::TimeProfile_gaussian(float pulse_duration)
+{
+    release_time = pulse_duration * sqrt(-log(GenerateRandomNumber())) + (3 * pulse_duration);
+}
+
 void Source::TimeProfile_flat(float pulse_duration)
 {
 	release_time = ((float)rand() / RAND_MAX) * pulse_duration;
+}
+
+void Source::TimeProfile_sech(float pulse_duration)
+{
+    release_time = 1 / cosh(GenerateRandomNumber());
 }
 
 /////////////////////////////
@@ -724,11 +734,15 @@ void WritePhotonFluenceToFile(Medium * m)
 	myFile.close();
 }
 
-
 void CreateNewThread(Medium * m, Source * s, long numPhotons)
 {
     for(long i = 0; i < numPhotons; i++)
     {
         RunPhotonNew(m,s);
     }
+}
+
+float GenerateRandomNumber()
+{
+    return (float)rand() / RAND_MAX;
 }

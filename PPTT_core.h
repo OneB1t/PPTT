@@ -51,6 +51,8 @@ public:
         void Circular_flat_beam(float x, float y, float z, float radius, float ux, float uy, float uz);
 		void TimeProfile_infiniteSharp();
 		void TimeProfile_flat(float pulse_duration); // in ns
+                void TimeProfile_gaussian(float pulse_duration);
+                void TimeProfile_sech(float pulse_duration);
 };
 
 class Photon 
@@ -145,7 +147,9 @@ void PrintAbsEnergy(Medium * m);
 void WriteAbsorbedEnergyToFile(Medium * m);
 void WritePhotonFluenceToFile(Medium * m);
 void WriteAbsorbedEnergyToFile_Time(Medium * m);
+
 void CreateNewThread(Medium * m, Source * s, long numPhotons);
 
+float GenerateRandomNumber();
 #endif	/* PPTT_CORE_H */
 
