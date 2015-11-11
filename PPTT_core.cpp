@@ -25,7 +25,8 @@ Source::Source()
 {
     x = y = z = 0;
     ux = uy = uz = 0;
-	release_time = 0;
+	release_time = 0.0;
+	freq = 1.0;
 }
 
 Source::~Source()
@@ -108,21 +109,25 @@ void Source::TimeProfile_infiniteSharp()
 	release_time = 0;
 }
 
-void Source::TimeProfile_gaussian(float pulse_duration)
-{
-    release_time = pulse_duration * sqrt(-log(GenerateRandomNumber())) + (3 * pulse_duration);
-}
-
 void Source::TimeProfile_flat(float pulse_duration)
 {
 	release_time = ((float)rand() / RAND_MAX) * pulse_duration;
 }
 
-void Source::TimeProfile_sech(float pulse_duration)
+void Source::TimeProfile_gaussian(float pulse_duration)
 {
-    release_time = 1 / cosh(GenerateRandomNumber());
+	release_time = pulse_duration * sqrt(-log(GenerateRandomNumber())) + (3 * pulse_duration);
 }
 
+void Source::TimeProfile_sech(float pulse_duration)
+{
+	release_time = 1 / cosh(GenerateRandomNumber());
+}
+
+void Source::Set_RepetitionRate(float repetition_rate)
+{
+	freq = repetition_rate;
+}
 /////////////////////////////
 // Photon class
 /////////////////////////////
@@ -130,7 +135,7 @@ void Source::TimeProfile_sech(float pulse_duration)
 Photon::Photon() 
 {
 	// cout << "Photon inicialization..." << endl;
-	x = y = 10;
+	x = y = 1;
 	z = 0;
 	ux = uy = 0;
 	uz = 1;
@@ -398,6 +403,11 @@ void Photon::UpdateDir(Medium * m)
 	//cout << "Z direction " << uz << endl;
 }
 
+float Photon::GetReflectionCoef(Medium * m)
+{
+	return (m->n[lastRegId] - m->n[regId]) / (m->n[lastRegId] + m->n[regId]);
+}
+
 //////////////////////////////////////////////////
 //			Medium class
 //////////////////////////////////////////////////
@@ -445,6 +455,16 @@ Medium::Medium()
 			for (int temp3 = 0; temp3 < voxels_z; temp3++)
                             for (int temp4 = 0; temp4 < num_time_steps; temp4++)
                                 energy_t[temp][temp2][temp3][temp4] = 0;
+
+	for (int temp = 0; temp < voxels_x; temp++)
+		for (int temp2 = 0; temp2 < voxels_y; temp2++)
+			for (int temp3 = 0; temp3 < voxels_z; temp3++)
+				energy_next[temp][temp2][temp3] = new float[num_time_steps];
+	for (int temp = 0; temp < voxels_x; temp++)
+		for (int temp2 = 0; temp2 < voxels_y; temp2++)
+			for (int temp3 = 0; temp3 < voxels_z; temp3++)
+				for (int temp4 = 0; temp4 < num_time_steps; temp4++)
+					energy_next[temp][temp2][temp3][temp4] = 0;
 }
 
 Medium::~Medium()
@@ -562,6 +582,12 @@ void Medium::AbsorbEnergyBeer_Time(Photon * p)
 	p->w = temp;
 }
 
+void Medium::AbsorbEnergyBeer_Time_secondPulse(Photon * p)
+{
+	float temp = p->w * (1 - (ua[p->regId] * p->step) + (ua[p->regId] * ua[p->regId] * p->step * p->step / 2)); // Taylor expansion series of Lambert-Beer law
+	energy_next[p->round_x][p->round_y][p->round_z][p->timeId] += (p->w - temp);
+	p->w = temp;
+}
 void Medium::RescaleEnergy(long num_photons)
 {
     for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
@@ -577,6 +603,15 @@ void Medium::RescaleEnergy_Time(long num_photons, float time_min_step)
 			for (int temp3 = 0; temp3 < voxels_z; temp3++)
 				for (int temp4 = 0; temp4 < num_time_steps; temp4++)
 				energy_t[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / pow(units, 3));
+}
+
+void Medium::RescaleEnergy_Time_secondPulse(long num_photons, float time_min_step)
+{
+	for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
+		for (int temp2 = 0; temp2 < voxels_y; temp2++)
+			for (int temp3 = 0; temp3 < voxels_z; temp3++)
+				for (int temp4 = 0; temp4 < num_time_steps; temp4++)
+					energy_next[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / pow(units, 3));
 }
 
 void Medium::RecordFluence()
@@ -658,6 +693,37 @@ void RunPhotonNew(Medium * m, Source * s)
         delete p;
 }
 
+void RunPhotonNew_secondPulse(Medium * m, Source * s)
+{
+	Photon * p = new Photon;
+	s->Collimated_gaussian_beam(5.0, 8.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+	s->TimeProfile_flat(pulseDuration);
+	p->GetSourceParameters(s);
+	p->regId = m->RetRegId(p);
+	p->lastRegId = p->regId;
+	p->remStep = p->GenStep(m->inv_albedo[p->regId]);
+	//cout << "Photon step " << p->remStep << endl;
+
+	while (p->w > PHOTON_DEATH)
+	{
+		//cout << "================" << endl;
+		//cout << "New step" << endl;
+		//cout << "================" << endl;
+		p->Move(m);
+		//p->PosAndDir();
+		if (p->CheckBoundaries()) break;
+		if (p->CheckTOF(time_end)) break;
+		p->timeId = p->GetTimeId();
+		// cout << "Time Id is " << p->timeId << endl;
+		p->lastRegId = p->regId;
+		p->regId = m->RetRegId(p);
+		//p->w /= 2;
+		m->AbsorbEnergyBeer_Time_secondPulse(p);
+	}
+
+	delete p;
+}
+
 void PrintAbsEnergy(Medium * m)
 {
 	for(int temp1 = 0; temp1 < voxels_x; temp1++)
@@ -695,7 +761,7 @@ void WriteAbsorbedEnergyToFile_Time(Medium * m)
 	for (int temp4 = 0; temp4 < m->num_time_steps; temp4++)
 	{
 		stringstream ss;
-		ss << "ResultsAbsorbedEnergyTime" << temp4 << ".txt";
+		ss << "ResultsAbsorbedEnergyTime_" << temp4 << ".txt";
 		ofstream myFile(ss.str().c_str());
 		// myFile.open("Results_absorbedEnergy.txt");
 		if(myFile.is_open())
@@ -717,6 +783,33 @@ void WriteAbsorbedEnergyToFile_Time(Medium * m)
 	}
 }
 
+void WriteAbsorbedEnergyToFile_Time_secondPulse(Medium * m)
+{
+	for (int temp4 = 0; temp4 < m->num_time_steps; temp4++)
+	{
+		stringstream ss;
+		ss << "ResultsAbsorbedEnergyTime_SecondPulse_" << temp4 << ".txt";
+		ofstream myFile(ss.str().c_str());
+		// myFile.open("Results_absorbedEnergy.txt");
+		if (myFile.is_open())
+		{
+			for (int temp1 = 0; temp1 < voxels_x; temp1++)
+			{
+				for (int temp2 = 0; temp2 < voxels_y; temp2++)
+				{
+					for (int temp3 = 0; temp3 < voxels_z; temp3++)
+						myFile << m->energy_next[temp1][temp2][temp3][temp4] << " ";
+					myFile << endl;
+				}
+				myFile << endl;
+			}
+			myFile.close();
+		}
+		else
+			cout << "File could not be opened." << endl;
+	}
+}
+
 void WritePhotonFluenceToFile(Medium * m)
 {
 	ofstream myFile;
@@ -734,6 +827,7 @@ void WritePhotonFluenceToFile(Medium * m)
 	myFile.close();
 }
 
+
 void CreateNewThread(Medium * m, Source * s, long numPhotons)
 {
     for(long i = 0; i < numPhotons; i++)
@@ -742,7 +836,28 @@ void CreateNewThread(Medium * m, Source * s, long numPhotons)
     }
 }
 
+void CreateNewThread_secondPulse(Medium * m, Source * s, long numPhotons)
+{
+	for (long i = 0; i < numPhotons; i++)
+	{
+		RunPhotonNew_secondPulse(m, s);
+	}
+}
+
 float GenerateRandomNumber()
 {
-    return (float)rand() / RAND_MAX;
+	return (float)rand() / RAND_MAX;
+}
+
+void Prepare_SecondPulse(Medium * m, Source * s, float delay)
+{
+	float period = 1e9 / s->freq;		//	in ns
+	int pulseTimeId = (int)floor(delay / time_step);
+
+	//	copy last matrix
+	for (int temp = 0; temp < voxels_x; temp++)
+		for (int temp2 = 0; temp2 < voxels_y; temp2++)
+			for (int temp3 = 0; temp3 < voxels_z; temp3++)
+				for (int temp4 = 0; temp4 < (int)floor((time_end - delay) / time_step); temp4++)
+					m->energy_next[temp][temp2][temp3][temp4] += m->energy_t[temp][temp2][temp3][pulseTimeId + temp4];
 }

@@ -43,6 +43,7 @@ public:
 	float x, y, z;	// entering position
 	float ux, uy, uz; // direction
 	float release_time;
+	float freq;			// laser repetition rate
 
         void Collimated_launch(float x, float y, float z, float ux, float uy, float uz);
         void Isotropic_point_source(float x, float y, float z);
@@ -51,8 +52,9 @@ public:
         void Circular_flat_beam(float x, float y, float z, float radius, float ux, float uy, float uz);
 		void TimeProfile_infiniteSharp();
 		void TimeProfile_flat(float pulse_duration); // in ns
-                void TimeProfile_gaussian(float pulse_duration);
-                void TimeProfile_sech(float pulse_duration);
+		void TimeProfile_gaussian(float pulse_duration);
+		void TimeProfile_sech(float pulse_duration);
+		void Set_RepetitionRate(float repetition_rate);
 };
 
 class Photon 
@@ -85,6 +87,9 @@ public:
 	int CheckBoundaries();				// check whether the photon is in medium
 	void GenDir(float g);				// generate cos(theta) a phi according to HG phase function
 	void UpdateDir(Medium * m);			// update direction
+	float GetReflectionCoef(Medium * m);	// calculate reflection coefficient on the interface
+	void Reflect(Medium * m);
+	void Transmis(Medium * m);
 };
 
 class Medium
@@ -110,17 +115,20 @@ public:
 	//   Timing variables
 	int num_time_steps;
 	float time;
-	float *energy_t[voxels_x][voxels_y][voxels_z];
+	float *energy_t[voxels_x][voxels_y][voxels_z];		//  score energy in first run
+	float *energy_next[voxels_x][voxels_y][voxels_z];	//	score energy in second run
 	/////////////////////////////////////////////////////////
 
 	void PrintMediumProperties();					//  print properties of all regions within medium
 	int RetRegId(Photon * p);						//  returns id stored in structure matrix
 	void AbsorbEnergy(Photon * p);					//  absorb energy of the photon in the voxel
-        void AbsorbEnergyBeer(Photon * p);			//  absorb energy exponentially
-		void AbsorbEnergyBeer_Time(Photon * p);		//  absorb energy with time resolution
-        void RescaleEnergy(long num_photons);                                  //  rescale absorbed energy 
-		void RescaleEnergy_Time(long num_photons, float time_min_step);                                  //  rescale absorbed energy 
-        void RecordFluence();                                  //  record photon fluence in a voxel
+    void AbsorbEnergyBeer(Photon * p);			//  absorb energy exponentially
+	void AbsorbEnergyBeer_Time(Photon * p);		//  absorb energy with time resolution
+	void AbsorbEnergyBeer_Time_secondPulse(Photon * p);		//  absorb energy for second pulse
+	void RescaleEnergy(long num_photons);                                  //  rescale absorbed energy 
+	void RescaleEnergy_Time(long num_photons, float time_min_step);                                  //  rescale absorbed energy 
+	void RescaleEnergy_Time_secondPulse(long num_photons, float time_min_step);                      //  rescale absorbed energy for second pulse 
+	void RecordFluence();                                  //  record photon fluence in a voxel
 	void CreateCube(int start_x, int start_y, int start_z, int dim_x, int dim_y, int dim_z, float ua, float us, float g, float n);	// create cube with specfied properties in mm	
 	void CreateBall(int center_x, int center_y, int center_z, int radius, float ua, float us, float g, float n);	
 };
@@ -147,9 +155,15 @@ void PrintAbsEnergy(Medium * m);
 void WriteAbsorbedEnergyToFile(Medium * m);
 void WritePhotonFluenceToFile(Medium * m);
 void WriteAbsorbedEnergyToFile_Time(Medium * m);
-
+void WriteAbsorbedEnergyToFile_Time_secondPulse(Medium * m);
 void CreateNewThread(Medium * m, Source * s, long numPhotons);
 
+// second pulse
+void Prepare_SecondPulse(Medium * m, Source * s, float delay);
+void CreateNewThread_secondPulse(Medium * m, Source * s, long numPhotons);
+void RunPhotonNew_secondPulse(Medium * m, Source * s);
+
 float GenerateRandomNumber();
+
 #endif	/* PPTT_CORE_H */
 
