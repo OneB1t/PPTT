@@ -166,10 +166,13 @@ void Photon::UpdatePos(Medium * m)
 
 float Photon::FindEdgeDistance()
 {
-    float temp_x, temp_y, temp_z;
+    float temp_x;
+    float temp_y;
+    float temp_z;
+
     //  Calculate distances
     if(ux > 0.0)
-        temp_x = ((round_x + 1 - x) / ux);
+        temp_x = ((round_x + 1.0f - x) / ux);
     else
     {
         if(ux < 0.0)
@@ -180,7 +183,7 @@ float Photon::FindEdgeDistance()
         else temp_x = 0.0;
     }
     if(uy > 0.0)
-        temp_y = ((round_y + 1 - y) / uy);
+        temp_y = ((round_y + 1.0f - y) / uy);
     else
     {
         if(uy < 0.0)
@@ -191,7 +194,7 @@ float Photon::FindEdgeDistance()
         else temp_y = 0.0;
     }
     if(uz > 0.0)
-        temp_z = ((round_z + 1 - z) / uz);
+        temp_z = ((round_z + 1.0f - z) / uz);
     else
     {
         if(uz < 0.0)
@@ -396,34 +399,27 @@ void Photon::UpdateDir(Medium * m)
 Medium::Medium()
 {
 	number_of_regions = 1;								// number of regions inicialization
-	for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				structure[temp][temp2][temp3] = 0;
-	for (int temp = 0; temp < voxels_x; temp++)			// matrix with absorbed energy inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				energy[temp][temp2][temp3] = 0;
+				
     for (int temp = 0; temp < voxels_x; temp++)			// matrix with photon fluence inicialization
 		for (int temp2 = 0; temp2 < voxels_y; temp2++)
 			for (int temp3 = 0; temp3 < voxels_z; temp3++)
+            {
+                
 				fluence[temp][temp2][temp3] = 0;
+                structure[temp][temp2][temp3] = 0;
+                energy[temp][temp2][temp3] = 0;
+            }
 	for (int temp = 0; temp < max_regions; temp++)
+    {
 		ua[temp] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		us[temp] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		inv_albedo[temp] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		g[temp] = 1;
-	for (int temp = 0; temp < max_regions; temp++)
-		n[temp] = 1;
-    for (int temp = 0; temp < max_regions; temp++)
-		k[temp] = 0;
-    for (int temp = 0; temp < max_regions; temp++)
-		rho[temp] = 0;
-    for (int temp = 0; temp < max_regions; temp++)
-		c_h[temp] = 0;
+        us[temp] = 0;
+        inv_albedo[temp] = 0;
+        g[temp] = 1;
+        n[temp] = 1;
+        k[temp] = 0;
+        rho[temp] = 0;
+        c_h[temp] = 0;
+    }
 
 	// Preparing array for time-resolved simulations
 	num_time_steps = (int)ceil((time_end - time_start) / time_step);

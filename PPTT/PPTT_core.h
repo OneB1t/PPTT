@@ -13,8 +13,8 @@
 #define	PPTT_CORE_H
 
 #include <cmath>
-
 #define PHOTON_DEATH	0.0001
+#define MAX_SOURCE_SIZE (0x100000)
 
 const float PI = 3.14159265358979323846;
 const float light_speed = 299.792458;  // mm per ns
@@ -28,6 +28,18 @@ const float time_start = 0;
 const float time_step = 0.05;	// in ns
 const float time_end = 0.3;
 const float pulseDuration = 0.2;
+
+typedef struct tag_my_struct {
+    int a;
+    int b;
+    int c;
+    
+    // medium struct
+    int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
+    float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
+    float fluence[voxels_x][voxels_z][voxels_z];            //      matrix with photon fluence
+}my_struct;
+
 
 class Source;
 class Photon;
