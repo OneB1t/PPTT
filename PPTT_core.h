@@ -39,22 +39,23 @@ public:
 	Source();
 	~Source();
         
-        enum beam_type{collimated_launch, isotropic_point_source, collimated_gaussian_beam, focused_gaussian_beam, circular_flat_field}; // beam type from Optical-Thermal Response of Laser-irradiated tissue
+    enum beam_type{collimated_launch, isotropic_point_source, collimated_gaussian_beam, focused_gaussian_beam, circular_flat_field}; // beam type from Optical-Thermal Response of Laser-irradiated tissue
 	float x, y, z;	// entering position
 	float ux, uy, uz; // direction
 	float release_time;
 	float freq;			// laser repetition rate
+	float power, energy;	// average power and energy in a pulse
 
-        void Collimated_launch(float x, float y, float z, float ux, float uy, float uz);
-        void Isotropic_point_source(float x, float y, float z);
-        void Collimated_gaussian_beam(float x, float y, float z, float radius, float ux, float uy, float uz); // radius 1/e
-        void Focused_gaussian_beam(float x, float y, float z, float radius, float focus_z, float ux, float uy, float uz);
-        void Circular_flat_beam(float x, float y, float z, float radius, float ux, float uy, float uz);
-		void TimeProfile_infiniteSharp();
-		void TimeProfile_flat(float pulse_duration); // in ns
-		void TimeProfile_gaussian(float pulse_duration);
-		void TimeProfile_sech(float pulse_duration);
-		void Set_RepetitionRate(float repetition_rate);
+    void Collimated_launch(float x, float y, float z, float ux, float uy, float uz);
+    void Isotropic_point_source(float x, float y, float z);
+    void Collimated_gaussian_beam(float x, float y, float z, float radius, float ux, float uy, float uz); // radius 1/e
+    void Focused_gaussian_beam(float x, float y, float z, float radius, float focus_z, float ux, float uy, float uz);
+    void Circular_flat_beam(float x, float y, float z, float radius, float ux, float uy, float uz);
+	void TimeProfile_infiniteSharp();
+	void TimeProfile_flat(float pulse_duration); // in ns
+	void TimeProfile_gaussian(float pulse_duration);
+	void TimeProfile_sech(float pulse_duration);
+	void Set_RepetitionRate(float repetition_rate);
 };
 
 class Photon 
@@ -65,7 +66,7 @@ public:
 
 	float x, y, z;					// photon position
 	int round_x, round_y, round_z;	//  rounded position for faster operation with matrix indices 
-        float ux, uy, uz;				// photon direction
+    float ux, uy, uz;				// photon direction
 	float w;						// photon weight
 	int regId, lastRegId;						// regionId position of the photon
 	float step, remStep, stepToNextVoxel;			// photon generated step and remaing step
@@ -98,10 +99,10 @@ public:
 	Medium();
 	~Medium();
 
-	int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
+	int ***structure;	//	matrix with id of every media, air = 0
 	int number_of_regions;							//  number of defined regions
-	float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
-    float fluence[voxels_x][voxels_z][voxels_z];            //      matrix with photon fluence
+	float ***energy;								//	matrix with absorbed energy
+    float ***fluence;            //      matrix with photon fluence
 	float ua[max_regions];							//	absorption coef by id
 	float us[max_regions];							//  scattering coef by id
 	float inv_albedo[max_regions];					//  1 / (ua + us)
@@ -110,13 +111,14 @@ public:
     float k[max_regions];                                           // heat conduction coeficient
     float rho[max_regions];                                         // tissue density
     float c_h[max_regions];                                         // specific heat of tissue
-	
+	float w_g[max_regions];							// blood perfusivity
+
 	/////////////////////////////////////////////////////////
 	//   Timing variables
 	int num_time_steps;
 	float time;
-	float *energy_t[voxels_x][voxels_y][voxels_z];		//  score energy in first run
-	float *energy_next[voxels_x][voxels_y][voxels_z];	//	score energy in second run
+	float ****energy_t;		//  score energy in first run
+	float ****energy_next;	//	score energy in second run
 	/////////////////////////////////////////////////////////
 
 	void PrintMediumProperties();					//  print properties of all regions within medium
@@ -131,6 +133,7 @@ public:
 	void RecordFluence();                                  //  record photon fluence in a voxel
 	void CreateCube(int start_x, int start_y, int start_z, int dim_x, int dim_y, int dim_z, float ua, float us, float g, float n);	// create cube with specfied properties in mm	
 	void CreateBall(int center_x, int center_y, int center_z, int radius, float ua, float us, float g, float n);	
+	void CreateLine(float start_x, float start_y, float start_z, float dir_x, float dir_y, float dir_z, float length, float set_ua, float set_us, float set_g, float set_n);
 };
 
 class Heat          // applied heat transfer equation
@@ -140,13 +143,20 @@ public:
     ~Heat();
     
     float time_start, time_step, time_end;
-    float heat_power[voxels_x][voxels_y][voxels_z];
-    void AddThermalCoef(Medium * m, int mediumId, float specific_heat, float density, float conduction);
+    float ***temperature;
+	void AddThermalCoef(Medium * m, int mediumId, float specific_heat, float density, float conduction, float blood_perfusivity);
+
+	/* Numerical methods for solving heat transfer */
+	void LaplaceOperator();
+	void PoissonEquation(Medium * m);
+
+	void PennesEquation(Medium * m, float arterial_temperature);
+	float AproximateBloodPerfusivity(float omega0, float omega1, float omega2, float omega3, float temperature);  // in 
 };
 
 // run one photon cycle
-void RunPhoton(Medium * m);
-void RunPhotonNew(Medium * m, Source * s);
+void RunPhoton_steady(Medium * m, Source * s);
+void RunPhoton_time(Medium * m, Source * s);
 
 // print absorbed energy
 void PrintAbsEnergy(Medium * m);
@@ -156,7 +166,8 @@ void WriteAbsorbedEnergyToFile(Medium * m);
 void WritePhotonFluenceToFile(Medium * m);
 void WriteAbsorbedEnergyToFile_Time(Medium * m);
 void WriteAbsorbedEnergyToFile_Time_secondPulse(Medium * m);
-void CreateNewThread(Medium * m, Source * s, long numPhotons);
+void CreateNewThread_time(Medium * m, Source * s, long numPhotons);
+void CreateNewThread_steady(Medium * m, Source * s, long numPhotons);
 
 // second pulse
 void Prepare_SecondPulse(Medium * m, Source * s, float delay);
