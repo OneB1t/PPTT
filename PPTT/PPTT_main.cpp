@@ -11,7 +11,7 @@
 #include <ctime>
 #include <thread>
 #include "PPTT_core.h"
-#include "simpleCL.h"
+#include "CL\CL.h"
 
 
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
 
     FILE *fp;
-    char fileName[] = "c:/PPTT/PPTT/OpenCL/photoncompute.cl";
+    char fileName[] = "./OpenCL/photoncompute.cl";
     char *source_str;
     size_t source_size;
 
@@ -128,9 +128,15 @@ int main(int argc, char *argv[]) {
 
     cl_int status = 0;
     my_struct* ms = new my_struct[5];
+    ms[0].a = 0;
+    for(int i = 0; i < 5; i++)
+    {
+        ms[i].n[0] = 5.1;
+    }
+    
 
     cl_mem mem = clCreateBuffer(context, 0, sizeof(my_struct) * 5, NULL, &status);
-    clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(mem) * 5, &ms, 0, NULL, NULL);
+    clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(mem), &ms, 0, NULL, NULL);
 
     status = clSetKernelArg(computePhoton, 0, sizeof(mem), &mem);
 
@@ -143,6 +149,8 @@ int main(int argc, char *argv[]) {
         cout << (ms + i)->a << " " << (ms + i)->b << " " << (ms + i)->c << endl;
 
     cout << ms[0].energy[0][0][0] << endl;
+    cout << ms[0].n[0] << endl;
+
     /* Tell the Device, through the command queue, to execute que Kernel */
     if(error != CL_SUCCESS) {
         printf("\n Error number %d", error);
