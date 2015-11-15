@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
     }
     else
     {
-        printf("compile sucessfull");
+        printf("compile sucessfull \n");
     }
     
 
@@ -127,25 +127,23 @@ int main(int argc, char *argv[]) {
     }
 
     cl_int status = 0;
-    my_struct* ms = new my_struct[5];
-    ms[0].a = 0;
-    for(int i = 0; i < 5; i++)
-    {
-        ms[i].n[0] = 5.1;
-    }
+    my_struct* ms = new my_struct[1];
+    memset(&ms[0], 0, sizeof(ms[0]));
+
+    ms[0].n[0] = 5.1;
     
 
-    cl_mem mem = clCreateBuffer(context, 0, sizeof(my_struct) * 5, NULL, &status);
-    clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(mem), &ms, 0, NULL, NULL);
+    cl_mem mem = clCreateBuffer(context, 0, sizeof(my_struct), NULL, &status);
+    clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
 
-    status = clSetKernelArg(computePhoton, 0, sizeof(mem), &mem);
+    status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
     size_t global[] = { 5 };
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
-    status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct) * 5, ms, 0, NULL, NULL);
+    status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, NULL);
 
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 1; i++)
         cout << (ms + i)->a << " " << (ms + i)->b << " " << (ms + i)->c << endl;
 
     cout << ms[0].energy[0][0][0] << endl;
