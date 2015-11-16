@@ -127,7 +127,31 @@ int main(int argc, char *argv[]) {
     }
     my_struct* ms = new my_struct[1];
 
-    ms[0].n[0] = 5.1;
+ 
+    // copy all into openCL structures
+   for(int temp = 0; temp < voxels_x; temp++)			// matrix with photon fluence inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+            {
+                ms[0].energy[temp][temp2][temp3] = m->energy[temp][temp2][temp3];
+                ms[0].structure[temp][temp2][temp3] = m->structure[temp][temp2][temp3];
+                ms[0].fluence[temp][temp2][temp3] = m->fluence[temp][temp2][temp3];
+            }
+
+
+    for(int temp = 0; temp < max_regions; temp++)
+    {
+        ms[0].ua[temp] = m->ua[temp];
+        ms[0].us[temp] = m->us[temp];
+        ms[0].inv_albedo[temp] = m->inv_albedo[temp];
+        ms[0].g[temp] = m->g[temp];
+        ms[0].n[temp] = m->n[temp];
+        ms[0].k[temp] = m->k[temp];
+        ms[0].rho[temp] = m->rho[temp];
+        ms[0].c_h[temp] = m->c_h[temp];
+    }
+
+    // this should go into another structure
     ms[0].time_end = time_end;
     ms[0].time_start = time_start;
     ms[0].pulseDuration = pulseDuration;
@@ -139,7 +163,7 @@ int main(int argc, char *argv[]) {
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
-    size_t global[] = { 40 };  // basically number of photons
+    size_t global[] = { 4000 };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
     status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, &event);

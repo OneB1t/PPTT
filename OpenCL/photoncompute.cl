@@ -1,4 +1,9 @@
 #define PHOTON_DEATH	0.0001
+const float PI = 3.14159265358979323846;
+const float light_speed = 299.792458;  // mm per ns
+
+
+
 typedef struct medium_struct{
     float time_start;
     float time_step;
@@ -82,6 +87,7 @@ __kernel void computePhoton(__global m_str *myStruct)
     photon.lastRegId = photon.regId;
     photon.remStep = -0.01; // this is unimplemented
 
+    int stop = 0;
     while(photon.w > PHOTON_DEATH) 
     {
         // this is hack to test photon movement
@@ -113,7 +119,9 @@ __kernel void computePhoton(__global m_str *myStruct)
 	    float temp = photon.w * (1 - (myStruct[0].ua[photon.regId] * photon.step) + (myStruct[0].ua[photon.regId] * myStruct[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
 	    myStruct[0].energy[photon.round_x][photon.round_y][photon.round_z] += (photon.w - temp); // this is not finished
 	    photon.w = temp;
-
+        stop++;
+        if(stop > 100)
+            break;
         
     }
 }
