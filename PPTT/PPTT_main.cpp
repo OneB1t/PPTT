@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     cl_int error;
     cl_platform_id platform;
     cl_device_id device;
+    cl_event event;
     cl_uint platforms, devices;
     char build_c[4096];
     size_t srcsize, worksize;
@@ -138,10 +139,14 @@ int main(int argc, char *argv[]) {
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
-    size_t global[] = { 5 };
+    size_t global[] = { 5000 };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
-    status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, NULL);
+    status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, &event);
+
+    status = clWaitForEvents(1, &event);
+    clReleaseEvent(event);
+
 
     for(int i = 0; i < 1; i++)
         cout << (ms + i)->a << " " << (ms + i)->b << " " << (ms + i)->c << endl;

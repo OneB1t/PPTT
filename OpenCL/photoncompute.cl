@@ -1,9 +1,4 @@
-const int voxels_x = 100;
-const int voxels_y = 100;
-const int voxels_z = 100;
-const int max_regions = 16;
-
-typedef struct tag_my_struct{
+typedef struct medium_struct{
   int a;
   int b;
   int c;
@@ -19,14 +14,32 @@ typedef struct tag_my_struct{
     float k[16];                                           // heat conduction coeficient
     float rho[16];                                         // tissue density
     float c_h[16];                                         // specific heat of tissue
-}my_struct;
+}m_str;
 
-__kernel void computePhoton(__global my_struct *myStruct)
+typedef struct photon_struct
 {
+	float x, y, z;					// photon position
+	int round_x, round_y, round_z;	//  rounded position for faster operation with matrix indices 
+    float ux, uy, uz;				// photon direction
+	float w;						// photon weight
+	int regId, lastRegId;						// regionId position of the photon
+	float step, remStep, stepToNextVoxel;			// photon generated step and remaing step
+	float cosTheta, phi;
+	float time_of_flight;				// in nanoseconds
+	int timeId;
+}p_str;
+
+typedef struct source_struct
+{
+	float x, y, z;	// entering position
+	float ux, uy, uz; // direction
+	float release_time;
+}s_str;
+
+__kernel void computePhoton(__global m_str *myStruct)
+{
+    local p_str photon; 
+    photon.x = 9;
     int gid = get_global_id(0);
-    myStruct[gid].a = gid + 100;
-    myStruct[gid].b = gid + 2;
-    myStruct[gid].c = gid + 200;
-    myStruct[gid].energy[0][0][0] = 60;
-    myStruct[gid].n[0] = myStruct[gid].n[0] + 1.1;
+    myStruct[0].a = photon.x;
 }
