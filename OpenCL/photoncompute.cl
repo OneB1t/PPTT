@@ -1,7 +1,10 @@
+#define PHOTON_DEATH	0.0001
 typedef struct medium_struct{
-  int a;
-  int b;
-  int c;
+    float time_start;
+    float time_step;
+    float time_end;
+    float pulseDuration;
+
   // medium struct
   int structure[100][100][100];	//	matrix with id of every media, air = 0
   float energy[100][100][100];		//	matrix with absorbed energy
@@ -14,6 +17,10 @@ typedef struct medium_struct{
     float k[16];                                           // heat conduction coeficient
     float rho[16];                                         // tissue density
     float c_h[16];                                         // specific heat of tissue
+	//   Timing variables
+	int num_time_steps;
+	float time;
+
 }m_str;
 
 typedef struct photon_struct
@@ -36,10 +43,78 @@ typedef struct source_struct
 	float release_time;
 }s_str;
 
+
+float timeProfile_flat(float pulse_duration)
+{
+	return pulse_duration;  // hacked this need random
+}
+
 __kernel void computePhoton(__global m_str *myStruct)
 {
     local p_str photon; 
-    photon.x = 9;
-    int gid = get_global_id(0);
-    myStruct[0].a = photon.x;
+    local s_str source; 
+
+    // create new photon
+    photon.x = 10;
+    photon.y = 10;
+    photon.z = 0;
+    photon.ux = 0;
+    photon.uy = 0;
+    photon.uz = 1;
+    photon.w = 1;
+    photon.round_x = floor(photon.x);
+    photon.round_y = floor(photon.y);
+    photon.round_z = floor(photon.z);
+    photon.time_of_flight = 0;
+    photon.timeId = 0;
+
+    // fill photon variables for photon
+    source.release_time = timeProfile_flat(myStruct[0].pulseDuration);
+    photon.x = source.x;
+    photon.y = source.y;
+    photon.z = source.z;    
+    photon.ux = source.ux;
+    photon.uy = source.uy;
+    photon.uz = source.uz;
+
+	photon.time_of_flight = source.release_time;
+    photon.regId = myStruct[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
+    photon.lastRegId = photon.regId;
+    photon.remStep = -0.01; // this is unimplemented
+
+    while(photon.w > PHOTON_DEATH) 
+    {
+        // this is hack to test photon movement
+        photon.x = photon.x + photon.ux * photon.step;
+        photon.y = photon.y + photon.uy * photon.step;
+        photon.z = photon.z + photon.uz * photon.step;
+
+        if((photon.z > 0 && photon.z < 100) || (photon.y > 0 && photon.y < 100) || (photon.x > 0 && photon.x < 100))
+        {
+        }
+        else 
+        {
+            break;
+        }
+        
+        if(photon.time_of_flight < myStruct[0].time_end)
+        {
+            
+        }
+        else
+        {
+            break;
+        }
+
+        photon.timeId = floor(photon.time_of_flight / myStruct[0].time_step);
+        photon.lastRegId = photon.regId;
+        photon.regId = myStruct[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
+
+	    float temp = photon.w * (1 - (myStruct[0].ua[photon.regId] * photon.step) + (myStruct[0].ua[photon.regId] * myStruct[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
+	    myStruct[0].energy[photon.round_x][photon.round_y][photon.round_z] += (photon.w - temp); // this is not finished
+	    photon.w = temp;
+
+        
+    }
 }
+

@@ -30,9 +30,10 @@ const float time_end = 0.3;
 const float pulseDuration = 0.2;
 
 typedef struct tag_my_struct {
-    int a;
-    int b;
-    int c;
+    float time_start;
+    float time_step;
+    float time_end;
+    float pulseDuration;
     
     // medium struct
     int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
@@ -46,6 +47,8 @@ typedef struct tag_my_struct {
     float k[max_regions];                                           // heat conduction coeficient
     float rho[max_regions];                                         // tissue density
     float c_h[max_regions];                                         // specific heat of tissue
+    int num_time_steps;
+    float time;
 }my_struct;
 
 

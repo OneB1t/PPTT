@@ -48,15 +48,14 @@ int main(int argc, char *argv[]) {
     Source * s = new Source;
     s->Collimated_gaussian_beam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0); // this causing crash with big number of photons if used for each of them so moved back to main
 
-
                                                                     /**
                                                                     * Initialize OpenCL vectors:
-                                                                    **/
-
+                                                                     **/
     cl_int error;
     cl_platform_id platform;
     cl_device_id device;
     cl_event event;
+    cl_int status = 0;
     cl_uint platforms, devices;
     char build_c[4096];
     size_t srcsize, worksize;
@@ -86,7 +85,7 @@ int main(int argc, char *argv[]) {
 
 
     FILE *fp;
-    char fileName[] = "./OpenCL/photoncompute.cl";
+    char fileName[] = "C:/PPTT/PPTT/OpenCL/photoncompute.cl";
     char *source_str;
     size_t source_size;
 
@@ -126,30 +125,27 @@ int main(int argc, char *argv[]) {
     if(error != CL_SUCCESS) {
         printf("\n Error number %d", error);
     }
-
-    cl_int status = 0;
     my_struct* ms = new my_struct[1];
-    memset(&ms[0], 0, sizeof(ms[0]));
 
     ms[0].n[0] = 5.1;
-    
+    ms[0].time_end = time_end;
+    ms[0].time_start = time_start;
+    ms[0].pulseDuration = pulseDuration;
+    ms[0].time_step = time_step;
 
+    // most important part here
     cl_mem mem = clCreateBuffer(context, 0, sizeof(my_struct), NULL, &status);
     clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
-    size_t global[] = { 5000 };  // basically number of photons
+    size_t global[] = { 40 };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
     status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, &event);
 
     status = clWaitForEvents(1, &event);
     clReleaseEvent(event);
-
-
-    for(int i = 0; i < 1; i++)
-        cout << (ms + i)->a << " " << (ms + i)->b << " " << (ms + i)->c << endl;
 
     cout << ms[0].energy[0][0][0] << endl;
     cout << ms[0].n[0] << endl;
@@ -166,17 +162,6 @@ int main(int argc, char *argv[]) {
     /* Finally, output the result */
     system("pause");
     return 0;
-
-
-    for(long i = 0; i < numThreads; i++)
-    {
-        tList[i] = thread(CreateNewThread, m, s, (long)floor(numPhotons / numThreads));
-    }
-
-    for(long i = 0; i < numThreads; i++)
-    {
-        tList[i].join();
-    }
 
     m->RescaleEnergy_Time(numPhotons, time_step);
     //m->RecordFluence();
