@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
-    size_t global[] = { 4000 };  // basically number of photons
+    size_t global[] = { 40000000000 };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
     status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, &event);
@@ -184,6 +184,9 @@ int main(int argc, char *argv[]) {
         printf("\n Error number %d", error);
     }
     /* Finally, output the result */
+    end = clock();
+
+    cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
     system("pause");
     return 0;
 
@@ -197,9 +200,7 @@ int main(int argc, char *argv[]) {
     delete s;
     delete h;
 
-    end = clock();
 
-    cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
     system("pause");
     exit(0);
 
