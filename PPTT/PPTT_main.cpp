@@ -163,13 +163,10 @@ int main(int argc, char *argv[]) {
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
-    size_t global[] = { 4000 };  // basically number of photons
+    size_t global[] = { numPhotons };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
-    status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, &event);
-
-    status = clWaitForEvents(1, &event);
-    clReleaseEvent(event);
+    status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, NULL);
 
     cout << ms[0].energy[0][0][0] << endl;
     cout << ms[0].n[0] << endl;
@@ -187,8 +184,14 @@ int main(int argc, char *argv[]) {
     end = clock();
 
     cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
-    system("pause");
-    return 0;
+
+    int num_time_steps = (int)ceil((time_end - time_start) / time_step);
+
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp4 = 0; temp4 < num_time_steps; temp4++)
+                    m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
 
     m->RescaleEnergy_Time(numPhotons, time_step);
     //m->RecordFluence();

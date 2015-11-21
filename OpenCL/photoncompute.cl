@@ -184,7 +184,7 @@ float GetTOF(__global m_str *myStruct, p_str photon, float step_size)
 
 float GenStep(float invAlbedo)
 {
-    float temp = -log(RandomNumber()) * invAlbedo; //  random number hack
+    float temp = -log(RandomNumber()) * invAlbedo;
     return temp;
 }
 
@@ -253,7 +253,6 @@ void Move(__global m_str *myStruct, p_str photon)
             UpdateDir(myStruct,photon);
         }
     }
-    // cout << "Moving to position x: " << x << " y: " << y << " z: " << z << endl;
 }
 
 
@@ -262,10 +261,14 @@ __kernel void computePhoton(__global m_str *myStruct)
     local p_str photon; 
     local s_str source; 
 
+		source.x = 53.7862;
+		source.y = 50.0297;
+		source.z = 0;
+		source.ux = 0;
+		source.uy = 0;
+		source.uz = 1;
+		
     // create new photon
-    photon.x = 10;
-    photon.y = 10;
-    photon.z = 0;
     photon.ux = 0;
     photon.uy = 0;
     photon.uz = 1;
@@ -288,7 +291,7 @@ __kernel void computePhoton(__global m_str *myStruct)
 	photon.time_of_flight = source.release_time;
     photon.regId = myStruct[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
     photon.lastRegId = photon.regId;
-    photon.remStep = -0.01; // this is unimplemented
+    photon.remStep = GenStep(myStruct[0].inv_albedo[photon.regId]);
 
     while(photon.w > PHOTON_DEATH) 
     {
