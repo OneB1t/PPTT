@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
 
     FILE *fp;
-    char fileName[] = "C:/PPTT/PPTT/OpenCL/photoncompute.cl";
+    char fileName[] = "photoncompute.cl";
     char *source_str;
     size_t source_size;
 

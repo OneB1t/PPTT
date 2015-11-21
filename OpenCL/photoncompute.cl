@@ -270,9 +270,6 @@ __kernel void computePhoton(__global m_str *myStruct)
     photon.uy = 0;
     photon.uz = 1;
     photon.w = 1;
-    photon.round_x = floor(photon.x);
-    photon.round_y = floor(photon.y);
-    photon.round_z = floor(photon.z);
     photon.time_of_flight = 0;
     photon.timeId = 0;
 
@@ -284,6 +281,9 @@ __kernel void computePhoton(__global m_str *myStruct)
     photon.ux = source.ux;
     photon.uy = source.uy;
     photon.uz = source.uz;
+    photon.round_x = floor(photon.x);
+    photon.round_y = floor(photon.y);
+    photon.round_z = floor(photon.z);
 
 	photon.time_of_flight = source.release_time;
     photon.regId = myStruct[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
