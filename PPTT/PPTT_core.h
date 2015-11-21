@@ -48,7 +48,7 @@ typedef struct tag_my_struct {
     float rho[max_regions];                                         // tissue density
     float c_h[max_regions];                                         // specific heat of tissue
     int num_time_steps;
-    float energy_t[voxels_x][voxels_y][voxels_z];
+    float energy_t[voxels_x][voxels_y][voxels_z][6];
 }my_struct;
 
 

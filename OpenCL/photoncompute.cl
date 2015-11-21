@@ -29,7 +29,7 @@ typedef struct medium_struct{
 	//   Timing variables
 	int num_time_steps;
 	float time;
-    float energy_t[voxels_x][voxels_y][voxels_z][100];
+    float energy_t[voxels_x][voxels_y][voxels_z][6];
 
 }m_str;
 
@@ -290,20 +290,20 @@ __kernel void computePhoton(__global m_str *myStruct)
     photon.lastRegId = photon.regId;
     photon.remStep = -0.01; // this is unimplemented
 
-    int stop = 0;
     while(photon.w > PHOTON_DEATH) 
     {
 
         Move(myStruct ,photon);
 
-        if(!((photon.z > 0 && photon.z < 100) || (photon.y > 0 && photon.y < 100) || (photon.x > 0 && photon.x < 100))) 
+        if(photon.z < 0 && photon.z > voxels_z)
             break;
-        
-        if(photon.time_of_flight < myStruct[0].time_end)
-        {
-            
-        }
-        else
+        if(photon.y < 0 && photon.y > voxels_y)
+            break;
+        if(photon.x < 0 && photon.x > voxels_x)
+            break;        
+
+
+        if(photon.time_of_flight >= myStruct[0].time_end)
         {
             break;
         }
@@ -313,11 +313,8 @@ __kernel void computePhoton(__global m_str *myStruct)
         photon.regId = myStruct[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
 
 	    float temp = photon.w * (1 - (myStruct[0].ua[photon.regId] * photon.step) + (myStruct[0].ua[photon.regId] * myStruct[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
-	    myStruct[0].energy_t[photon.round_x][photon.round_y][photon.round_z][stop] += (photon.w - temp); // this is not finished
+	    myStruct[0].energy_t[photon.round_x][photon.round_y][photon.round_z][photon.timeId] += (photon.w - temp); // this is not finished
 	    photon.w = temp;
-        stop++;
-        if(stop > 100)
-            break;
         
     }
 }

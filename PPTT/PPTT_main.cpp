@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
-    size_t global[] = { 40000000000 };  // basically number of photons
+    size_t global[] = { 4000 };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
     status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, &event);
