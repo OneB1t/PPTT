@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
     ms[0].time_step = time_step;
 
     // most important part here
-    cl_mem mem = clCreateBuffer(context, 0, sizeof(my_struct), NULL, &status);
+    cl_mem mem = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(ms[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
