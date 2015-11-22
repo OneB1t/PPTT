@@ -177,9 +177,9 @@ void GenDir(float g,p_str *photon)
     (*photon).phi = 2 * PI * RandomNumber();
 }
 
-float GetTOF(__global m_str *myStruct, p_str *photon, float step_size)
+float GetTOF(__global m_str *myStruct,p_str *photon, float step_size)
 {
-    return step_size * myStruct[0].n[(*photon).regId] / (light_speed * units);
+    return step_size * myStruct[0].n[(*photon).regId] / (2997.92458);
 }
 
 float GenStep(float invAlbedo)
@@ -188,20 +188,18 @@ float GenStep(float invAlbedo)
     return temp;
 }
 
-void UpdateDir(__global m_str *myStruct, p_str *photon)
+void UpdateDir(__global m_str *myStruct,p_str *photon)
 {
 	GenDir(myStruct[0].g[(*photon).regId],photon);
 	float temp_ux, temp_uy, temp_uz;
 	float sinTheta = sin(acos((*photon).cosTheta)); //cout << "sinTheta " << sinTheta << endl;
-	float temp_sqrt = 1.0 / sqrt(1 - (*photon).uz*(*photon).uz); //cout << "temp sqrt " << temp_sqrt << endl;
+
 	if (fabs((*photon).uz) < 0.99999)
 	{
-		temp_ux = sinTheta * ((*photon).ux * (*photon).uz * cos((*photon).phi) - (*photon).uy * sin((*photon).phi)) * temp_sqrt + (*photon).ux * (*photon).cosTheta;
-		temp_uy = sinTheta * ((*photon).uy * (*photon).uz * cos((*photon).phi) + (*photon).ux * sin((*photon).phi)) * temp_sqrt + (*photon).uy * (*photon).cosTheta;
-		temp_uz = -sinTheta * cos((*photon).phi) / temp_sqrt + (*photon).uz * (*photon).cosTheta;
-		(*photon).ux = temp_ux;
-		(*photon).uy = temp_uy;
-		(*photon).uz = temp_uz;
+		float temp_sqrt = 1.0 / sqrt(1 - (*photon).uz*(*photon).uz);
+		(*photon).ux = sinTheta * ((*photon).ux * (*photon).uz * cos((*photon).phi) - (*photon).uy * sin((*photon).phi)) * temp_sqrt + (*photon).ux * (*photon).cosTheta;
+		(*photon).uy = sinTheta * ((*photon).uy * (*photon).uz * cos((*photon).phi) + (*photon).ux * sin((*photon).phi)) * temp_sqrt + (*photon).uy * (*photon).cosTheta;
+		(*photon).uz = -sinTheta * cos((*photon).phi) / temp_sqrt + (*photon).uz * (*photon).cosTheta;
 	}
 	else
 	{
@@ -218,7 +216,7 @@ void RoundPosition(p_str *photon)
     (*photon).round_z = floor((*photon).z);
 }
 
-void Move(__global m_str *myStruct, p_str *photon)
+void Move(__global m_str *myStruct,p_str *photon)
 {
     float temp_step = FindEdgeDistance(photon);
     (*photon).remStep = (*photon).remStep * (myStruct[0].us[(*photon).lastRegId] / myStruct[0].us[(*photon).regId]);
@@ -258,11 +256,8 @@ void Move(__global m_str *myStruct, p_str *photon)
 
 __kernel void computePhoton(__global m_str *myStruct)
 {
-    p_str pht; 
-		p_str * photon;
-		photon = &pht;
-	
-    local s_str source; 
+    p_str photon; 
+    s_str source; 
 
 		source.x = 53.7862;
 		source.y = 50.0297;
@@ -272,53 +267,55 @@ __kernel void computePhoton(__global m_str *myStruct)
 		source.uz = 1;
 		
     // create new photon
-    (*photon).ux = 0;
-    (*photon).uy = 0;
-    (*photon).uz = 1;
-    (*photon).w = 1;
-    (*photon).time_of_flight = 0;
-    (*photon).timeId = 0;
+    photon.ux = 0;
+    photon.uy = 0;
+    photon.uz = 1;
+    photon.w = 1;
+    photon.time_of_flight = 0;
+    photon.timeId = 0;
 
     // fill photon variables for photon
     source.release_time = timeProfile_flat(myStruct[0].pulseDuration);
-    (*photon).x = source.x;
-    (*photon).y = source.y;
-    (*photon).z = source.z;    
-    (*photon).ux = source.ux;
-    (*photon).uy = source.uy;
-    (*photon).uz = source.uz;
-		RoundPosition(photon);
+    photon.x = source.x;
+    photon.y = source.y;
+    photon.z = source.z;    
+    photon.ux = source.ux;
+    photon.uy = source.uy;
+    photon.uz = source.uz;
+    photon.round_x = floor(photon.x);
+    photon.round_y = floor(photon.y);
+    photon.round_z = floor(photon.z);
 
-	  (*photon).time_of_flight = source.release_time;
-    (*photon).regId = myStruct[0].structure[(int)floor((*photon).x)][(int)floor((*photon).y)][(int)floor((*photon).z)];
-    (*photon).lastRegId = (*photon).regId;
-    (*photon).remStep = GenStep(myStruct[0].inv_albedo[(*photon).regId]);
+	photon.time_of_flight = source.release_time;
+    photon.regId = myStruct[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
+    photon.lastRegId = photon.regId;
+    photon.remStep = GenStep(myStruct[0].inv_albedo[photon.regId]);
 
-    while((*photon).w > PHOTON_DEATH) 
+    while(photon.w > PHOTON_DEATH) 
     {
 
-        Move(myStruct ,photon);
+        Move(myStruct ,&photon);
 
-        if((*photon).z < 0 && (*photon).z > voxels_z)
+        if(photon.z < 0 && photon.z > voxels_z)
             break;
-        if((*photon).y < 0 && (*photon).y > voxels_y)
+        if(photon.y < 0 && photon.y > voxels_y)
             break;
-        if((*photon).x < 0 && (*photon).x > voxels_x)
+        if(photon.x < 0 && photon.x > voxels_x)
             break;        
 
 
-        if((*photon).time_of_flight >= myStruct[0].time_end)
+       /* if(photon.time_of_flight >= myStruct[0].time_end)
         {
             break;
-        }
+        }*/
 
-        (*photon).timeId = floor((*photon).time_of_flight / myStruct[0].time_step);
-        (*photon).lastRegId = (*photon).regId;
-        (*photon).regId = myStruct[0].structure[(int)floor((*photon).x)][(int)floor((*photon).y)][(int)floor((*photon).z)];
+        photon.timeId = floor(photon.time_of_flight / myStruct[0].time_step);
+        photon.lastRegId = photon.regId;
+        photon.regId = myStruct[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
 
-	    float temp = (*photon).w * (1 - (myStruct[0].ua[(*photon).regId] * (*photon).step) + (myStruct[0].ua[(*photon).regId] * myStruct[0].ua[(*photon).regId] * (*photon).step * (*photon).step / 2)); // Taylor expansion series of Lambert-Beer law
-	    myStruct[0].energy_t[(*photon).round_x][(*photon).round_y][(*photon).round_z][(*photon).timeId] += ((*photon).w - temp); // this is not finished
-	    (*photon).w = temp;
+	    float temp = photon.w * (1 - (myStruct[0].ua[photon.regId] * photon.step) + (myStruct[0].ua[photon.regId] * myStruct[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
+	    myStruct[0].energy_t[photon.round_x][photon.round_y][photon.round_z][photon.timeId] += (photon.w - temp); // this is not finished
+	    photon.w = temp;
         
     }
 }

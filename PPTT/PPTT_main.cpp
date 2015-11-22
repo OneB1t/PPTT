@@ -18,7 +18,7 @@
 using namespace std;
 
 int e;
-const long numPhotons = 800;
+const long numPhotons = 1000000;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     cl_event event;
     cl_int status = 0;
     cl_uint platforms, devices;
-    char build_c[4096];
+    char build_c[8192];
     size_t srcsize, worksize;
 
     /* Fetch the Platforms, we only want one. */
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
         printf("Error on buildProgram ");
         printf("\n Error number %d", error);
         fprintf(stdout, "\nRequestingInfo\n");
-        clGetProgramBuildInfo(prog, 0, CL_PROGRAM_BUILD_LOG, 4096, build_c, NULL);
+        clGetProgramBuildInfo(prog, 0, CL_PROGRAM_BUILD_LOG, 8192, build_c, NULL);
         printf("Build Log for %s_program:\n%s\n", "example", build_c);
     }
     else
@@ -149,6 +149,7 @@ int main(int argc, char *argv[]) {
         ms[0].k[temp] = m->k[temp];
         ms[0].rho[temp] = m->rho[temp];
         ms[0].c_h[temp] = m->c_h[temp];
+        cout << ms[0].n[temp] << endl;
     }
 
     // this should go into another structure
@@ -158,7 +159,7 @@ int main(int argc, char *argv[]) {
     ms[0].time_step = time_step;
 
     // most important part here
-    cl_mem mem = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(ms[0]), NULL, &status);
+    cl_mem mem = clCreateBuffer(context, 0, sizeof(ms[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
