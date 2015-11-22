@@ -15,3 +15,8 @@ ResultsAbsorbedEnergyTime2.txt
 ResultsAbsorbedEnergyTime3.txt
 ResultsAbsorbedEnergyTime4.txt
 ResultsAbsorbedEnergyTime5.txt
+OpenCL/AMDOpenCLDebug.log
+OpenCL/AMDOpenCLDebugAPIUsage.log
+OpenCL/PPTT_debug.exe
+OpenCL/PPTT_debug.ilk
+OpenCL/PPTT_debug.pdb

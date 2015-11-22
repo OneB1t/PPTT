@@ -125,10 +125,21 @@ int main(int argc, char *argv[]) {
     if(error != CL_SUCCESS) {
         printf("\n Error number %d", error);
     }
-    my_struct* ms = new my_struct[1];
 
- 
+    // this is usable for more than 1 medium and source
+    m_str* ms = new m_str[1];
+    s_str * ss = new s_str[1];
+
     // copy all into openCL structures
+
+    ss[0].release_time = RandomNumber() * pulseDuration; // HACK
+    ss[0].x = s->x;
+    ss[0].y = s->y;
+    ss[0].z = s->z;
+    ss[0].ux = s->ux;
+    ss[0].uy = s->uy;
+    ss[0].uz = s->uz;
+
    for(int temp = 0; temp < voxels_x; temp++)			// matrix with photon fluence inicialization
         for(int temp2 = 0; temp2 < voxels_y; temp2++)
             for(int temp3 = 0; temp3 < voxels_z; temp3++)
@@ -158,11 +169,15 @@ int main(int argc, char *argv[]) {
     ms[0].pulseDuration = pulseDuration;
     ms[0].time_step = time_step;
 
-    // most important part here
-    cl_mem mem = clCreateBuffer(context, 0, sizeof(ms[0]), NULL, &status);
-    clEnqueueWriteBuffer(cq, mem, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
+    // copy memory buffers to GPU
+    cl_mem mediumMemoryBlock = clCreateBuffer(context, 0, sizeof(ms[0]), NULL, &status);
+    clEnqueueWriteBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
+    status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mediumMemoryBlock);
 
-    status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
+    cl_mem structureMemoryBlock = clCreateBuffer(context, 0, sizeof(ss[0]), NULL, &status);
+    clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE,0 , sizeof(ss[0]), &ss[0], 0, NULL, NULL);
+    status = clSetKernelArg(computePhoton, 1, sizeof(ss), &structureMemoryBlock);
+
 
     size_t global[] = { numPhotons / 4 };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
@@ -171,10 +186,7 @@ int main(int argc, char *argv[]) {
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
 
 
-    status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, NULL);
-
-    cout << ms[0].energy[0][0][0] << endl;
-    cout << ms[0].n[0] << endl;
+    status = clEnqueueReadBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), ms,0, NULL, NULL);
 
     /* Tell the Device, through the command queue, to execute que Kernel */
     if(error != CL_SUCCESS) {
