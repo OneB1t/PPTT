@@ -18,7 +18,7 @@
 using namespace std;
 
 int e;
-const long numPhotons = 1000000;
+const long numPhotons = 64000 * 4;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -164,8 +164,12 @@ int main(int argc, char *argv[]) {
 
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mem);
 
-    size_t global[] = { numPhotons };  // basically number of photons
+    size_t global[] = { numPhotons / 4 };  // basically number of photons
     status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
+    status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
+    status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
+    status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, NULL);
+
 
     status = clEnqueueReadBuffer(cq, mem, CL_TRUE, 0, sizeof(my_struct), ms, 0, NULL, NULL);
 
