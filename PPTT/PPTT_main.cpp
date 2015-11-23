@@ -14,7 +14,8 @@
 #include "GLView.h"
 #include "CL\CL.h"
 #include <GL\glut.h>
-
+#include "clRNG/clRNG.h"
+#include "clRNG/mrg31k3p.h"
 
 
 
@@ -61,6 +62,10 @@ int main(int argc, char *argv[]) {
     cl_event event;
     cl_int status = 0;
     cl_uint platforms, devices;
+    clrngMrg31k3pStream *streams = 0;
+    size_t streamBufferSize = 0;
+    char *clrng_root;
+    char include_str[1024];
     char build_c[8192];
     size_t srcsize, worksize;
 
@@ -87,6 +92,12 @@ int main(int argc, char *argv[]) {
         printf("\n Error number %d", error);
     }
 
+    /* Make sure CLRNG_ROOT is specified to get library path */
+    clrng_root;
+    if(clrng_root == NULL) printf("\nSpecify environment variable CLRNG_ROOT as described\n");
+    strcpy(include_str, "-I ");
+    strcat(include_str, clrng_root);
+    strcat(include_str, "/include");
 
     FILE *fp;
     char fileName[] = "photoncompute.cl";
@@ -173,6 +184,8 @@ int main(int argc, char *argv[]) {
     ms[0].pulseDuration = pulseDuration;
     ms[0].time_step = time_step;
 
+    size_t globalWorkItems[] = { numPhotons / numBatches };  // basically number of photons per batch
+
     // copy memory buffers to GPU
     cl_mem mediumMemoryBlock = clCreateBuffer(context, 0, sizeof(ms[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
@@ -182,12 +195,16 @@ int main(int argc, char *argv[]) {
     clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE,0 , sizeof(ss[0]), &ss[0], 0, NULL, NULL);
     status = clSetKernelArg(computePhoton, 1, sizeof(ss), &structureMemoryBlock);
 
+    /* Create streams for clRNG*/
+    streams = clrngMrg31k3pCreateStreams(NULL, numPhotons / numBatches, &streamBufferSize, (clrngStatus *)&status);
+    cl_mem randomNumber = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, streamBufferSize, streams, &status);
+    status = clSetKernelArg(computePhoton, 2, sizeof(randomNumber), &randomNumber);
 
-    size_t global[] = { numPhotons / numBatches};  // basically number of photons per batch
+
     for(int i = 0; i < numBatches;i++)
     {
         batch_start = clock();
-        status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, global, NULL, 0, NULL, &event);
+        status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, NULL, 0, NULL, &event);
         cout << "run number:" << i << " ";
         clWaitForEvents(1, &event);
         batch_end = clock();

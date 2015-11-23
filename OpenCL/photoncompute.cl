@@ -1,4 +1,8 @@
 #define PHOTON_DEATH	0.0001
+#define CLRNG_SINGLE_PRECISION  
+
+#include <clRNG/mrg31k3p.clh>     
+
 static const float PI     =         3.14159265358979323846;
 static const float light_speed =    299.792458;  // mm per ns
 static const int units = 10;               // voxels per mm
@@ -254,8 +258,14 @@ void Move(__global m_str *m_str,p_str *photon)
 }
 
 
-__kernel void computePhoton(__global m_str *m_str,__global s_str *source)
+__kernel void computePhoton(__global m_str *m_str,__global s_str *source,__global clrngMrg31k3pHostStream *streams)
 {
+
+    int gid = get_global_id(0);                                  
+                                                                         
+    clrngMrg31k3pStream workItemStream;                          
+    clrngMrg31k3pCopyOverStreamsFromGlobal(1, &workItemStream, &streams[gid]); 
+
     p_str photon; 
 
 		// create new photon
