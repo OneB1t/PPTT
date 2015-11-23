@@ -183,5 +183,7 @@ inline int int_floor(float x);
 void draw();
 void handleResize(int w, int h);
 void init(int argc, char** argv);
+void processSpecialKeys(int key, int xx, int yy);
+void processNormalKeys(unsigned char key, int x, int y);
 #endif	/* PPTT_CORE_H */
 
