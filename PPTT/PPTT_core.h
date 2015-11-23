@@ -180,5 +180,8 @@ void CreateNewThread(Medium * m, Source * s, long numPhotons);
 float RandomNumber(); // from 0 to 1
 inline int int_floor(float x);
 
+void draw();
+void handleResize(int w, int h);
+void init(int argc, char** argv);
 #endif	/* PPTT_CORE_H */
 

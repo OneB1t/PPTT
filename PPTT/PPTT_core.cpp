@@ -689,13 +689,13 @@ void WriteAbsorbedEnergyToFile_Time(Medium * m)
 		if(myFile.is_open())
                 {
                 for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		{
-			for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			{
-				for (int temp3 = 0; temp3 < voxels_z; temp3++)
-					myFile << m->energy_t[temp1][temp2][temp3][temp4] << " ";
-				myFile << endl;
-			}
+		        {
+			        for (int temp2 = 0; temp2 < voxels_y; temp2++)
+			        {
+				        for (int temp3 = 0; temp3 < voxels_z; temp3++)
+					        myFile << m->energy_t[temp1][temp2][temp3][temp4] << " ";
+				        myFile << endl;
+			        }
 			myFile << endl;
 		}
 		myFile.close();
