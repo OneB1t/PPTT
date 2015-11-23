@@ -151,7 +151,6 @@ public:
 	void CreateCube(int start_x, int start_y, int start_z, int dim_x, int dim_y, int dim_z, float ua, float us, float g, float n);	// create cube with specfied properties in mm	
 	void CreateBall(int center_x, int center_y, int center_z, int radius, float ua, float us, float g, float n);	
 };
-
 class Heat          // applied heat transfer equation
 {
 public:
@@ -179,11 +178,5 @@ void WriteAbsorbedEnergyToFile_Time(Medium * m);
 void CreateNewThread(Medium * m, Source * s, long numPhotons);
 float RandomNumber(); // from 0 to 1
 inline int int_floor(float x);
-
-void draw();
-void handleResize(int w, int h);
-void init(int argc, char** argv);
-void processSpecialKeys(int key, int xx, int yy);
-void processNormalKeys(unsigned char key, int x, int y);
 #endif	/* PPTT_CORE_H */
 

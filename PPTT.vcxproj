@@ -31,9 +31,11 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='CPU_Debug|x64'">
       </PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="PPTT\GLview.cpp" />
     <ClCompile Include="PPTT\PPTT_core.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PPTT\GLView.h" />
     <ClInclude Include="PPTT\PPTT_core.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
