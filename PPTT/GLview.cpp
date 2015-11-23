@@ -9,6 +9,10 @@ void GLView::run()
     glutIdleFunc(draw);
     glutKeyboardFunc(processNormalKeys);
     glutSpecialFunc(processSpecialKeys);
+    glutMouseFunc(mouseButton);
+    glutMotionFunc(mouseMove);
+
+
     glutMainLoop(); //Start the main loop. glutMainLoop doesn't return.
 }
 
@@ -18,7 +22,7 @@ void GLView::init(int argc, char** argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800, 800); //Window size
-    glutCreateWindow("Introduction to OpenGL"); //Create a window
+    glutCreateWindow("PPTT - matrix view"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
 }
 
@@ -45,16 +49,16 @@ void handleResize(int w, int h)
 
 void processSpecialKeys(int key, int xx, int yy) {
 
-    float fraction = 0.1f;
+    float fraction = 1.0f;
 
     switch(key) {
         case GLUT_KEY_LEFT:
-        angle -= 0.01f;
+        angle -= 0.05f;
         lx = sin(angle);
         lz = -cos(angle);
         break;
         case GLUT_KEY_RIGHT:
-        angle += 0.01f;
+        angle += 0.05f;
         lx = sin(angle);
         lz = -cos(angle);
         break;
@@ -66,6 +70,36 @@ void processSpecialKeys(int key, int xx, int yy) {
         x -= lx * fraction;
         z -= lz * fraction;
         break;
+    }
+}
+
+void mouseButton(int button, int state, int x, int y) {
+
+    // only start motion if the left button is pressed
+    if(button == GLUT_LEFT_BUTTON) {
+
+        // when the button is released
+        if(state == GLUT_UP) {
+            angle += deltaAngle;
+            xOrigin = -1;
+        }
+        else {// state = GLUT_DOWN
+            xOrigin = x;
+        }
+    }
+}
+
+void mouseMove(int x, int y) {
+
+    // this will only be true when the left button is down
+    if(xOrigin >= 0) {
+
+        // update deltaAngle
+        deltaAngle = (x - xOrigin) * 0.001f;
+
+        // update camera's direction
+        lx = sin(angle + deltaAngle);
+        lz = -cos(angle + deltaAngle);
     }
 }
 
