@@ -64,8 +64,6 @@ int main(int argc, char *argv[]) {
     cl_uint platforms, devices;
     clrngMrg31k3pStream *streams = 0;
     size_t streamBufferSize = 0;
-    char *clrng_root;
-    char include_str[1024];
     char build_c[8192];
     size_t srcsize, worksize;
 
@@ -92,29 +90,19 @@ int main(int argc, char *argv[]) {
         printf("\n Error number %d", error);
     }
 
-    /* Make sure CLRNG_ROOT is specified to get library path */
-    clrng_root;
-    if(clrng_root == NULL) printf("\nSpecify environment variable CLRNG_ROOT as described\n");
-    strcpy(include_str, "-I ");
-    strcat(include_str, clrng_root);
-    strcat(include_str, "/include");
-
     FILE *fp;
     char fileName[] = "photoncompute.cl";
-    char *source_str;
-    size_t source_size;
 
     /* Load the source code containing the kernel*/
     fp = fopen(fileName, "r");
     if(!fp) {
         fprintf(stderr, "Failed to load kernel.\n");
     }
-    
-    source_str = (char*)malloc(MAX_SOURCE_SIZE);
+    char * source_str = (char*)malloc(MAX_SOURCE_SIZE);
     srcsize = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
     fclose(fp);
 
-    const char *srcptr[] = { source_str };
+    const char *srcptr[] = { source_str,  };
     /* Submit the source code of the kernel to OpenCL, and create a program object with it */
     cl_program prog = clCreateProgramWithSource(context,1, srcptr, &srcsize, &error);
     if(error != CL_SUCCESS) {
@@ -122,7 +110,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* Compile the kernel code (after this we could extract the compiled version) */
-    error = clBuildProgram(prog, 0, NULL, "", NULL, NULL);
+    error = clBuildProgram(prog, 0, NULL, "-I ./include",NULL, NULL);
     if(error != CL_SUCCESS) {
         printf("Error on buildProgram ");
         printf("\n Error number %d", error);
@@ -195,11 +183,11 @@ int main(int argc, char *argv[]) {
     clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE,0 , sizeof(ss[0]), &ss[0], 0, NULL, NULL);
     status = clSetKernelArg(computePhoton, 1, sizeof(ss), &structureMemoryBlock);
 
-    /* Create streams for clRNG*/
+    /* Create streams for clRN
     streams = clrngMrg31k3pCreateStreams(NULL, numPhotons / numBatches, &streamBufferSize, (clrngStatus *)&status);
     cl_mem randomNumber = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, streamBufferSize, streams, &status);
     status = clSetKernelArg(computePhoton, 2, sizeof(randomNumber), &randomNumber);
-
+    */
 
     for(int i = 0; i < numBatches;i++)
     {

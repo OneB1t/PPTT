@@ -1,7 +1,4 @@
 #define PHOTON_DEATH	0.0001
-#define CLRNG_SINGLE_PRECISION  
-
-#include <clRNG/mrg31k3p.clh>     
 
 static const float PI     =         3.14159265358979323846;
 static const float light_speed =    299.792458;  // mm per ns
@@ -11,6 +8,70 @@ static const int voxels_y = 100;
 static const int voxels_z = 100;
 static const int max_regions =  16;
 
+typedef struct { uint x; uint c; } mwc64x_state_t;
+
+ulong AddMod64(ulong a, ulong b, ulong M)
+{
+	ulong v = a + b;
+	if (v >= M || v < a) v -= M;
+	return v;
+}
+ulong MulMod64(ulong a, ulong b, ulong M)
+{
+	ulong r = 0;
+	while (a)
+	{
+		if (a & 1) r = AddMod64(r, b, M);
+		b = AddMod64(b, b, M);
+		a = a >> 1;
+	}
+	return r;
+}
+ulong PowMod64(ulong a, ulong e, ulong M)
+{
+	ulong sqr = a, acc = 1;
+	while (e)
+	{
+		if (e & 1) acc = MulMod64(acc, sqr, M);
+		sqr = MulMod64(sqr, sqr, M);
+		e = e >> 1;
+	}
+	return acc;
+}
+
+enum { A = 4294883355U };
+enum { M = 18446383549859758079UL };
+enum { B = 4077358422479273989UL };
+
+void skip(mwc64x_state_t *s, ulong d)
+{
+	ulong m = PowMod64(A, d, M);
+	ulong x = MulMod64(s->x * (ulong)A + s->c, m, M);
+	s->x = x / A;
+	s->c = x % A;
+}
+
+void seed(mwc64x_state_t *s, ulong baseOffset, ulong perStreamOffset)
+{
+	ulong d = baseOffset + get_global_id(0) * perStreamOffset;
+	ulong m = PowMod64(A, d, M);
+	ulong x = MulMod64(B, m, M);
+	s->x = x / A;
+	s->c = x % A;
+}
+
+uint next(mwc64x_state_t *s)
+{
+	uint X = s->x;
+	uint C = s->c;
+	uint r = X ^ C;
+	uint Xn = A * X + C;
+	uint carry = Xn < C;
+	uint Cn = mad_hi(A, X, carry);
+	s->x = Xn;
+	s->c = Cn;
+	return r;
+}
 
 typedef struct medium_struct{
     float time_start;
@@ -258,16 +319,11 @@ void Move(__global m_str *m_str,p_str *photon)
 }
 
 
-__kernel void computePhoton(__global m_str *m_str,__global s_str *source,__global clrngMrg31k3pHostStream *streams)
+__kernel void computePhoton(__global m_str *m_str,__global s_str *source)
 {
 
-    int gid = get_global_id(0);                                  
-                                                                         
-    clrngMrg31k3pStream workItemStream;                          
-    clrngMrg31k3pCopyOverStreamsFromGlobal(1, &workItemStream, &streams[gid]); 
-
     p_str photon; 
-
+    mwc64x_state_t rng;
 		// create new photon
     photon.w = 1;
     photon.timeId = 0;
