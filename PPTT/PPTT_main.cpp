@@ -14,16 +14,14 @@
 #include "GLView.h"
 #include "CL\CL.h"
 #include <GL\glut.h>
-#include "clRNG/clRNG.h"
-#include "clRNG/mrg31k3p.h"
 
 
 
 using namespace std;
 
 int e;
-const long numBatches = 1;
-const long numPhotons = 32000 * numBatches;
+const long numBatches = 10;
+const long numPhotons = 88 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -62,7 +60,6 @@ int main(int argc, char *argv[]) {
     cl_event event;
     cl_int status = 0;
     cl_uint platforms, devices;
-    clrngMrg31k3pStream *streams = 0;
     size_t streamBufferSize = 0;
     char build_c[8192];
     size_t srcsize, worksize;
@@ -173,6 +170,7 @@ int main(int argc, char *argv[]) {
     ms[0].time_step = time_step;
 
     size_t globalWorkItems[] = { numPhotons / numBatches };  // basically number of photons per batch
+    size_t localWorkItems[] = { 1 };  // basically number of photons per batch
 
     // copy memory buffers to GPU
     cl_mem mediumMemoryBlock = clCreateBuffer(context, 0, sizeof(ms[0]), NULL, &status);
@@ -192,7 +190,7 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < numBatches;i++)
     {
         batch_start = clock();
-        status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, NULL, 0, NULL, &event);
+        status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, &event);
         cout << "run number:" << i << " ";
         clWaitForEvents(1, &event);
         batch_end = clock();
@@ -212,7 +210,7 @@ int main(int argc, char *argv[]) {
     }
     /* Finally, output the result */
     end = clock();
-
+    printf("float: %4.2f",ms[0].energy[0][0][0]);
     cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
     int num_time_steps = (int)ceil((time_end - time_start) / time_step);

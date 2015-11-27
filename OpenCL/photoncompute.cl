@@ -118,17 +118,17 @@ typedef struct source_struct
 	float release_time;
 }s_str;
 
-float RandomNumber()
+float RandomNumber(mwc64x_state_t *rng)
 {
-    return 0.8f;
+    return ((float)next(rng) / 0xffffffff);
 }
 
-float timeProfile_flat(float pulse_duration)
+float timeProfile_flat(float pulse_duration,mwc64x_state_t *rng)
 {
-	return pulse_duration * RandomNumber();  // hacked this need random
+	return pulse_duration * RandomNumber(rng);  // hacked this need random
 }
 
-float FindEdgeDistance(p_str *photon)
+float FindEdgeDistance(p_str *photon,mwc64x_state_t *rng)
 {
     float temp_x;
     float temp_y;
@@ -233,13 +233,13 @@ float FindEdgeDistance(p_str *photon)
     }
 }
 
-void GenDir(float g,p_str *photon)
+void GenDir(float g,p_str *photon,mwc64x_state_t *rng)
 {
     if(g != 0)
-        (*photon).cosTheta = 1.0 / (2.0 * g) * (1 + g*g - pow((1 - g*g) / (1 - g + 2 * g * RandomNumber()), 2));
+        (*photon).cosTheta = 1.0 / (2.0 * g) * (1 + g*g - pow((1 - g*g) / (1 - g + 2 * g * RandomNumber(rng)), 2));
     else
-        (*photon).cosTheta = 2 * RandomNumber() - 1;
-    (*photon).phi = 2 * PI * RandomNumber();
+        (*photon).cosTheta = 2 * RandomNumber(rng) - 1;
+    (*photon).phi = 2 * PI * RandomNumber(rng);
 }
 
 float GetTOF(__global m_str *m_str,p_str *photon, float step_size)
@@ -247,15 +247,15 @@ float GetTOF(__global m_str *m_str,p_str *photon, float step_size)
     return step_size * m_str[0].n[(*photon).regId] / (2997.92458);
 }
 
-float GenStep(float invAlbedo)
+float GenStep(float invAlbedo, mwc64x_state_t *rng)
 {
-    float temp = -log(RandomNumber()) * invAlbedo;
+    float temp = -log(RandomNumber(rng)) * invAlbedo;
     return temp;
 }
 
-void UpdateDir(__global m_str *m_str,p_str *photon)
+void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 {
-	GenDir(m_str[0].g[(*photon).regId],photon);
+	GenDir(m_str[0].g[(*photon).regId],photon,rng);
 	float temp_ux, temp_uy, temp_uz;
 	float sinTheta = sin(acos((*photon).cosTheta)); //cout << "sinTheta " << sinTheta << endl;
 
@@ -281,9 +281,9 @@ void RoundPosition(p_str *photon)
     (*photon).round_z = floor((*photon).z);
 }
 
-void Move(__global m_str *m_str,p_str *photon)
+void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 {
-    float temp_step = FindEdgeDistance(photon);
+    float temp_step = FindEdgeDistance(photon,rng);
     (*photon).remStep = (*photon).remStep * (m_str[0].us[(*photon).lastRegId] / m_str[0].us[(*photon).regId]);
 
     if(temp_step > (*photon).remStep)
@@ -294,8 +294,8 @@ void Move(__global m_str *m_str,p_str *photon)
         (*photon).y = (*photon).y + (*photon).uy * (*photon).step;
         (*photon).z = (*photon).z + (*photon).uz * (*photon).step;
         (*photon).time_of_flight += GetTOF(m_str, photon, (*photon).step);
-        (*photon).remStep = GenStep(m_str[0].inv_albedo[(*photon).regId]);
-        UpdateDir(m_str,photon);
+        (*photon).remStep = GenStep(m_str[0].inv_albedo[(*photon).regId],rng);
+        UpdateDir(m_str,photon,rng);
         RoundPosition(photon);
     }
     else
@@ -312,8 +312,8 @@ void Move(__global m_str *m_str,p_str *photon)
         else
         {
             RoundPosition(photon);
-            (*photon).remStep = GenStep(m_str[0].inv_albedo[(*photon).regId]);
-            UpdateDir(m_str,photon);
+            (*photon).remStep = GenStep(m_str[0].inv_albedo[(*photon).regId],rng);
+            UpdateDir(m_str,photon,rng);
         }
     }
 }
@@ -324,6 +324,8 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source)
 
     p_str photon; 
     mwc64x_state_t rng;
+		seed(&rng, 0, 99999);
+    //m_str[0].energy[0][0][0] = ((float)next(&rng) / 0xffffffff);
 		// create new photon
     photon.w = 1;
     photon.timeId = 0;
@@ -343,12 +345,12 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source)
 		photon.time_of_flight = source[0].release_time;
     photon.regId = m_str[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
     photon.lastRegId = photon.regId;
-    photon.remStep = GenStep(m_str[0].inv_albedo[photon.regId]);
+    photon.remStep = GenStep(m_str[0].inv_albedo[photon.regId],&rng);
 
     while(photon.w > PHOTON_DEATH) 
     {
 
-        Move(m_str , &photon);
+        Move(m_str , &photon, &rng);
 
         if(photon.z < 0.0 && photon.z > voxels_z)
             break;
