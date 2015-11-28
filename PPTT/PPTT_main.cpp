@@ -20,8 +20,8 @@
 using namespace std;
 
 int e;
-const long numBatches = 100;
-const long numPhotons = 100 * numBatches;
+const long numBatches = 10;
+const long numPhotons = 10 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
     ms[0].time_start = time_start;
     ms[0].pulseDuration = pulseDuration;
     ms[0].time_step = time_step;
-
+    ms[0].finished = 0;
     size_t globalWorkItems[] = { numPhotons / numBatches };  // basically number of photons per batch
     size_t localWorkItems[] = { 1 };  // basically number of photons per batch
 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
     }
     /* Finally, output the result */
     end = clock();
-    printf("float: %4.2f",ms[0].energy[0][0][0]);
+    cout << ms[0].finished << endl;
     cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
     int num_time_steps = (int)ceil((time_end - time_start) / time_step);
@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
     m->RescaleEnergy_Time(numPhotons, time_step);
     //m->RecordFluence();
 
-    WriteAbsorbedEnergyToFile_Time(m);
+    //WriteAbsorbedEnergyToFile_Time(m);
     // WritePhotonFluenceToFile(m);
 
     GLView * view = new GLView();

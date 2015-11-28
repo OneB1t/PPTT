@@ -95,6 +95,7 @@ typedef struct medium_struct{
 	int num_time_steps;
 	float time;
     float energy_t[voxels_x][voxels_y][voxels_z][6];
+    int finished;
 
 }m_str;
 
@@ -361,6 +362,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 
         if(photon.time_of_flight >= m_str[0].time_end)
         {
+            m_str[0].finished = m_str[0].finished + 1; // count number of time ended photons
             break;
         }
 

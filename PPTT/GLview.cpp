@@ -70,6 +70,11 @@ void processSpecialKeys(int key, int xx, int yy) {
         x -= lx * fraction;
         z -= lz * fraction;
         break;
+        case GLUT_KEY_F1:
+        counter = counter + 1;
+        if(counter > 6)
+            counter = 0;
+        break;
     }
 }
 
@@ -110,8 +115,6 @@ void processNormalKeys(unsigned char key, int x, int y)
 //Draws the 3D scene
 void draw()
 {
-        if(counter > 6)
-        counter = 0;
     //Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
@@ -120,21 +123,23 @@ void draw()
         x + lx, 1.0f, z + lz,
         0.0f, 1.0f, 0.0f);
 
-
-    glBegin(GL_POINTS); //Begin drawing points
-
     for(int temp1 = 0; temp1 < voxels_x; temp1++)
     {
         for(int temp2 = 0; temp2 < voxels_y; temp2++)
         {
             for(int temp3 = 0; temp3 < voxels_z; temp3++)
             {
-                float color = m_draw->energy_t[temp1][temp2][temp3][0] * 10;
+                float color = m_draw->energy_t[temp1][temp2][temp3][counter];
                 float color2 = m_draw->structure[temp1][temp2][temp3] * 1000;
-                glColor3f(color, color, color);
-                glVertex3f((-temp1 + 50), (-temp2 + 50), (-temp3 - 10));
-                glColor3f(color2, color2, color2);
-                glVertex3f((-temp1 + 50), (-temp2 + 50), (-temp3 - 10));
+                if(color != 0)
+                {
+                    glPushMatrix();
+                    glColor3ub(128 + color * 50, 128 + color * 50, 128 + color * 50);
+                    glTranslatef(-temp1 + 50, -temp2 + 50, -temp3 - 10);
+                    glutSolidCube(color);
+                    glPopMatrix();
+                }
+
 
             }
         }
@@ -142,5 +147,4 @@ void draw()
 
     glEnd();
     glutSwapBuffers(); //Send scene to the screen to be shown
-    counter++;
 }
