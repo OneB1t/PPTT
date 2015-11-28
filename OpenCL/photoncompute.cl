@@ -319,13 +319,12 @@ void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 }
 
 
-__kernel void computePhoton(__global m_str *m_str,__global s_str *source)
+__kernel void computePhoton(__global m_str *m_str,__global s_str *source,int random)
 {
 
     p_str photon; 
     mwc64x_state_t rng;
-		seed(&rng, 0, 99999);
-    //m_str[0].energy[0][0][0] = ((float)next(&rng) / 0xffffffff);
+	seed(&rng, 0, random);
 		// create new photon
     photon.w = 1;
     photon.timeId = 0;
@@ -346,7 +345,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source)
     photon.regId = m_str[0].structure[(int)floor(photon.x)][(int)floor(photon.y)][(int)floor(photon.z)];
     photon.lastRegId = photon.regId;
     photon.remStep = GenStep(m_str[0].inv_albedo[photon.regId],&rng);
-
+    int i= 0;
     while(photon.w > PHOTON_DEATH) 
     {
 
@@ -372,6 +371,12 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source)
 	    float temp = photon.w * (1 - (m_str[0].ua[photon.regId] * photon.step) + (m_str[0].ua[photon.regId] * m_str[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
 	    m_str[0].energy_t[photon.round_x][photon.round_y][photon.round_z][photon.timeId] += (photon.w - temp);
 	    photon.w = temp;
+        i++;
+        // failsafe
+        if(i > 50000)
+        {
+            break;
+        }
         
     }
 }

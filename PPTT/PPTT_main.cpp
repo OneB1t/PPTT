@@ -20,8 +20,8 @@
 using namespace std;
 
 int e;
-const long numBatches = 10;
-const long numPhotons = 88 * numBatches;
+const long numBatches = 100;
+const long numPhotons = 100 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
         printf("\n Error number %d", error);
     }
     /* Create a command queue to communicate with the device */
-    cl_command_queue cq = clCreateCommandQueue(context, device, 0, &error);
+    cl_command_queue cq = clCreateCommandQueueWithProperties(context, device, 0, &error);
     if(error != CL_SUCCESS) {
         printf("\n Error number %d", error);
     }
@@ -173,14 +173,17 @@ int main(int argc, char *argv[]) {
     size_t localWorkItems[] = { 1 };  // basically number of photons per batch
 
     // copy memory buffers to GPU
-    cl_mem mediumMemoryBlock = clCreateBuffer(context, 0, sizeof(ms[0]), NULL, &status);
+    cl_mem mediumMemoryBlock = clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, sizeof(ms[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mediumMemoryBlock);
 
-    cl_mem structureMemoryBlock = clCreateBuffer(context, 0, sizeof(ss[0]), NULL, &status);
+    cl_mem structureMemoryBlock = clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, sizeof(ss[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE,0 , sizeof(ss[0]), &ss[0], 0, NULL, NULL);
     status = clSetKernelArg(computePhoton, 1, sizeof(ss), &structureMemoryBlock);
-
+    
+    int random = rand() % 1000;
+    cl_mem randomValue = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(int), NULL, &status);
+    status = clSetKernelArg(computePhoton, 2, sizeof(int), &randomValue);
     /* Create streams for clRN
     streams = clrngMrg31k3pCreateStreams(NULL, numPhotons / numBatches, &streamBufferSize, (clrngStatus *)&status);
     cl_mem randomNumber = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, streamBufferSize, streams, &status);
@@ -190,9 +193,11 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < numBatches;i++)
     {
         batch_start = clock();
-        status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, &event);
+        status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
+        int random = rand() % 1000;
+        clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
         cout << "run number:" << i << " ";
-        clWaitForEvents(1, &event);
+       // clWaitForEvents(1, &event);
         batch_end = clock();
         cout << "Batch Simulation duration was " << (float)(batch_end - batch_start) / CLOCKS_PER_SEC << " seconds." << endl;
     }
@@ -224,7 +229,7 @@ int main(int argc, char *argv[]) {
     m->RescaleEnergy_Time(numPhotons, time_step);
     //m->RecordFluence();
 
-    //WriteAbsorbedEnergyToFile_Time(m);
+    WriteAbsorbedEnergyToFile_Time(m);
     // WritePhotonFluenceToFile(m);
 
     GLView * view = new GLView();
@@ -233,6 +238,22 @@ int main(int argc, char *argv[]) {
     view->run();
     delete s;
     delete h;
+
+    clReleaseMemObject(mediumMemoryBlock);
+    clReleaseMemObject(structureMemoryBlock);
+    if(cq != 0)
+        clReleaseCommandQueue(cq);
+
+    if(computePhoton != 0)
+        clReleaseKernel(computePhoton);
+
+    if(prog != 0)
+        clReleaseProgram(prog);
+
+    if(context != 0)
+        clReleaseContext(context);
+
+
 
     system("pause");
     exit(0);
