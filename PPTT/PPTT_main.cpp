@@ -21,7 +21,7 @@ using namespace std;
 
 int e;
 const long numBatches = 10;
-const long numPhotons = 10 * numBatches;
+const long numPhotons = 100000 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 

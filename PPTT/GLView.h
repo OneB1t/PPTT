@@ -14,10 +14,11 @@
 #include <cmath>
 #include "PPTT_core.h"
 
-static int counter = 0;
+static int counter = 0; // time
+static int selector = 0; // selected view
 static float angle = 0.0;
-static float lx = 0.0f, lz = -1.0f;
-static float x = 0.0f, z = 5.0f;
+static float lx = 0.0f, lz = -1.0f, ly = 0.0f;
+static float x = 0.0f, z = 5.0f, y = 1.0f;
 static float deltaAngle = 0.0f;
 static int xOrigin = -1;
 static Medium * m_draw;
