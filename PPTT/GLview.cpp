@@ -51,7 +51,7 @@ void handleResize(int w, int h)
 
 void processSpecialKeys(int key, int xx, int yy) {
 
-    float fraction = 1.0f;
+    float fraction = 10.0f;
 
     switch(key) {
         case GLUT_KEY_LEFT:

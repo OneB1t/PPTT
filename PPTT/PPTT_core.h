@@ -25,16 +25,17 @@ const int max_regions = 16;
 const int units = 10;               // voxels per mm
 
 const float time_start = 0;
-const float time_step = 0.05;	// in ns
-const float time_end = 0.3;
-const float pulseDuration = 0.2;
+const float time_step = 0.005;	// in ns
+const float time_end = 0.03;
+const float pulseDuration = 0.0025;
 
 typedef struct tag_my_struct {
     float time_start;
     float time_step;
     float time_end;
     float pulseDuration;
-    
+    int finished;
+    int num_time_steps;
     // medium struct
     int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
     float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
@@ -47,9 +48,9 @@ typedef struct tag_my_struct {
     float k[max_regions];                                           // heat conduction coeficient
     float rho[max_regions];                                         // tissue density
     float c_h[max_regions];                                         // specific heat of tissue
-    int num_time_steps;
+
+
     float energy_t[voxels_x][voxels_y][voxels_z][6];
-    int finished;
 }m_str;
 
 typedef struct source_struct

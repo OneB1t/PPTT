@@ -78,7 +78,8 @@ typedef struct medium_struct{
     float time_step;
     float time_end;
     float pulseDuration;
-
+    int finished;
+	int num_time_steps;
   // medium struct
   int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
   float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
@@ -92,10 +93,8 @@ typedef struct medium_struct{
     float rho[max_regions];                                         // tissue density
     float c_h[max_regions];                                         // specific heat of tissue
 	//   Timing variables
-	int num_time_steps;
-	float time;
     float energy_t[voxels_x][voxels_y][voxels_z][6];
-    int finished;
+
 
 }m_str;
 
@@ -349,16 +348,22 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
         Move(m_str , &photon, &rng);
 
         if(photon.position.x < 0.0 && photon.position.x > voxels_z)
-            break;
-        if(photon.position.y < 0.0 && photon.position.y > voxels_y)
-            break;
-        if(photon.position.x < 0.0 && photon.position.x > voxels_x)
+        {
             break;        
+        }
+        if(photon.position.y < 0.0 && photon.position.y > voxels_y)
+        {
+            break;        
+        }
+        if(photon.position.x < 0.0 && photon.position.x > voxels_x)
+        {
+            break;        
+        }
+
 
 
         if(photon.time_of_flight >= m_str[0].time_end)
         {
-            m_str[0].finished = m_str[0].finished + 1; // count number of time ended photons
             break;
         }
 
@@ -371,11 +376,13 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 	    photon.position.w = temp;
         i++;
         // failsafe
-        if(i > 50000)
+        if(i > 5000)
         {
-            break;
+            m_str[0].finished = m_str[0].finished + 1; // count number of time ended photons
+           break;
         }
         
     }
+
 }
 

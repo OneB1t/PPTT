@@ -20,8 +20,8 @@
 using namespace std;
 
 int e;
-const long numBatches = 5;
-const long numPhotons = 1000 * numBatches;
+const long numBatches = 30;
+const long numPhotons = 500 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     //m->PrintMediumProperties();
 
     Source * s = new Source;
-    s->Collimated_gaussian_beam(5.0, 5.0, 5.0, 0.5, 1.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
+    s->Collimated_gaussian_beam(10.0, 2.0, 2.0, 0.2, 0.0, 0.0, 3.0); // this causing crash with big number of photons if used for each of them so moved back to main
 
                                                                     /**
                                                                     * Initialize OpenCL vectors:
@@ -174,30 +174,24 @@ int main(int argc, char *argv[]) {
 
     // copy memory buffers to GPU
     cl_mem mediumMemoryBlock = clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, sizeof(ms[0]), NULL, &status);
-    clEnqueueWriteBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), &ms[0], 0, NULL, NULL);
+    clEnqueueWriteBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), ms, 0, NULL, NULL);
     status = clSetKernelArg(computePhoton, 0, sizeof(ms), &mediumMemoryBlock);
 
     cl_mem structureMemoryBlock = clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, sizeof(ss[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE,0 , sizeof(ss[0]), &ss[0], 0, NULL, NULL);
     status = clSetKernelArg(computePhoton, 1, sizeof(ss), &structureMemoryBlock);
     
-    int random = rand() % 1000;
+    int random = rand() % 10000;
     cl_mem randomValue = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(int), NULL, &status);
     status = clSetKernelArg(computePhoton, 2, sizeof(int), &randomValue);
-    /* Create streams for clRN
-    streams = clrngMrg31k3pCreateStreams(NULL, numPhotons / numBatches, &streamBufferSize, (clrngStatus *)&status);
-    cl_mem randomNumber = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, streamBufferSize, streams, &status);
-    status = clSetKernelArg(computePhoton, 2, sizeof(randomNumber), &randomNumber);
-    */
 
     for(int i = 0; i < numBatches;i++)
     {
         batch_start = clock();
         status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
-        int random = rand() % 1000;
+        int random = rand() % 10000;
         clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
         cout << "run number:" << i << " ";
-       // clWaitForEvents(1, &event);
         batch_end = clock();
         cout << "Batch Simulation duration was " << (float)(batch_end - batch_start) / CLOCKS_PER_SEC << " seconds." << endl;
     }
@@ -215,7 +209,8 @@ int main(int argc, char *argv[]) {
     }
     /* Finally, output the result */
     end = clock();
-    cout << ms[0].finished << endl;
+    ms[0].finished;
+    cout << "Number of finished photons:" << ms[0].finished << endl;
     cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
     int num_time_steps = (int)ceil((time_end - time_start) / time_step);
