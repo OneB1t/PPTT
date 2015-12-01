@@ -261,19 +261,19 @@ void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 {
 	GenDir(m_str[0].g[(*photon).regId],photon,rng);
 	float sinTheta = sin(acos((*photon).cosTheta));
+	float sinPhotonPhi = sin((*photon).phi);
+	float cosPhotonPhi = cos((*photon).phi);
 	if (fabs((*photon).vector.z) < 0.99999)
 	{
-		float temp = 1.0 / sqrt(1 - (*photon).position.z * (*photon).vector.z);  // this line is weird
-		//(*photon).vector.x = sinTheta * ((*photon).vector.x * (*photon).vector.z * cos((*photon).phi) - (*photon).vector.y * sin((*photon).phi));
-		(*photon).vector.x = (*photon).vector.x  * temp + (*photon).vector.x * (*photon).cosTheta;
-		//(*photon).vector.y = sinTheta * ((*photon).vector.y * (*photon).vector.z * cos((*photon).phi) + (*photon).vector.x * sin((*photon).phi));
-		(*photon).vector.y = (*photon).vector.y  * temp + (*photon).vector.y * (*photon).cosTheta;
-		//(*photon).vector.z = -sinTheta * cos((*photon).phi) / temp + (*photon).vector.z * (*photon).cosTheta;
+		float temp = 1.0 / sqrt(1 - (*photon).vector.z*(*photon).vector.z);
+		(*photon).vector.x = sinTheta * ((*photon).vector.x * (*photon).vector.z * cosPhotonPhi - (*photon).vector.y * sinPhotonPhi) * temp + (*photon).vector.x * (*photon).cosTheta;
+		(*photon).vector.y = sinTheta * ((*photon).vector.y * (*photon).vector.z * cosPhotonPhi + (*photon).vector.x * sinPhotonPhi) * temp + (*photon).vector.y * (*photon).cosTheta;
+		(*photon).vector.z = -sinTheta * cosPhotonPhi / temp + (*photon).vector.z * (*photon).cosTheta;
 	}
 	else
 	{
-		(*photon).vector.x = sinTheta * cos((*photon).phi);
-		(*photon).vector.y = sinTheta * sin((*photon).phi);
+		(*photon).vector.x = sinTheta * cosPhotonPhi;
+		(*photon).vector.y = sinTheta * sinPhotonPhi;
 		(*photon).vector.z = (*photon).vector.z * (*photon).cosTheta / fabs((*photon).vector.z);
 	}
 }
@@ -327,8 +327,13 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 		// create new photon
     photon.timeId = 0;
 
-    photon.position = (source[0].x,source[0].y,source[0].z,1);
-    photon.vector = (source[0].ux,source[0].uy,source[0].uz);
+    photon.position.x = source[0].x;
+    photon.position.y = source[0].y;
+    photon.position.z = source[0].z;
+    photon.position.w = 1;
+    photon.vector.x = source[0].ux;
+    photon.vector.y = source[0].uy;
+    photon.vector.z = source[0].uz;
     photon.roundposition.x = floor(photon.position.x);
 	  photon.roundposition.y = floor(photon.position.y);
 	  photon.roundposition.z = floor(photon.position.z);

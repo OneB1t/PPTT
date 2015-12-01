@@ -1,6 +1,8 @@
 #include "GLview.h"
 #include "PPTT_core.h"
 #include <GL\glut.h>
+#include <sstream>
+#include <iostream>
 
 void GLView::run()
 {
@@ -72,13 +74,13 @@ void processSpecialKeys(int key, int xx, int yy) {
         break;
         case GLUT_KEY_F4:
         y -= ly * fraction;
-        break;  
+        break;
         case GLUT_KEY_F3:
         y += ly * fraction;
         break;
         case GLUT_KEY_F1:
         counter = counter + 1;
-        if(counter > 6)
+        if(counter > 5)
             counter = 0;
         break;
         case GLUT_KEY_F2:
@@ -119,7 +121,7 @@ void mouseMove(int x, int y) {
     }
 }
 
-void processNormalKeys(unsigned char key, int x, int y) 
+void processNormalKeys(unsigned char key, int x, int y)
 {
 }
 
@@ -133,30 +135,54 @@ void draw()
     gluLookAt(x, y, z,
         x + lx, y + ly, z + lz,
         0.0f, 1.0f, 0.0f);
+    if(counter == 0)
+        glutSetWindowTitle("counter = 0");
+    else if(counter == 1)
+        glutSetWindowTitle("counter = 1");
+    else if(counter == 2)
+        glutSetWindowTitle("counter = 2");
+    else if(counter == 3)
+        glutSetWindowTitle("counter = 3");
+    else if(counter == 4)
+        glutSetWindowTitle("counter = 4");
+    else if(counter == 5)
+        glutSetWindowTitle("counter = 5");
+    else
+        glutSetWindowTitle("counter = 6");
     switch(selector)
     {
         case 0:
-            for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        {
+            for(int temp2 = 0; temp2 < voxels_y; temp2++)
             {
-                for(int temp2 = 0; temp2 < voxels_y; temp2++)
+                for(int temp3 = 0; temp3 < voxels_z; temp3++)
                 {
-                    for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                    if(temp1 == 0 && temp2 == 0 && temp3 == 0)
                     {
-                        float color = m_draw->energy_t[temp1][temp2][temp3][counter];
-                        float color2 = m_draw->structure[temp1][temp2][temp3] * 1000;
-                        if(color != 0)
-                        {
-                            glPushMatrix();
-                            glColor3ub(128 + color * 50, 128 + color * 50, 128 + color * 50);
-                            glTranslatef((-temp1 + 50) * 0.2, (-temp2 + 50) * 0.2, (-temp3 - 10) * 0.2);
-                            glutSolidCube(color / 5);
-                            glPopMatrix();
-                        }
-
-
+                        glPushMatrix();
+                        glColor3ub(255, 0, 0);
+                        glTranslatef(0, 0, 0);
+                        glutSolidCube(1);
+                        glPopMatrix();
                     }
+                    float color = m_draw->energy_t[temp1][temp2][temp3][counter];
+
+                    if(color != 0)
+                    {
+                        if(color > 20)
+                            color = 20;
+                        glPushMatrix();
+                        glColor3ub(128 + color * 50, 128 + color * 50, 128 + color * 50);
+                        glTranslatef(temp1, temp2, temp3);
+                        glutSolidCube(color / 5);
+                        glPopMatrix();
+                    }
+
+
                 }
             }
+        }
         break;
         case 1:
         for(int temp1 = 0; temp1 < voxels_x; temp1++)
@@ -165,13 +191,13 @@ void draw()
             {
                 for(int temp3 = 0; temp3 < voxels_z; temp3++)
                 {
-                    float color2 = m_draw->structure[temp1][temp2][temp3];  
+                    float color2 = m_draw->structure[temp1][temp2][temp3];
                     if(color2 > 3.1)
-                    {  
+                    {
                         glPushMatrix();
                         glColor3ub(128 + color2 * 50, 128 + color2 * 50, 128 + color2 * 50);
-                        glTranslatef((-temp1 + 50) * 0.2, (-temp2 + 50) * 0.2, (-temp3 - 10) * 0.2);
-                        glutSolidCube(color2 / 100);
+                        glTranslatef(temp1, temp2, temp3);
+                        glutSolidCube(color2 / 5);
                         glPopMatrix();
                     }
                 }
@@ -179,7 +205,7 @@ void draw()
         }
         break;
     }
-  
+
 
     glEnd();
     glutSwapBuffers(); //Send scene to the screen to be shown
