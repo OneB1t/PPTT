@@ -46,7 +46,7 @@ void handleResize(int w, int h)
     gluPerspective(45.0,				  //The camera angle
         (double)w / (double)h, //The width-to-height ratio
         1.0,				   //The near z clipping coordinate
-        200.0);				//The far z clipping coordinate
+        2000.0);				//The far z clipping coordinate
 }
 
 void processSpecialKeys(int key, int xx, int yy) {

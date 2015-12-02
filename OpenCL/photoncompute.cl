@@ -319,11 +319,11 @@ void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 
 __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int random)
 {
-
-    p_str photon; 
+    // random number generator
     mwc64x_state_t rng;
 	seed(&rng, 0, random);
-		// create new photon
+	// create new photon
+    p_str photon;     
     photon.timeId = 0;
 
     photon.position.x = source[0].x;
@@ -334,33 +334,34 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     photon.vector.y = source[0].uy;
     photon.vector.z = source[0].uz;
     photon.roundposition.x = floor(photon.position.x);
-	  photon.roundposition.y = floor(photon.position.y);
-	  photon.roundposition.z = floor(photon.position.z);
+	photon.roundposition.y = floor(photon.position.y);
+	photon.roundposition.z = floor(photon.position.z);
 
-		photon.time_of_flight = source[0].release_time;
+	photon.time_of_flight = source[0].release_time;
     photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];
     photon.lastRegId = photon.regId;
     photon.remStep = GenStep(m_str[0].inv_albedo[photon.regId],&rng);
     int i= 0;
     while(photon.position.w > PHOTON_DEATH) 
     {
+        Move(m_str , &photon, &rng);
         if(photon.position.x < 0.0 || photon.position.x > voxels_z)
         {
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
         if(photon.position.y < 0.0 || photon.position.y > voxels_y)
         {
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
         if(photon.position.x < 0.0 || photon.position.x > voxels_x)
         {
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
         if(photon.time_of_flight >= m_str[0].time_end)
-        {
             break;
-        }
-        Move(m_str , &photon, &rng);
         photon.timeId = floor(photon.time_of_flight / m_str[0].time_step);
         photon.lastRegId = photon.regId;
         photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];
