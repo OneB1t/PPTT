@@ -1,0 +1,41 @@
+﻿Build started 02.12.2015 17:11:12.
+     1>Project "C:\Users\KuBa\Documents\GitHub\PPTT\PPTT\PPTT.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt PPTT_core.cpp PPTT_io.cpp
+         PPTT_io.cpp
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(19): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(20): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(28): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(29): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(30): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+         PPTT_core.cpp
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(19): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(20): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(28): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(29): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.h(30): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(143): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(144): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(145): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(445): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(456): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(755): warning C4244: '/=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(764): warning C4244: '/=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(773): warning C4244: '/=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(832): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(859): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(888): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(888): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(899): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\kuba\documents\github\pptt\pptt\pptt_core.cpp(1111): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\KuBa\Documents\GitHub\PPTT\Debug\PPTT.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\KuBa\Documents\GitHub\PPTT\Debug\PPTT.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\KuBa\Documents\GitHub\PPTT\Debug\PPTT.lib" /MACHINE:X86 Debug\PPTT_core.obj
+         Debug\PPTT_io.obj
+         Debug\PPTT_main.obj
+         PPTT.vcxproj -> C:\Users\KuBa\Documents\GitHub\PPTT\Debug\PPTT.exe
+     1>Done Building Project "C:\Users\KuBa\Documents\GitHub\PPTT\PPTT\PPTT.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.91
