@@ -344,29 +344,23 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     int i= 0;
     while(photon.position.w > PHOTON_DEATH) 
     {
-
-        Move(m_str , &photon, &rng);
-
-        if(photon.position.x < 0.0 && photon.position.x > voxels_z)
+        if(photon.position.x < 0.0 || photon.position.x > voxels_z)
         {
             break;        
         }
-        if(photon.position.y < 0.0 && photon.position.y > voxels_y)
+        if(photon.position.y < 0.0 || photon.position.y > voxels_y)
         {
             break;        
         }
-        if(photon.position.x < 0.0 && photon.position.x > voxels_x)
+        if(photon.position.x < 0.0 || photon.position.x > voxels_x)
         {
             break;        
         }
-
-
-
         if(photon.time_of_flight >= m_str[0].time_end)
         {
             break;
         }
-
+        Move(m_str , &photon, &rng);
         photon.timeId = floor(photon.time_of_flight / m_str[0].time_step);
         photon.lastRegId = photon.regId;
         photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];

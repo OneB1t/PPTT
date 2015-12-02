@@ -20,8 +20,8 @@
 using namespace std;
 
 int e;
-const long numBatches = 30;
-const long numPhotons = 500 * numBatches;
+const long numBatches = 5;
+const long numPhotons = 5000 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
