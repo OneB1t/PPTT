@@ -65,7 +65,7 @@ public:
 	~Photon();
 
 	float x, y, z;					// photon position
-	int round_x, round_y, round_z;	//  rounded position for faster operation with matrix indices 
+	int round_x, round_y, round_z, prev_round_x, prev_round_y, prev_round_z;	//  rounded position for faster operation with matrix indices 
     float ux, uy, uz;				// photon direction
 	float w;						// photon weight
 	int regId, lastRegId;						// regionId position of the photon
@@ -88,6 +88,7 @@ public:
 	int CheckBoundaries(Medium * m);				// check whether the photon is in medium
 	void GenDir(float g);				// generate cos(theta) a phi according to HG phase function
 	void UpdateDir(Medium * m);			// update direction
+	int CheckRefIndexMismatch(Medium * m);		// returns 0 if refractive index has changed
 	float GetReflectionCoef(Medium * m);	// calculate reflection coefficient on the interface
 	void Reflect(Medium * m);
 	void Transmis(Medium * m);

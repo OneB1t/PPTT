@@ -85,9 +85,6 @@ void Source::Collimated_gaussian_beam(float set_x, float set_y, float set_z, flo
     x = set_x + r * cos(phi);
     y = set_y + r * sin(phi);
     z = set_z;
-    
-    //cout << "Parameters of the source are: " << endl;
-    //cout << "x = " << x << " y = " << y << " z = " << z << endl;
 }
 
 void Source::Circular_flat_beam(float set_x, float set_y, float set_z, float radius, float set_ux, float set_uy, float set_uz)
@@ -140,11 +137,14 @@ Photon::Photon()
 	ux = uy = 0;
 	uz = 1;
 	w = 1;
-        round_x = floor(x);
-        round_y = floor(y);
-        round_z = floor(z);
-		time_of_flight = 0;
-		timeId = 0;
+    round_x = (int)floor(x);
+    round_y = (int)floor(y);
+    round_z = (int)floor(z);
+	prev_round_x = round_x;
+	prev_round_y = round_y;
+	prev_round_z = round_z;
+	time_of_flight = 0;
+	timeId = 0;
 }
 
 Photon::~Photon()
@@ -157,6 +157,10 @@ void Photon::GetSourceParameters(Source * s)
     y = s->y;
     z = s->z;
     
+	round_x = (int)floor(x);
+	round_y = (int)floor(y);
+	round_z = (int)floor(z);
+	
     ux = s->ux;
     uy = s->uy;
     uz = s->uz;
@@ -340,6 +344,10 @@ void Photon::PosAndDir()
 
 void Photon::RoundPosition()
 {
+	prev_round_x = round_x;
+	prev_round_y = round_y;
+	prev_round_z = round_z;
+	
 	round_x = (int)floor(x);
 	round_y = (int)floor(y);
 	round_z = (int)floor(z);
@@ -471,9 +479,54 @@ void Photon::UpdateDir(Medium * m)
 	}
 }
 
+int Photon::CheckRefIndexMismatch(Medium * m)
+{
+	if (m->n[regId] - m->n[lastRegId])
+		return 0;
+	else return 1;
+}
+
 float Photon::GetReflectionCoef(Medium * m)
 {
-	return (m->n[lastRegId] - m->n[regId]) / (m->n[lastRegId] + m->n[regId]);
+	return ((m->n[lastRegId] - m->n[regId])*(m->n[lastRegId] - m->n[regId])) / ((m->n[lastRegId] + m->n[regId])*(m->n[lastRegId] + m->n[regId]));
+}
+
+void Photon::Reflect(Medium * m)
+{
+	if (prev_round_z != round_z)
+		uz = -uz;
+	if (prev_round_y != round_y)
+		uy = -uy;
+	if (prev_round_x != round_x)
+		ux = -ux;
+}
+
+void Photon::Transmis(Medium * m)
+{
+	if (prev_round_z != round_z)
+	{
+		float alpha_i = acos(abs(uz));
+		float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
+		ux *= m->n[lastRegId] / m->n[regId];
+		uy *= m->n[lastRegId] / m->n[regId];
+		uz *= sin(alpha_t) / abs(uz);
+	}
+	if (prev_round_y != round_y)
+	{
+		float alpha_i = acos(abs(uy));
+		float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
+		ux *= m->n[lastRegId] / m->n[regId];
+		uz *= m->n[lastRegId] / m->n[regId];
+		uy *= sin(alpha_t) / abs(uy);
+	}
+	if (prev_round_x != round_x)
+	{
+		float alpha_i = acos(abs(ux));
+		float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
+		uz *= m->n[lastRegId] / m->n[regId];
+		uy *= m->n[lastRegId] / m->n[regId];
+		ux *= sin(alpha_t) / abs(ux);
+	}
 }
 
 //////////////////////////////////////////////////
@@ -723,28 +776,28 @@ void Medium::CreateLine(float start_x, float start_y, float start_z, float dir_x
 void Medium::AbsorbEnergy(Photon * p)
 {
     float temp = p->w * (ua[p->regId] * inv_albedo[p->regId]);
-    energy[p->round_x][p->round_y][p->round_z] += temp;
+    energy[p->prev_round_x][p->prev_round_y][p->prev_round_z] += temp;
     p->w -= temp;
 }
 
 void Medium::AbsorbEnergyBeer(Photon * p)
 {
-	float temp = p->w * exp(-ua[p->regId] * p->step);						 // Lambert-Beer law
-    energy[p->round_x][p->round_y][p->round_z] += (p->w - temp);
+	float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
+    energy[p->prev_round_x][p->prev_round_y][p->prev_round_z] += (p->w - temp);
     p->w = temp;
 }
 
 void Medium::AbsorbEnergyBeer_Time(Photon * p)
 {
-	float temp = p->w * exp(-ua[p->regId] * p->step); // Taylor expansion series of Lambert-Beer law
-	energy_t[p->round_x][p->round_y][p->round_z][p->timeId] += (p->w - temp);
+	float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
+	energy_t[p->prev_round_x][p->prev_round_y][p->prev_round_z][p->timeId] += (p->w - temp);
 	p->w = temp;
 }
 
 void Medium::AbsorbEnergyBeer_Time_secondPulse(Photon * p)
 {
-	float temp = p->w * (1 - (ua[p->regId] * p->step) + (ua[p->regId] * ua[p->regId] * p->step * p->step / 2)); // Taylor expansion series of Lambert-Beer law
-	energy_next[p->round_x][p->round_y][p->round_z][p->timeId] += (p->w - temp);
+	float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
+	energy_next[p->prev_round_x][p->prev_round_y][p->prev_round_z][p->timeId] += (p->w - temp);
 	p->w = temp;
 }
 void Medium::RescaleEnergy(long num_photons)
@@ -915,9 +968,17 @@ void RunPhoton_steady(Medium * m, Source * s)
 
 	while (p->w > PHOTON_DEATH)
 	{
-		p->Move(m);
+		if (p->CheckRefIndexMismatch(m))
+			p->Move(m);
+		else
+		{
+			if (GenerateRandomNumber() < p->GetReflectionCoef(m))
+				p->Reflect(m);
+			else
+				p->Transmis(m);
+			p->Move(m);
+		}
 		if (p->CheckBoundaries(m)) break;
-		if (p->CheckTOF(time_end)) break;
 		p->lastRegId = p->regId;
 		p->regId = m->RetRegId(p);
 		m->AbsorbEnergyBeer(p);
@@ -939,7 +1000,16 @@ void RunPhoton_time(Medium * m, Source * s)
         
 	while(p->w > PHOTON_DEATH) 
 	{
-        p->Move(m);
+		if (p->CheckRefIndexMismatch(m))
+			p->Move(m);
+		else
+		{
+			if (GenerateRandomNumber() < p->GetReflectionCoef(m))
+				p->Reflect(m);
+			else
+				p->Transmis(m);
+			p->Move(m);
+		}
         if (p->CheckBoundaries(m)) break;
 		if (p->CheckTOF(time_end)) break;
 		p->timeId = p->GetTimeId();
