@@ -18,16 +18,18 @@
 
 const float PI = 3.14159265358979323846;
 const float light_speed = 299.792458;  // mm per ns
-const int voxels_x = 100;
-const int voxels_y = 100;
-const int voxels_z = 100;
+const int voxels_x = 150;
+const int voxels_y = 150;
+const int voxels_z = 150;
 const int max_regions = 16;
 const int units = 10;               // voxels per mm
 
+
 const float time_start = 0;
-const float time_step = 0.005;	// in ns
-const float time_end = 0.03;
+const float time_step = 0.0025;	// in ns
+const float time_end = 0.12;
 const float pulseDuration = 0.0025;
+const int timeSegments = 48;
 
 typedef struct tag_my_struct {
     float time_start;
@@ -50,7 +52,7 @@ typedef struct tag_my_struct {
     float c_h[max_regions];                                         // specific heat of tissue
 
 
-    float energy_t[voxels_x][voxels_y][voxels_z][6];
+    float energy_t[voxels_x][voxels_y][voxels_z][timeSegments];
 }m_str;
 
 typedef struct source_struct

@@ -3,9 +3,10 @@
 static const float PI     =         3.14159265358979323846;
 static const float light_speed =    299.792458;  // mm per ns
 static const int units = 10;               // voxels per mm
-static const int voxels_x = 100;
-static const int voxels_y = 100;
-static const int voxels_z = 100;
+static const int voxels_x = 150;
+static const int voxels_y = 150;
+static const int voxels_z = 150;
+static const int timeSegment = 48;
 static const int max_regions =  16;
 
 typedef struct { uint x; uint c; } mwc64x_state_t;
@@ -92,8 +93,7 @@ typedef struct medium_struct{
     float k[max_regions];                                           // heat conduction coeficient
     float rho[max_regions];                                         // tissue density
     float c_h[max_regions];                                         // specific heat of tissue
-	//   Timing variables
-    float energy_t[voxels_x][voxels_y][voxels_z][6];
+    float energy_t[voxels_x][voxels_y][voxels_z][timeSegment];
 
 
 }m_str;
@@ -344,24 +344,28 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     int i= 0;
     while(photon.position.w > PHOTON_DEATH) 
     {
-        Move(m_str , &photon, &rng);
-        if(photon.position.x < 0.0 || photon.position.x > voxels_z)
+    photon.roundposition.x = floor(photon.position.x);
+	photon.roundposition.y = floor(photon.position.y);
+	photon.roundposition.z = floor(photon.position.z);
+        if(photon.position.x < 0.0 || photon.position.x > voxels_x)
         {
-            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][0][photon.timeId] += photon.position.w;
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
         if(photon.position.y < 0.0 || photon.position.y > voxels_y)
         {
-            m_str[0].energy_t[photon.roundposition.x][0][photon.roundposition.z][photon.timeId] += photon.position.w;
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
-        if(photon.position.x < 0.0 || photon.position.x > voxels_x)
+        if(photon.position.z < 0.0 || photon.position.z > voxels_z)
         {
-            m_str[0].energy_t[0][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
         if(photon.time_of_flight >= m_str[0].time_end)
             break;
+
+        Move(m_str , &photon, &rng);
         photon.timeId = floor(photon.time_of_flight / m_str[0].time_step);
         photon.lastRegId = photon.regId;
         photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];

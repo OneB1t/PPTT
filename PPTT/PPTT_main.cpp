@@ -49,11 +49,8 @@ int main(int argc, char *argv[]) {
     //m->PrintMediumProperties();
 
     Source * s = new Source;
-    s->Collimated_gaussian_beam(0.5, 5.0, 0.5, 0.5, 0.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
-
-                                                                    /**
-                                                                    * Initialize OpenCL vectors:
-                                                                     **/
+    s->Collimated_gaussian_beam(5.0, 2.0, 2.5, 2.0, 0.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
+                                                                 
     cl_int error;
     cl_platform_id platform;
     cl_device_id device;
@@ -181,7 +178,7 @@ int main(int argc, char *argv[]) {
     clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE,0 , sizeof(ss[0]), &ss[0], 0, NULL, NULL);
     status = clSetKernelArg(computePhoton, 1, sizeof(ss), &structureMemoryBlock);
     
-    int random = rand() % 10000;
+    int random = rand();
     cl_mem randomValue = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(int), NULL, &status);
     status = clSetKernelArg(computePhoton, 2, sizeof(int), &randomValue);
 
@@ -189,7 +186,7 @@ int main(int argc, char *argv[]) {
     {
         batch_start = clock();
         status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
-        int random = rand() % 10000;
+        int random = rand();
         clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
         cout << "run number:" << i << " ";
         batch_end = clock();

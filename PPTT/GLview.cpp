@@ -3,6 +3,7 @@
 #include <GL\glut.h>
 #include <sstream>
 #include <iostream>
+#include <string>
 
 void GLView::run()
 {
@@ -23,6 +24,10 @@ void GLView::init(int argc, char** argv)
     //Initialize GLUT
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glShadeModel(GL_SMOOTH);
     glutInitWindowSize(1200, 800); //Window size
     glutCreateWindow("PPTT - matrix view"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
@@ -80,7 +85,7 @@ void processSpecialKeys(int key, int xx, int yy) {
         break;
         case GLUT_KEY_F1:
         counter = counter + 1;
-        if(counter > 5)
+        if(counter > timeSegments)
             counter = 0;
         break;
         case GLUT_KEY_F2:
@@ -109,7 +114,7 @@ void processSpecialKeys(int key, int xx, int yy) {
                 adjustsize -= 0.5;
             }
             if(adjustsize <= 0)
-                adjustsize == 0;
+                adjustsize = 0;
             break;
         }
         case GLUT_KEY_F8:
@@ -159,28 +164,15 @@ void draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
     glLoadIdentity(); //Reset the drawing perspective
-    gluLookAt(x, y, z,
-        x + lx, y + ly, z + lz,
-        0.0f, 1.0f, 0.0f);
-    if(counter == 0)
-        glutSetWindowTitle("counter = 0");
-    else if(counter == 1)
-        glutSetWindowTitle("counter = 1");
-    else if(counter == 2)
-        glutSetWindowTitle("counter = 2");
-    else if(counter == 3)
-        glutSetWindowTitle("counter = 3");
-    else if(counter == 4)
-        glutSetWindowTitle("counter = 4");
-    else if(counter == 5)
-        glutSetWindowTitle("counter = 5");
-    else
-        glutSetWindowTitle("counter = 6");
+    gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
     glPushMatrix();
     glColor3ub(255, 0, 0);
     glTranslatef(0, 0, 0);
     glutSolidCube(1);
     glPopMatrix();
+
+    drawHelp("Start location 0,0,0", 0.7f, 1.0f, 0.0f);
+
     switch(selector)
     {
         case 0:
@@ -238,4 +230,11 @@ void draw()
 
     glEnd();
     glutSwapBuffers(); //Send scene to the screen to be shown
+}
+
+
+void drawHelp(std::string s, float x, float y, float z) {
+    glRasterPos3f(x, y, z);
+    for(int i = 0; i < s.length(); i++)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i]);
 }
