@@ -15,6 +15,8 @@
 #include "PPTT_core.h"
 
 static int counter = 0; // time
+static bool showboundary = false;
+static float adjustsize = 1;
 static int selector = 0; // selected view
 static float angle = 0.0;
 static float lx = 0.0f, lz = -1.0f, ly = 0.0f;

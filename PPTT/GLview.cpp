@@ -88,6 +88,33 @@ void processSpecialKeys(int key, int xx, int yy) {
         if(selector > 1)
             selector = 0;
         break;
+        case GLUT_KEY_F5:
+        if(showboundary)
+               showboundary = false;
+        else
+            showboundary = true;
+        break;
+        case GLUT_KEY_F7:
+            adjustsize += 10;
+        break;
+        case GLUT_KEY_F6:
+        {
+
+            if(adjustsize <= 1)
+            {
+                adjustsize -= 0.1;
+            }
+            else
+            {
+                adjustsize -= 0.5;
+            }
+            if(adjustsize <= 0)
+                adjustsize == 0;
+            break;
+        }
+        case GLUT_KEY_F8:
+        adjustsize = 1;
+        break;
     }
 }
 
@@ -149,33 +176,30 @@ void draw()
         glutSetWindowTitle("counter = 5");
     else
         glutSetWindowTitle("counter = 6");
+    glPushMatrix();
+    glColor3ub(255, 0, 0);
+    glTranslatef(0, 0, 0);
+    glutSolidCube(1);
+    glPopMatrix();
     switch(selector)
     {
         case 0:
-        for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
         {
-            for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
             {
-                for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp3 = 0 + showboundary; temp3 < voxels_z - showboundary; temp3++)
                 {
-                    if(temp1 == 0 && temp2 == 0 && temp3 == 0)
-                    {
-                        glPushMatrix();
-                        glColor3ub(255, 0, 0);
-                        glTranslatef(0, 0, 0);
-                        glutSolidCube(1);
-                        glPopMatrix();
-                    }
-                    float color = m_draw->energy_t[temp1][temp2][temp3][counter];
+                    float size = m_draw->energy_t[temp1][temp2][temp3][counter] * adjustsize;
 
-                    if(color != 0)
+                    if(size != 0)
                     {
-                        if(color > 20)
-                            color = 20;
+                        if(size > 20)
+                            size = 20;
                         glPushMatrix();
-                        glColor3ub(128 + color * 50, 128 + color * 50, 128 + color * 50);
+                        glColor3ub(128 + size * 50, 128 + size * 50, 128);
                         glTranslatef(temp1, temp2, temp3);
-                        glutSolidCube(color / 5);
+                        glutSolidCube(size / 5);
                         glPopMatrix();
                     }
 
@@ -192,10 +216,15 @@ void draw()
                 for(int temp3 = 0; temp3 < voxels_z; temp3++)
                 {
                     float color2 = m_draw->structure[temp1][temp2][temp3];
-                    if(color2 > 3.1)
+                    if(color2 > 1.0)
                     {
                         glPushMatrix();
-                        glColor3ub(128 + color2 * 50, 128 + color2 * 50, 128 + color2 * 50);
+                        if(color2 > 2.0)
+                            glColor3ub(255, 0,0);
+                        else
+                        {
+                            glColor3ub(0, 255, 0);
+                        }
                         glTranslatef(temp1, temp2, temp3);
                         glutSolidCube(color2 / 5);
                         glPopMatrix();

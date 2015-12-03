@@ -20,8 +20,8 @@
 using namespace std;
 
 int e;
-const long numBatches = 5;
-const long numPhotons = 5000 * numBatches;
+const long numBatches = 1;
+const long numPhotons = 500000 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     //m->PrintMediumProperties();
 
     Source * s = new Source;
-    s->Collimated_gaussian_beam(10.0, 2.0, 2.0, 0.2, 0.0, 0.0, 3.0); // this causing crash with big number of photons if used for each of them so moved back to main
+    s->Collimated_gaussian_beam(0.5, 5.0, 0.5, 0.5, 0.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
 
                                                                     /**
                                                                     * Initialize OpenCL vectors:
