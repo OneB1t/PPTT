@@ -65,7 +65,7 @@ void Source::Isotropic_point_source(float set_x, float set_y, float set_z)  // p
     uz = cosTheta;
 }
 
-void Source::Collimated_gaussian_beam(float set_x, float set_y, float set_z, float radius, float set_ux, float set_uy, float set_uz)
+void Source::CollimatedGaussianBeam(float set_x, float set_y, float set_z, float radius, float set_ux, float set_uy, float set_uz)
 {
     set_x = set_x * units;
     set_y = set_y * units;

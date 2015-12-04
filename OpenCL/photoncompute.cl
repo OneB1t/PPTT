@@ -100,9 +100,9 @@ typedef struct medium_struct{
 
 typedef struct photon_struct
 {
-  float4 position;  // this also implements photon weight
-  int3 roundposition;
-  float3 vector;
+    float4 position;  // this also implements photon weight
+    int3 roundposition;
+    float3 vector;
 	int regId, lastRegId;						// regionId position of the photon
 	float step, remStep, stepToNextVoxel;			// photon generated step and remaing step
 	float cosTheta, phi;
@@ -279,9 +279,9 @@ void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 
 void RoundPosition(p_str *photon)
 {
-    (*photon).roundposition.x = floor((*photon).position.x);
-    (*photon).roundposition.y = floor((*photon).position.y);
-    (*photon).roundposition.z = floor((*photon).position.z);
+    (*photon).roundposition.x = (int)floor((*photon).position.x);
+    (*photon).roundposition.y = (int)floor((*photon).position.y);
+    (*photon).roundposition.z = (int)floor((*photon).position.z);
 }
 
 void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
@@ -344,20 +344,21 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     int i= 0;
     while(photon.position.w > PHOTON_DEATH) 
     {
-    photon.roundposition.x = floor(photon.position.x);
-	photon.roundposition.y = floor(photon.position.y);
-	photon.roundposition.z = floor(photon.position.z);
-        if(photon.position.x < 0.0 || photon.position.x > voxels_x)
+        photon.roundposition.x = floor(photon.position.x);
+	    photon.roundposition.y = floor(photon.position.y);
+	    photon.roundposition.z = floor(photon.position.z);
+        Move(m_str , &photon, &rng);
+        if(photon.position.x < 2.0 || photon.position.x > voxels_x - 2)
         {
             m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
-        if(photon.position.y < 0.0 || photon.position.y > voxels_y)
+        if(photon.position.y < 2.0 || photon.position.y > voxels_y - 2)
         {
             m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
-        if(photon.position.z < 0.0 || photon.position.z > voxels_z)
+        if(photon.position.z < 2.0 || photon.position.z > voxels_z - 2)
         {
             m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
@@ -365,7 +366,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
         if(photon.time_of_flight >= m_str[0].time_end)
             break;
 
-        Move(m_str , &photon, &rng);
+
         photon.timeId = floor(photon.time_of_flight / m_str[0].time_step);
         photon.lastRegId = photon.regId;
         photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];
@@ -375,8 +376,9 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 	    photon.position.w = temp;
         i++;
         // failsafe
-        if(i > 5000)
+        if(i > 10000)
         {
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             m_str[0].finished = m_str[0].finished + 1; // count number of time ended photons
            break;
         }

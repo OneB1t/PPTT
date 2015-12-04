@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     //m->PrintMediumProperties();
 
     Source * s = new Source;
-    s->Collimated_gaussian_beam(5.0, 2.0, 2.5, 2.0, 0.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
+    s->CollimatedGaussianBeam(5.0, 2.0, 2.5, 2.0, 0.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
                                                                  
     cl_int error;
     cl_platform_id platform;

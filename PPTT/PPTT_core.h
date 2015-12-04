@@ -26,10 +26,10 @@ const int units = 10;               // voxels per mm
 
 
 const float time_start = 0;
-const float time_step = 0.0025;	// in ns
+const float time_step = 0.00125;	// in ns
 const float time_end = 0.12;
 const float pulseDuration = 0.0025;
-const int timeSegments = 48;
+const int timeSegments = 96;
 
 typedef struct tag_my_struct {
     float time_start;
@@ -79,7 +79,7 @@ public:
 
         void Collimated_launch(float x, float y, float z, float ux, float uy, float uz);
         void Isotropic_point_source(float x, float y, float z);
-        void Collimated_gaussian_beam(float x, float y, float z, float radius, float ux, float uy, float uz); // radius 1/e
+        void CollimatedGaussianBeam(float x, float y, float z, float radius, float ux, float uy, float uz); // radius 1/e
         void Focused_gaussian_beam(float x, float y, float z, float radius, float focus_z, float ux, float uy, float uz);
         void Circular_flat_beam(float x, float y, float z, float radius, float ux, float uy, float uz);
 		void TimeProfile_infiniteSharp();

@@ -88,6 +88,13 @@ void processSpecialKeys(int key, int xx, int yy) {
         if(counter > timeSegments)
             counter = 0;
         break;
+        case GLUT_KEY_F9:
+        counter = counter - 1;
+        if(counter < 0)
+            counter = timeSegments;
+        if(counter > timeSegments)
+            counter = 0;
+        break;
         case GLUT_KEY_F2:
         selector++;
         if(selector > 1)
@@ -191,6 +198,7 @@ void draw()
                         glPushMatrix();
                         glColor3ub(128 + size * 50, 128 + size * 50, 128);
                         glTranslatef(temp1, temp2, temp3);
+                        drawHelp("0", 0.7f, 1.0f, 0.0f);
                         glutSolidCube(size / 5);
                         glPopMatrix();
                     }
