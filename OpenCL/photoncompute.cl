@@ -6,7 +6,7 @@ static const int units = 10;               // voxels per mm
 static const int voxels_x = 150;
 static const int voxels_y = 150;
 static const int voxels_z = 150;
-static const int timeSegment = 48;
+static const int timeSegment = 96;
 static const int max_regions =  16;
 
 typedef struct { uint x; uint c; } mwc64x_state_t;

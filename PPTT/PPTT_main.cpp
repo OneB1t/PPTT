@@ -19,7 +19,6 @@
 
 using namespace std;
 
-int e;
 const long numBatches = 1;
 const long numPhotons = 500000 * numBatches;
 const int numThreads = 1;
