@@ -20,7 +20,7 @@
 using namespace std;
 
 const long numBatches = 1;
-const long numPhotons = 500000 * numBatches;
+const long numPhotons = 10000000 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     thread tList[numThreads];
 
     //  inserting brain layers
-    m->CreateCube(0, 0, 0, 10, 10, 10, 0.019, 7.8, 0.89, 1.37);		// scalp and skull
+    m->CreateCube(0, 0, 0, 15, 15, 15, 0.019, 7.8, 0.89, 1.37);		// scalp and skull
     //m->CreateBall(1,1,1,1,0.02,9.0,0.89,1.37);
     m->CreateCube(2, 2, 2, 6, 6, 6, 0.004, 0.009, 0.89, 1.37);	// cerebro-spinal fluid
     m->CreateCube(3, 3, 3, 4, 4, 4, 0.02, 9.0, 0.89, 1.37);		// gray-matter

@@ -109,9 +109,9 @@ void processSpecialKeys(int key, int xx, int yy)
         adjustSize = 1;
         break;
         case GLUT_KEY_F6:
-        selector++;
-        if(selector > 1)
-            selector = 0;
+        viewSelector++;
+        if(viewSelector > 4)
+            viewSelector = 0;
         break;
         case GLUT_KEY_F7:
         if(showboundary)
@@ -177,6 +177,36 @@ void processNormalKeys(unsigned char key, int x, int y)
         x -= lx * fraction;
         z -= lz * fraction;
         break;
+        case 'u':
+        sliceX++;
+        if(sliceX > voxels_x - 1)
+            sliceX = 0;
+        break;
+        case 'i':
+        sliceX--;
+        if(sliceX < 0)
+            sliceX = voxels_x - 1;
+        break;
+        case 'j':
+        sliceY++;
+        if(sliceY > voxels_y - 1)
+            sliceY = 0;
+        break;
+        case 'k':
+        sliceY--;
+        if(sliceY < 0)
+            sliceY = voxels_y - 1;
+        break;
+        case 'n':
+        sliceZ++;
+        if(sliceZ > voxels_z - 1)
+            sliceZ = 0;
+        break;
+        case 'm':
+        sliceZ--;
+        if(sliceZ < 0)
+            sliceZ = voxels_z - 1;
+        break;
 }
 }
 
@@ -193,10 +223,9 @@ void draw()
     glTranslatef(0, 0, 0);
     glutSolidCube(1);
     glTranslatef(voxels_x / 2 , voxels_y / 2, voxels_z / 2);
-    drawBounds(voxels_x / 2);
     glPopMatrix();
 
-    switch(selector)
+    switch(viewSelector)
     {
         case 0:
         for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
@@ -248,6 +277,71 @@ void draw()
             }
         }
         break;
+        case 2: // sliceX
+        for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
+        {
+            for(int temp3 = 0 + showboundary; temp3 < voxels_z - showboundary; temp3++)
+            {
+                float size = m_draw->energy_t[sliceX][temp2][temp3][stepCounter] * adjustSize;
+
+                if(size != 0)
+                {
+                    if(size > 20)
+                        size = 20;
+                    glPushMatrix();
+                    glColor3ub(128 + size * 50, 128 + size * 50, 128);
+                    glTranslatef(sliceX, temp2, temp3);
+                    glutSolidCube(size / 5);
+                    glPopMatrix();
+                }
+
+
+            }
+        }
+        break;
+        case 3: // sliceY
+        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
+        {
+            for(int temp3 = 0 + showboundary; temp3 < voxels_z - showboundary; temp3++)
+            {
+                float size = m_draw->energy_t[temp1][sliceY][temp3][stepCounter] * adjustSize;
+
+                if(size != 0)
+                {
+                    if(size > 20)
+                        size = 20;
+                    glPushMatrix();
+                    glColor3ub(128 + size * 50, 128 + size * 50, 128);
+                    glTranslatef(temp1, sliceY, temp3);
+                    glutSolidCube(size / 5);
+                    glPopMatrix();
+                }
+
+
+            }
+        }
+        case 4: // sliceZ
+        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
+        {
+            for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
+            {
+                float size = m_draw->energy_t[temp1][temp2][sliceZ][stepCounter] * adjustSize;
+
+                if(size != 0)
+                {
+                    if(size > 20)
+                        size = 20;
+                    glPushMatrix();
+                    glColor3ub(128 + size * 50, 128 + size * 50, 128);
+                    glTranslatef(temp1, temp2, sliceZ);
+                    glutSolidCube(size / 5);
+                    glPopMatrix();
+                }
+
+
+            }
+        }
+        break;
     }
     drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)-30);
     drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
@@ -261,6 +355,27 @@ void draw()
     drawHelp("Simulation step counter: " + std::to_string(stepCounter) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
     drawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
     drawHelp("Time per step: " + std::to_string(timeStep) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
+    switch(viewSelector)
+    {
+        case 0:
+            drawHelp("View mode: Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        break;
+        case 1:
+            drawHelp("View mode: Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        break;
+        case 2:
+            drawHelp("View mode: X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+            drawHelp("sliceX: " + std::to_string(sliceX),glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 3:
+            drawHelp("View mode: Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+            drawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 4:
+            drawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+            drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+    }
     glEnd();
     glutSwapBuffers(); //Send scene to the screen to be shown
 }
@@ -286,10 +401,4 @@ void drawHelp(std::string s, float x, float y)
     glEnable(GL_TEXTURE_2D);
 
     glutPostRedisplay();
-}
-
-void drawBounds(int myVar) 
-{
-
-    glutWireCube(myVar);
 }
