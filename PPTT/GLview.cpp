@@ -14,8 +14,6 @@ void GLView::run()
     glutSpecialFunc(processSpecialKeys);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMove);
-
-
     glutMainLoop(); //Start the main loop. glutMainLoop doesn't return.
 }
 
@@ -54,8 +52,8 @@ void handleResize(int w, int h)
         2000.0);				//The far z clipping coordinate
 }
 
-void processSpecialKeys(int key, int xx, int yy) {
-
+void processSpecialKeys(int key, int xx, int yy) 
+{
     float fraction = 10.0f;
 
     switch(key) {
@@ -77,61 +75,56 @@ void processSpecialKeys(int key, int xx, int yy) {
         x -= lx * fraction;
         z -= lz * fraction;
         break;
-        case GLUT_KEY_F4:
-        y -= ly * fraction;
-        break;
-        case GLUT_KEY_F3:
-        y += ly * fraction;
-        break;
         case GLUT_KEY_F1:
-        counter = counter + 1;
-        if(counter > timeSegments)
-            counter = 0;
-        break;
-        case GLUT_KEY_F9:
-        counter = counter - 1;
-        if(counter < 0)
-            counter = timeSegments;
-        if(counter > timeSegments)
-            counter = 0;
+        stepCounter = stepCounter + 1;
+        if(stepCounter > timeSegments)
+            stepCounter = 0;
         break;
         case GLUT_KEY_F2:
+        stepCounter = stepCounter - 1;
+        if(stepCounter < 0)
+            stepCounter = timeSegments;
+        if(stepCounter > timeSegments)
+            stepCounter = 0;
+        break;
+        case GLUT_KEY_F3:
+        adjustSize += 10;
+        break;
+        case GLUT_KEY_F4:
+        {
+
+            if(adjustSize <= 1)
+            {
+                adjustSize -= 0.1;
+            }
+            else
+            {
+                adjustSize -= 0.5;
+            }
+            if(adjustSize <= 0)
+                adjustSize = 0;
+            break;
+        }
+        case GLUT_KEY_F5:
+        adjustSize = 1;
+        break;
+        case GLUT_KEY_F6:
         selector++;
         if(selector > 1)
             selector = 0;
         break;
-        case GLUT_KEY_F5:
+        case GLUT_KEY_F7:
         if(showboundary)
                showboundary = false;
         else
             showboundary = true;
         break;
-        case GLUT_KEY_F7:
-            adjustsize += 10;
-        break;
-        case GLUT_KEY_F6:
-        {
 
-            if(adjustsize <= 1)
-            {
-                adjustsize -= 0.1;
-            }
-            else
-            {
-                adjustsize -= 0.5;
-            }
-            if(adjustsize <= 0)
-                adjustsize = 0;
-            break;
-        }
-        case GLUT_KEY_F8:
-        adjustsize = 1;
-        break;
     }
 }
 
-void mouseButton(int button, int state, int x, int y) {
-
+void mouseButton(int button, int state, int x, int y) 
+{
     // only start motion if the left button is pressed
     if(button == GLUT_LEFT_BUTTON) {
 
@@ -146,7 +139,8 @@ void mouseButton(int button, int state, int x, int y) {
     }
 }
 
-void mouseMove(int x, int y) {
+void mouseMove(int x, int y)
+{
 
     // this will only be true when the left button is down
     if(xOrigin >= 0) {
@@ -162,6 +156,28 @@ void mouseMove(int x, int y) {
 
 void processNormalKeys(unsigned char key, int x, int y)
 {
+    float fraction = 10.0f;
+    switch(key) {
+        case 'a':
+        angle -= 0.05f;
+        lx = sin(angle);
+        lz = -cos(angle);
+        break;
+        case 'd':
+        angle += 0.05f;
+        lx = sin(angle);
+        lz = -cos(angle);
+        break;
+        case GLUT_KEY_UP:
+        case 'w':
+        x += lx * fraction;
+        z += lz * fraction;
+        break;
+        case 's':
+        x -= lx * fraction;
+        z -= lz * fraction;
+        break;
+}
 }
 
 //Draws the 3D scene
@@ -176,9 +192,9 @@ void draw()
     glColor3ub(255, 0, 0);
     glTranslatef(0, 0, 0);
     glutSolidCube(1);
+    glTranslatef(voxels_x / 2 , voxels_y / 2, voxels_z / 2);
+    drawBounds(voxels_x / 2);
     glPopMatrix();
-
-    drawHelp("Start location 0,0,0", 0.7f, 1.0f, 0.0f);
 
     switch(selector)
     {
@@ -189,7 +205,7 @@ void draw()
             {
                 for(int temp3 = 0 + showboundary; temp3 < voxels_z - showboundary; temp3++)
                 {
-                    float size = m_draw->energy_t[temp1][temp2][temp3][counter] * adjustsize;
+                    float size = m_draw->energy_t[temp1][temp2][temp3][stepCounter] * adjustSize;
 
                     if(size != 0)
                     {
@@ -198,7 +214,6 @@ void draw()
                         glPushMatrix();
                         glColor3ub(128 + size * 50, 128 + size * 50, 128);
                         glTranslatef(temp1, temp2, temp3);
-                        drawHelp("0", 0.7f, 1.0f, 0.0f);
                         glutSolidCube(size / 5);
                         glPopMatrix();
                     }
@@ -234,15 +249,47 @@ void draw()
         }
         break;
     }
-
-
+    drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)-30);
+    drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
+    drawHelp("F1 - forward", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 70);
+    drawHelp("F2 - back", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 90);
+    drawHelp("F3 - increase energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 110);
+    drawHelp("F4 - decrease energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 130);
+    drawHelp("F5 - reset energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 150);
+    drawHelp("F6 - show medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 170);
+    drawHelp("F7 - show boundary energy matrix", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 190);
+    drawHelp("Simulation step counter: " + std::to_string(stepCounter) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
+    drawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
+    drawHelp("Time per step: " + std::to_string(timeStep) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
     glEnd();
     glutSwapBuffers(); //Send scene to the screen to be shown
 }
 
 
-void drawHelp(std::string s, float x, float y, float z) {
-    glRasterPos3f(x, y, z);
+void drawHelp(std::string s, float x, float y) 
+{
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT));
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glColor3f(1.0f, 0.0f, 0.0f);//needs to be called before RasterPos
+    glRasterPos2i(x - 300, y);
     for(int i = 0; i < s.length(); i++)
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i]);
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+
+    glutPostRedisplay();
+}
+
+void drawBounds(int myVar) 
+{
+
+    glutWireCube(myVar);
 }

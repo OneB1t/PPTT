@@ -26,7 +26,7 @@ const int units = 10;               // voxels per mm
 
 
 const float time_start = 0;
-const float time_step = 0.00125;	// in ns
+const float timeStep = 0.00125;	// in ns
 const float time_end = 0.12;
 const float pulseDuration = 0.0025;
 const int timeSegments = 96;

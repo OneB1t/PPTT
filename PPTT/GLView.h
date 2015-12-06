@@ -15,9 +15,9 @@
 #include <string>
 #include "PPTT_core.h"
 
-static int counter = 0; // time
+static int stepCounter = 0; // time
 static bool showboundary = false;
-static float adjustsize = 1;
+static float adjustSize = 1;
 static int selector = 0; // selected view
 static float angle = 0.0;
 static float lx = 0.0f, lz = -1.0f, ly = 0.0f;
@@ -34,7 +34,8 @@ public:
     void savemedium(Medium *m);
 };
 void draw();
-void drawHelp(std::string s,float x, float y, float z);
+void drawBounds(int myVar);
+void drawHelp(std::string s,float x, float y);
 void colorPick(float intensity);
 void handleResize(int w, int h);
 void processSpecialKeys(int key, int xx, int yy);

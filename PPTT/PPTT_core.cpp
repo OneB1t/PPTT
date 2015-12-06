@@ -324,7 +324,7 @@ float Photon::GetTOF(Medium * m, float step_size)
 
 int Photon::GetTimeId()
 {
-	return int_floor(time_of_flight / time_step);
+	return int_floor(time_of_flight / timeStep);
 }
 
 int Photon::CheckTOF(float end)
@@ -422,7 +422,7 @@ Medium::Medium()
     }
 
 	// Preparing array for time-resolved simulations
-	num_time_steps = (int)ceil((time_end - time_start) / time_step);
+	num_time_steps = (int)ceil((time_end - time_start) / timeStep);
 
 	for (int temp = 0; temp < voxels_x; temp++)
 		for (int temp2 = 0; temp2 < voxels_y; temp2++)

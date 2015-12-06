@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
     ms[0].time_end = time_end;
     ms[0].time_start = time_start;
     ms[0].pulseDuration = pulseDuration;
-    ms[0].time_step = time_step;
+    ms[0].time_step = timeStep;
     ms[0].finished = 0;
     size_t globalWorkItems[] = { numPhotons / numBatches };  // basically number of photons per batch
     size_t localWorkItems[] = { 1 };  // basically number of photons per batch
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
     cout << "Number of finished photons:" << ms[0].finished << endl;
     cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
-    int num_time_steps = (int)ceil((time_end - time_start) / time_step);
+    int num_time_steps = (int)ceil((time_end - time_start) / timeStep);
 
     for(int temp = 0; temp < voxels_x; temp++)
         for(int temp2 = 0; temp2 < voxels_y; temp2++)
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
                 for(int temp4 = 0; temp4 < num_time_steps; temp4++)
                     m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
 
-    m->RescaleEnergy_Time(numPhotons, time_step);
+    m->RescaleEnergy_Time(numPhotons, timeStep);
     //m->RecordFluence();
 
     //WriteAbsorbedEnergyToFile_Time(m);
