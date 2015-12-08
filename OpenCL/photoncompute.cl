@@ -348,17 +348,17 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 	    photon.roundposition.y = floor(photon.position.y);
 	    photon.roundposition.z = floor(photon.position.z);
         Move(m_str , &photon, &rng);
-        if(photon.position.x < 2.0 || photon.position.x > voxels_x - 2)
+        if(photon.position.x < 1.0 || photon.position.x > voxels_x - 2)
         {
             m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
-        if(photon.position.y < 2.0 || photon.position.y > voxels_y - 2)
+        if(photon.position.y < 1.0 || photon.position.y > voxels_y - 2)
         {
             m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        
         }
-        if(photon.position.z < 2.0 || photon.position.z > voxels_z - 2)
+        if(photon.position.z < 1.0 || photon.position.z > voxels_z - 2)
         {
             m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
             break;        

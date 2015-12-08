@@ -19,8 +19,8 @@
 
 using namespace std;
 
-const long numBatches = 1;
-const long numPhotons = 10000000 * numBatches;
+const long numBatches = 50;
+const long numPhotons = 1 * numBatches;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
@@ -185,8 +185,8 @@ int main(int argc, char *argv[]) {
     {
         batch_start = clock();
         status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
-        int random = rand();
-        clEnqueueWriteBuffer(cq, structureMemoryBlock, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
+        random = rand();
+        clEnqueueWriteBuffer(cq, randomValue, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
         cout << "run number:" << i << " ";
         batch_end = clock();
         cout << "Batch Simulation duration was " << (float)(batch_end - batch_start) / CLOCKS_PER_SEC << " seconds." << endl;

@@ -47,4 +47,5 @@ void processSpecialKeys(int key, int xx, int yy);
 void processNormalKeys(unsigned char key, int x, int y);
 void mouseButton(int button, int state, int x, int y);
 void mouseMove(int x, int y);
+void getColor(float t);
 #endif	/* GLVIEW_H */

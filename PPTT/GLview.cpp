@@ -1,5 +1,6 @@
 #include "GLview.h"
 #include "PPTT_core.h"
+#include "CL\CL.h"
 #include <GL\glut.h>
 #include <sstream>
 #include <iostream>
@@ -240,8 +241,8 @@ void draw()
                     {
                         if(size > 20)
                             size = 20;
-                        glPushMatrix();
-                        glColor3ub(128 + size * 50, 128 + size * 50, 128);
+                        glPushMatrix();    
+                        getColor(size);
                         glTranslatef(temp1, temp2, temp3);
                         glutSolidCube(size / 5);
                         glPopMatrix();
@@ -289,7 +290,7 @@ void draw()
                     if(size > 20)
                         size = 20;
                     glPushMatrix();
-                    glColor3ub(128 + size * 50, 128 + size * 50, 128);
+                    getColor(size);
                     glTranslatef(sliceX, temp2, temp3);
                     glutSolidCube(size / 5);
                     glPopMatrix();
@@ -311,7 +312,7 @@ void draw()
                     if(size > 20)
                         size = 20;
                     glPushMatrix();
-                    glColor3ub(128 + size * 50, 128 + size * 50, 128);
+                    getColor(size);
                     glTranslatef(temp1, sliceY, temp3);
                     glutSolidCube(size / 5);
                     glPopMatrix();
@@ -320,6 +321,7 @@ void draw()
 
             }
         }
+        break;
         case 4: // sliceZ
         for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
         {
@@ -332,7 +334,7 @@ void draw()
                     if(size > 20)
                         size = 20;
                     glPushMatrix();
-                    glColor3ub(128 + size * 50, 128 + size * 50, 128);
+                    getColor(size);
                     glTranslatef(temp1, temp2, sliceZ);
                     glutSolidCube(size / 5);
                     glPopMatrix();
@@ -401,4 +403,38 @@ void drawHelp(std::string s, float x, float y)
     glEnable(GL_TEXTURE_2D);
 
     glutPostRedisplay();
+}
+
+void getColor(float t)
+{
+    float invMaxH = 1.0f / (255);
+    float zRel = (t * 10) * invMaxH;
+    float cR = 0, cG = 0, cB = 0;
+    if(0 <= zRel && zRel < 0.2f)
+    {
+        cB = 1.0f;
+        cG = zRel * 5.0f;
+    }
+    else if(0.2f <= zRel && zRel < 0.4f)
+    {
+        cG = 1.0f;
+        cB = 1.0f - (zRel - 0.2f) * 5.0f;
+    }
+    else if(0.4f <= zRel && zRel < 0.6f)
+    {
+        cG = 1.0f;
+        cR = (zRel - 0.4f) * 5.0f;
+    }
+    else if(0.6f <= zRel && zRel < 0.8f)
+    {
+        cR = 1.0f;
+        cG = 1.0f - (zRel - 0.6f) * 5.0f;
+    }
+    else
+    {
+        cR = 1.0f;
+        cG = (zRel - 0.8f) * 5.0f;
+        cB = cG;
+    }
+    glColor3f(cR, cG, cB);
 }
