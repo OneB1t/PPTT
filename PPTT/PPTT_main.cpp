@@ -7,6 +7,7 @@
 /* PPTT_main is a main source file calling the whole      */
 /* program												  */
 /**********************************************************/
+
 #include <iostream>
 #include <ctime>
 #include <thread>
@@ -14,36 +15,37 @@
 #include "GLView.h"
 #include "CL\CL.h"
 #include <GL\glut.h>
-
-
+#include "PPTT_io.h"
 
 using namespace std;
 
-const long numBatches = 50;
-const long numPhotons = 1 * numBatches;
+const long numBatches = 1;
+long numPhotons = 0;
 const int numThreads = 1;
 thread myThreads[numThreads];
 
-
 int main(int argc, char *argv[]) {
-
+    Introduction();
     clock_t start, end,batch_start,batch_end;
+	
+	int Time_Selection = ChooseSteadyOrTime();          // 1 for steady state, 2 for time resolved
+	numPhotons = HowManyPhotons() * numBatches;
 
     start = clock();
-    Medium * m = new Medium();
+    Medium * m = new Medium;
     Heat * h = new Heat;
-    thread tList[numThreads];
 
     //  inserting brain layers
-    m->CreateCube(0, 0, 0, 15, 15, 15, 0.019, 7.8, 0.89, 1.37);		// scalp and skull
+    m->CreateCube(0, 0, 0, 10, 10, 10, 0.07, 37.4, 0.977, 1.37);		// adipose tissue @ 700 nm
     //m->CreateBall(1,1,1,1,0.02,9.0,0.89,1.37);
-    m->CreateCube(2, 2, 2, 6, 6, 6, 0.004, 0.009, 0.89, 1.37);	// cerebro-spinal fluid
-    m->CreateCube(3, 3, 3, 4, 4, 4, 0.02, 9.0, 0.89, 1.37);		// gray-matter
+  
+    m->CreateCube(1, 1, 0, 8, 8, 8, 0.15, 1.67, 0.7, 1.37);		// AuNR in intralipid
+	m->CreateCube(2, 2, 2, 6, 6, 6, 0.045, 29.5, 0.96, 1.37);	// breast carcinoma @ 700nm
     //m->CreateCube(6, 6, 6, 2, 2, 2, 0.08, 40.9, 0.84, 1.37);		// white-matter
 
-    h->AddThermalCoef(m, 2, 3.800, 0.001000, 0.000500);                     // spinus
-    h->AddThermalCoef(m, 1, 1.590, 0.001520, 0.000650);                       // bone
-    h->AddThermalCoef(m, 3, 3.680, 0.001030, 0.000565);                     // grey-matter 
+    h->AddThermalCoef(m, 2, 3.800, 0.001000, 0.000500, 0);                     // spinus
+    h->AddThermalCoef(m, 1, 1.590, 0.001520, 0.000650, 0);                       // bone
+    h->AddThermalCoef(m, 3, 3.680, 0.001030, 0.000565, 0);                     // grey-matter 
 //	h->AddThermalCoef(m, 4, 3.600, 0.001030, 0.000505);                     // white-matter
     //m->PrintMediumProperties();
 
@@ -113,7 +115,7 @@ int main(int argc, char *argv[]) {
     }
     else
     {
-        printf("compile sucessfull \n");
+        printf("OpenCL kernel compile sucessfull. \n");
     }
     
 
@@ -156,14 +158,13 @@ int main(int argc, char *argv[]) {
         ms[0].k[temp] = m->k[temp];
         ms[0].rho[temp] = m->rho[temp];
         ms[0].c_h[temp] = m->c_h[temp];
-        cout << ms[0].n[temp] << endl;
     }
 
     // this should go into another structure
     ms[0].time_end = time_end;
     ms[0].time_start = time_start;
     ms[0].pulseDuration = pulseDuration;
-    ms[0].time_step = timeStep;
+    ms[0].time_step = time_step;
     ms[0].finished = 0;
     size_t globalWorkItems[] = { numPhotons / numBatches };  // basically number of photons per batch
     size_t localWorkItems[] = { 1 };  // basically number of photons per batch
@@ -205,11 +206,10 @@ int main(int argc, char *argv[]) {
     }
     /* Finally, output the result */
     end = clock();
-    ms[0].finished;
-    cout << "Number of finished photons:" << ms[0].finished << endl;
+    cout << "Number of unfinished photons:" << ms[0].finished << endl;
     cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
-    int num_time_steps = (int)ceil((time_end - time_start) / timeStep);
+    int num_time_steps = (int)ceil((time_end - time_start) / time_step);
 
     for(int temp = 0; temp < voxels_x; temp++)
         for(int temp2 = 0; temp2 < voxels_y; temp2++)
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
                 for(int temp4 = 0; temp4 < num_time_steps; temp4++)
                     m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
 
-    m->RescaleEnergy_Time(numPhotons, timeStep);
+    m->RescaleEnergy_Time(numPhotons, time_step);
     //m->RecordFluence();
 
     //WriteAbsorbedEnergyToFile_Time(m);
