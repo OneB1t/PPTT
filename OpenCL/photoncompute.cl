@@ -11,6 +11,52 @@ static const int max_regions =  16;
 
 typedef struct { uint x; uint c; } mwc64x_state_t;
 
+
+typedef struct medium_struct{
+    float time_start;
+    float time_step;
+    float time_end;
+    float pulseDuration;
+    int finished;
+	int num_time_steps;
+  // medium struct
+  int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
+  float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
+  float fluence[voxels_x][voxels_y][voxels_z];            //      matrix with photon fluence
+    float ua[max_regions];							//	absorption coef by id
+    float us[max_regions];							//  scattering coef by id
+    float inv_albedo[max_regions];					//  1 / (ua + us)
+    float g[max_regions];							//  anisotropy parameter
+    float n[max_regions];                                               //	refractive index
+    float k[max_regions];                                           // heat conduction coeficient
+    float rho[max_regions];                                         // tissue density
+    float c_h[max_regions];                                         // specific heat of tissue
+    float w_g[max_regions];
+    float energy_t[voxels_x][voxels_y][voxels_z][timeSegment];
+
+
+}m_str;
+
+typedef struct photon_struct
+{
+    float4 position;  // this also implements photon weight
+    int3 roundposition;
+    int3 prevroundposition;
+    float3 vector;
+	int regId, lastRegId;						// regionId position of the photon
+	float step, remStep, stepToNextVoxel;			// photon generated step and remaing step
+	float cosTheta, phi;
+	float time_of_flight;				// in nanoseconds
+	int timeId;
+}p_str;
+
+typedef struct source_struct
+{
+	float x, y, z;	// entering position
+	float ux, uy, uz; // direction
+	float release_time;
+}s_str;
+
 ulong AddMod64(ulong a, ulong b, ulong M)
 {
 	ulong v = a + b;
@@ -74,48 +120,6 @@ uint next(mwc64x_state_t *s)
 	return r;
 }
 
-typedef struct medium_struct{
-    float time_start;
-    float time_step;
-    float time_end;
-    float pulseDuration;
-    int finished;
-	int num_time_steps;
-  // medium struct
-  int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
-  float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
-  float fluence[voxels_x][voxels_y][voxels_z];            //      matrix with photon fluence
-    float ua[max_regions];							//	absorption coef by id
-    float us[max_regions];							//  scattering coef by id
-    float inv_albedo[max_regions];					//  1 / (ua + us)
-    float g[max_regions];							//  anisotropy parameter
-    float n[max_regions];                                               //	refractive index
-    float k[max_regions];                                           // heat conduction coeficient
-    float rho[max_regions];                                         // tissue density
-    float c_h[max_regions];                                         // specific heat of tissue
-    float energy_t[voxels_x][voxels_y][voxels_z][timeSegment];
-
-
-}m_str;
-
-typedef struct photon_struct
-{
-    float4 position;  // this also implements photon weight
-    int3 roundposition;
-    float3 vector;
-	int regId, lastRegId;						// regionId position of the photon
-	float step, remStep, stepToNextVoxel;			// photon generated step and remaing step
-	float cosTheta, phi;
-	float time_of_flight;				// in nanoseconds
-	int timeId;
-}p_str;
-
-typedef struct source_struct
-{
-	float x, y, z;	// entering position
-	float ux, uy, uz; // direction
-	float release_time;
-}s_str;
 
 float RandomNumber(mwc64x_state_t *rng)
 {
@@ -256,6 +260,57 @@ float GenStep(float invAlbedo, mwc64x_state_t *rng)
     return temp;
 }
 
+float GetReflectionCoef(__global m_str *m_str,p_str *photon)
+{
+	return ((m_str[0].n[(*photon).lastRegId] - m_str[0].n[(*photon).regId])*(m_str[0].n[(*photon).lastRegId] - m_str[0].n[(*photon).regId])) / ((m_str[0].n[(*photon).lastRegId] + m_str[0].n[(*photon).regId])*(m_str[0].n[(*photon).lastRegId] + m_str[0].n[(*photon).regId]));
+}
+
+void Reflect(__global m_str *m_str,p_str *photon)
+{
+	if ((*photon).prevroundposition.z != (*photon).roundposition.z)
+		(*photon).vector.z = -(*photon).vector.z;
+  if ((*photon).prevroundposition.y != (*photon).roundposition.y)
+		(*photon).vector.y = -(*photon).vector.y;
+	if ((*photon).prevroundposition.x != (*photon).roundposition.x)
+		(*photon).vector.x = -(*photon).vector.x;
+}
+
+void Transmis(__global m_str *m_str,p_str *photon)
+{
+  if ((*photon).prevroundposition.z != (*photon).roundposition.z)
+	{
+		float alpha_i = acos(fabs((*photon).vector.z));
+		float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
+		(*photon).vector.x *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
+		(*photon).vector.y *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
+		(*photon).vector.z *= sin(alpha_t) / fabs((*photon).vector.z);
+	}
+	if ((*photon).prevroundposition.y != (*photon).roundposition.y)
+	{
+		float alpha_i = acos(fabs((*photon).vector.y));
+		float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
+		(*photon).vector.x *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
+		(*photon).vector.z *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
+		(*photon).vector.y *= sin(alpha_t) / fabs((*photon).vector.y);
+	}
+	if ((*photon).prevroundposition.x != (*photon).roundposition.x)
+	{
+		
+		float alpha_i = acos(fabs((*photon).vector.x));
+		float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
+		(*photon).vector.y *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
+		(*photon).vector.z *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
+		(*photon).vector.x *= sin(alpha_t) / fabs((*photon).vector.x);
+	}
+}
+
+int CheckRefIndexMismatch(__global m_str *m_str,p_str *photon)
+{
+	if (m_str[0].n[(*photon).regId] - m_str[0].n[(*photon).lastRegId])
+		return 0;
+	else return 1;
+}
+
 void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 {
 	GenDir(m_str[0].g[(*photon).regId],photon,rng);
@@ -344,10 +399,24 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     int i= 0;
     while(photon.position.w > PHOTON_DEATH) 
     {
-        photon.roundposition.x = floor(photon.position.x);
-	    photon.roundposition.y = floor(photon.position.y);
-	    photon.roundposition.z = floor(photon.position.z);
-        Move(m_str , &photon, &rng);
+        if (CheckRefIndexMismatch(m_str,&photon))
+        {
+            Move(m_str , &photon, &rng);
+        }
+        else
+        {
+            if (RandomNumber(&rng) < GetReflectionCoef(m_str,&photon))
+            {
+                Reflect(m_str,&photon);
+            }
+            else
+            {
+                Transmis(m_str,&photon);
+            }
+            Move(m_str , &photon, &rng);
+        }
+        
+
         if(photon.position.x < 1.0 || photon.position.x > voxels_x - 2)
         {
             m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;

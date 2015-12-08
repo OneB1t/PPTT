@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
         ms[0].k[temp] = m->k[temp];
         ms[0].rho[temp] = m->rho[temp];
         ms[0].c_h[temp] = m->c_h[temp];
+        ms[0].w_g[temp] = m->w_g[temp];
     }
 
     // this should go into another structure

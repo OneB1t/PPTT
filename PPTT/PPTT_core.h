@@ -50,7 +50,7 @@ typedef struct tag_my_struct {
     float k[max_regions];                                           // heat conduction coeficient
     float rho[max_regions];                                         // tissue density
     float c_h[max_regions];                                         // specific heat of tissue
-
+    float w_g[max_regions];
 
     float energy_t[voxels_x][voxels_y][voxels_z][timeSegments];
 }m_str;
