@@ -36,6 +36,18 @@ char ChooseSteadyOrTime()
 	return selection;
 }
 
+char OpenCLOrCPU()
+{
+    cout << "Select type of simulation and press enter: " << endl;
+    cout << "	1 - OpenCL" << endl;
+    cout << "	2 - CPU" << endl;
+    cout << "You have selected ";
+    int selection;
+    cin >> selection;
+    cout << endl;
+    return selection;
+}
+
 long HowManyPhotons()
 {
 	cout << "How many photons should participate in simulation? " << endl;

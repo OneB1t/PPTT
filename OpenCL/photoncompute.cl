@@ -334,6 +334,7 @@ void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 
 void RoundPosition(p_str *photon)
 {
+    (*photon).prevroundposition = (*photon).roundposition;
     (*photon).roundposition.x = (int)floor((*photon).position.x);
     (*photon).roundposition.y = (int)floor((*photon).position.y);
     (*photon).roundposition.z = (int)floor((*photon).position.z);

@@ -18,6 +18,7 @@ using namespace std;
 
 void Introduction();
 char ChooseSteadyOrTime();
+char OpenCLOrCPU();
 long HowManyPhotons();
 
 void WriteTemperature(Medium * m, Heat * h);
