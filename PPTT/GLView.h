@@ -31,13 +31,14 @@ static int sliceY = 0;
 static int sliceZ = 0;
 
 static Medium * m_draw;
+static Heat * h_draw;
 class GLView;
 class GLView
 {
 public:
     void run();
     void init(int argc, char ** argv);
-    void savemedium(Medium *m);
+    void savemedium(Medium *m,Heat *h);
 };
 void draw();
 void drawHelp(std::string s,float x, float y);

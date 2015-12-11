@@ -397,7 +397,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];
     photon.lastRegId = photon.regId;
     photon.remStep = GenStep(m_str[0].inv_albedo[photon.regId],&rng);
-    int i= 0;
+    //int i= 0;
     while(photon.position.w > PHOTON_DEATH) 
     {
         if (CheckRefIndexMismatch(m_str,&photon))
@@ -444,14 +444,14 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 	    float temp = photon.position.w * (1 - (m_str[0].ua[photon.regId] * photon.step) + (m_str[0].ua[photon.regId] * m_str[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
 	    m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += (photon.position.w - temp);
 	    photon.position.w = temp;
-        i++;
+        //i++;
         // failsafe
-        if(i > 10000)
-        {
-            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
-            m_str[0].finished = m_str[0].finished + 1; // count number of time ended photons
-           break;
-        }
+        //if(i > 10000)
+        //{
+        //    m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
+        //    m_str[0].finished = m_str[0].finished + 1; // count number of time ended photons
+        //   break;
+        //}
         
     }
 

@@ -977,7 +977,7 @@ float Heat::AproximateBloodPerfusivity(float omega0, float omega1, float omega2,
 void RunPhoton_steady(Medium * m, Source * s)
 {
 	Photon * p = new Photon;
-	s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+	//s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
 	s->TimeProfile_infiniteSharp();
 	p->GetSourceParameters(s);
 	p->regId = m->RetRegId(p);

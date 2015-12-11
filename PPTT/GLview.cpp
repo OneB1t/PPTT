@@ -32,9 +32,10 @@ void GLView::init(int argc, char** argv)
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
 }
 
-void GLView::savemedium(Medium * m)
+void GLView::savemedium(Medium * m,Heat * h)
 {
     m_draw = m;
+    h_draw = h;
 }
 
 //Called when the window is resized
@@ -111,7 +112,7 @@ void processSpecialKeys(int key, int xx, int yy)
         break;
         case GLUT_KEY_F6:
         viewSelector++;
-        if(viewSelector > 4)
+        if(viewSelector > 5)
             viewSelector = 0;
         break;
         case GLUT_KEY_F7:
@@ -344,6 +345,28 @@ void draw()
             }
         }
         break;
+        case 5: // temperature
+        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
+        {
+            for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
+            {
+                float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize - 36;
+
+                if(size != 0)
+                {
+                    if(size > 20)
+                        size = 20;
+                    glPushMatrix();
+                    getColor(size);
+                    glTranslatef(temp1, temp2, sliceZ);
+                    glutSolidCube(size / 5);
+                    glPopMatrix();
+                }
+
+
+            }
+        }
+        break;
     }
     drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)-30);
     drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
@@ -376,6 +399,10 @@ void draw()
         case 4:
             drawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
             drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 5:
+        drawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
     }
     glEnd();
