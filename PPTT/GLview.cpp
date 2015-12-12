@@ -62,14 +62,14 @@ void processSpecialKeys(int key, int xx, int yy)
     switch(key) {
         case GLUT_KEY_F1:
         stepCounter = stepCounter + 1;
-        if(stepCounter > timeSegments)
+        if(stepCounter > timeSegments - 1)
             stepCounter = 0;
         break;
         case GLUT_KEY_F2:
         stepCounter = stepCounter - 1;
         if(stepCounter < 0)
-            stepCounter = timeSegments;
-        if(stepCounter > timeSegments)
+            stepCounter = timeSegments -1;
+        if(stepCounter > timeSegments - 1)
             stepCounter = 0;
         break;
         case GLUT_KEY_F3:
@@ -356,7 +356,7 @@ void draw()
     drawHelp("F5 - reset energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 150);
     drawHelp("F6 - show medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 170);
     drawHelp("F7 - show boundary energy matrix", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 190);
-    drawHelp("Simulation step counter: " + std::to_string(stepCounter) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
+    drawHelp("Simulation step counter: " + std::to_string(stepCounter + 1) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
     drawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
     drawHelp("Time per step: " + std::to_string(time_step) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
     switch(viewSelector)
