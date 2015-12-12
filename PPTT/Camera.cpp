@@ -4,17 +4,17 @@
 
 Camera::Camera()
 {
-    azimuth = 0.0f;
-    zenith = -1.5f;
+    azimuth = -1.2f;
+    zenith = -0.17f;
     radius = 1.0f;
-    eyeVector = Vec3D(0,-1,0);
-    pos = Vec3D(150.0f, 150.0f, 300.0f);
+    eyeVector = Vec3D(0, -1, 0);
+    pos = Vec3D(20.0f, 250.0f, 100.0f);
     computeCameraMatrix();
 }
 
 void Camera::computeCameraMatrix()
 {
-    eyeVector = Vec3D(cos(azimuth) * cos(zenith),sin(azimuth) * cos(zenith),sin(zenith));
+    eyeVector = Vec3D(cos(azimuth) * cos(zenith), sin(azimuth) * cos(zenith), sin(zenith));
     from = Vec3D(pos);
     to = eyeVector.mul(radius);
     upV.x = (cos(azimuth) * cos(zenith + PI / 2));
@@ -62,7 +62,7 @@ void Camera::left(float speed)
 
 void Camera::right(float speed)
 {
-    pos = pos.add(Vec3D(cos(azimuth - PI / 2),sin(azimuth - PI / 2), 0.0f).mul(speed));
+    pos = pos.add(Vec3D(cos(azimuth - PI / 2), sin(azimuth - PI / 2), 0.0f).mul(speed));
     computeCameraMatrix();
 }
 
@@ -79,17 +79,17 @@ void Camera::up(float speed)
 }
 void Camera::move(Vec3D dir)
 {
-    dir.x *= 10;
-    dir.y *= 10;
-    dir.z *= 10;
+    dir.x *= 30;
+    dir.y *= 30;
+    dir.z *= 30;
     pos = pos.add(dir);
     computeCameraMatrix();
 }
 void Camera::moveback(Vec3D dir)
 {
-    dir.x = -dir.x;
-    dir.y = -dir.y;
-    dir.z = -dir.z;
+    dir.x = -dir.x * 30;
+    dir.y = -dir.y * 30;
+    dir.z = -dir.z * 30;
     pos = pos.add(dir);
     computeCameraMatrix();
 }

@@ -60,24 +60,6 @@ void processSpecialKeys(int key, int xx, int yy)
     float fraction = 10.0f;
 
     switch(key) {
-        case GLUT_KEY_LEFT:
-        angle -= 0.05f;
-        lx = sin(angle);
-        lz = -cos(angle);
-        break;
-        case GLUT_KEY_RIGHT:
-        angle += 0.05f;
-        lx = sin(angle);
-        lz = -cos(angle);
-        break;
-        case GLUT_KEY_UP:
-        x += lx * fraction;
-        z += lz * fraction;
-        break;
-        case GLUT_KEY_DOWN:
-        x -= lx * fraction;
-        z -= lz * fraction;
-        break;
         case GLUT_KEY_F1:
         stepCounter = stepCounter + 1;
         if(stepCounter > timeSegments)
@@ -132,7 +114,6 @@ void mouseButton(int button, int state, int x, int y)
     if(button == GLUT_LEFT_BUTTON) {
         // when the button is released
         if(state == GLUT_UP) {
-            angle += deltaAngle;
             xOrigin = -1;
         }
         else {// state = GLUT_DOWN
@@ -150,8 +131,8 @@ void mouseMove(int x, int y)
     if(xOrigin >= 0) {
         cam.addAzimuth(0.1 * PI * (cam.ox - x) / GLUT_WINDOW_WIDTH);
         cam.addZenith(-0.1 * PI * (y - cam.oy) / GLUT_WINDOW_WIDTH);
-          cam.ox = x;
-          cam.oy = y;
+        cam.ox = x;
+        cam.oy = y;
     }
 }
 
@@ -217,8 +198,8 @@ void draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
     glLoadIdentity(); //Reset the drawing perspective   
-    gluLookAt(cam.from.x,cam.from.y,cam.from.z,cam.from.x + cam.to.x, cam.from.y + cam.to.y,cam.from.z + cam.to.z,cam.upV.x,cam.upV.y,cam.upV.z);
-   
+    gluLookAt(cam.from.x, cam.from.y, cam.from.z, cam.from.x + cam.to.x, cam.from.y + cam.to.y, cam.from.z + cam.to.z, cam.upV.x, cam.upV.y, cam.upV.z);
+
     glColor3ub(255, 0, 0);
     glTranslatef(0, 0, 0);
     glutSolidCube(1);
@@ -428,6 +409,57 @@ void drawHelp(std::string s, float x, float y)
     glEnable(GL_TEXTURE_2D);
 
     glutPostRedisplay();
+}
+
+void drawAxis()
+{
+    /* Create a display list for drawing axes */
+    GLuint axes_list = glGenLists(1);
+    glNewList(axes_list, GL_COMPILE);
+
+    glColor4ub(0, 0, 255, 255);
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(0.75f, 0.25f, 0.0f);
+    glVertex3f(0.75f, -0.25f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(0.75f, 0.0f, 0.25f);
+    glVertex3f(0.75f, 0.0f, -0.25f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 0.75f, 0.25f);
+    glVertex3f(0.0f, 0.75f, -0.25f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.25f, 0.75f, 0.0f);
+    glVertex3f(-0.25f, 0.75f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.25f, 0.0f, 0.75f);
+    glVertex3f(-0.25f, 0.0f, 0.75f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.0f, 0.25f, 0.75f);
+    glVertex3f(0.0f, -0.25f, 0.75f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glEnd();
+
+    glColor4ub(255, 255, 0, 255);
+    glRasterPos3f(1.1f, 0.0f, 0.0f);
+
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'x');
+    glRasterPos3f(0.0f, 1.1f, 0.0f);
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'y');
+    glRasterPos3f(0.0f, 0.0f, 1.1f);
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'z');
+
+    glEndList();
+
 }
 
 void getColor(float t)

@@ -26,8 +26,8 @@ Source::Source()
 {
     x = y = z = 0;
     ux = uy = uz = 0;
-	release_time = 0.0;
-	freq = 1.0;
+    release_time = 0.0;
+    freq = 1.0;
 }
 
 Source::~Source()
@@ -42,7 +42,7 @@ void Source::Collimated_launch(float set_x, float set_y, float set_z, float set_
     z = set_z * units;
     ux = set_ux / temp;
     uy = set_uy / temp;
-    uz = set_uz / temp;    
+    uz = set_uz / temp;
 }
 
 void Source::Isotropic_point_source(float set_x, float set_y, float set_z)  // parameters in mm
@@ -71,9 +71,9 @@ void Source::CollimatedGaussianBeam(float set_x, float set_y, float set_z, float
 {
     set_x = set_x * units;
     set_y = set_y * units;
-    set_z = set_z * units;    
+    set_z = set_z * units;
     radius = radius * units;
-    
+
     float temp = sqrt(set_ux*set_ux + set_uy*set_uy + set_uz*set_uz);
     ux = set_ux / temp;
     uy = set_uy / temp;
@@ -107,47 +107,47 @@ void Source::Circular_flat_beam(float set_x, float set_y, float set_z, float rad
 
 void Source::TimeProfile_infiniteSharp()
 {
-	release_time = 0;
+    release_time = 0;
 }
 
 void Source::TimeProfile_flat(float pulse_duration)
 {
-	release_time = ((float)rand() / RAND_MAX) * pulse_duration;
+    release_time = ((float)rand() / RAND_MAX) * pulse_duration;
 }
 
 void Source::TimeProfile_gaussian(float pulse_duration)
 {
-	release_time = pulse_duration * sqrt(-log(RandomNumber())) + (3 * pulse_duration);
+    release_time = pulse_duration * sqrt(-log(RandomNumber())) + (3 * pulse_duration);
 }
 
 void Source::TimeProfile_sech(float pulse_duration)
 {
-	release_time = 1 / cosh(RandomNumber());
+    release_time = 1 / cosh(RandomNumber());
 }
 
 void Source::Set_RepetitionRate(float repetition_rate)
 {
-	freq = repetition_rate;
+    freq = repetition_rate;
 }
 /////////////////////////////
 // Photon class
 /////////////////////////////
 
-Photon::Photon() 
+Photon::Photon()
 {
-	x = y = 1;
-	z = 0;
-	ux = uy = 0;
-	uz = 1;
-	w = 1;
+    x = y = 1;
+    z = 0;
+    ux = uy = 0;
+    uz = 1;
+    w = 1;
     round_x = (int)floor(x);
     round_y = (int)floor(y);
     round_z = (int)floor(z);
-	prev_round_x = round_x;
-	prev_round_y = round_y;
-	prev_round_z = round_z;
-	time_of_flight = 0;
-	timeId = 0;
+    prev_round_x = round_x;
+    prev_round_y = round_y;
+    prev_round_z = round_z;
+    time_of_flight = 0;
+    timeId = 0;
 }
 
 Photon::~Photon()
@@ -159,16 +159,16 @@ void Photon::GetSourceParameters(Source * s)
     x = s->x;
     y = s->y;
     z = s->z;
-    
-	round_x = (int)floor(x);
-	round_y = (int)floor(y);
-	round_z = (int)floor(z);
-	
+
+    round_x = (int)floor(x);
+    round_y = (int)floor(y);
+    round_z = (int)floor(z);
+
     ux = s->ux;
     uy = s->uy;
     uz = s->uz;
 
-	time_of_flight = s->release_time;
+    time_of_flight = s->release_time;
 }
 
 float Photon::GenStep(float invAlbedo)
@@ -346,7 +346,7 @@ float Photon::GetTOF(Medium * m, float step_size)
 
 int Photon::GetTimeId()
 {
-	return int_floor(time_of_flight / time_step);
+    return int_floor(time_of_flight / time_step);
 }
 
 int Photon::CheckTOF(float end)
@@ -362,114 +362,114 @@ void Photon::PosAndDir()
 
 void Photon::RoundPosition()
 {
-	prev_round_x = round_x;
-	prev_round_y = round_y;
-	prev_round_z = round_z;
-	
-	round_x = (int)floor(x);
-	round_y = (int)floor(y);
-	round_z = (int)floor(z);
+    prev_round_x = round_x;
+    prev_round_y = round_y;
+    prev_round_z = round_z;
+
+    round_x = (int)floor(x);
+    round_y = (int)floor(y);
+    round_z = (int)floor(z);
 }
 
 int Photon::CheckBoundaries(Medium * m)
 {
-	if (round_z < 0)
-	{
-		if (round_x < 0)
-			round_x = 0;
-		if (round_y < 0)
-			round_y = 0;
+    if(round_z < 0)
+    {
+        if(round_x < 0)
+            round_x = 0;
+        if(round_y < 0)
+            round_y = 0;
 
-		if (round_x >= voxels_x)
-			round_x = voxels_x - 1;
-		if (round_y <= voxels_y)
-			round_y = voxels_y - 1;
+        if(round_x >= voxels_x)
+            round_x = voxels_x - 1;
+        if(round_y <= voxels_y)
+            round_y = voxels_y - 1;
 
-		m->surrounding_z[round_x][round_y][0] += w;
-		return 1;
-	}
-	if (round_z >= voxels_z)
-	{
-		if (round_x < 0)
-			round_x = 0;
-		if (round_y < 0)
-			round_y = 0;
+        m->surrounding_z[round_x][round_y][0] += w;
+        return 1;
+    }
+    if(round_z >= voxels_z)
+    {
+        if(round_x < 0)
+            round_x = 0;
+        if(round_y < 0)
+            round_y = 0;
 
-		if (round_x >= voxels_x)
-			round_x = voxels_x - 1;
-		if (round_y <= voxels_y)
-			round_y = voxels_y - 1;
+        if(round_x >= voxels_x)
+            round_x = voxels_x - 1;
+        if(round_y <= voxels_y)
+            round_y = voxels_y - 1;
 
-		m->surrounding_z[round_x][round_y][1] += w;
-		return 1;
-	}
-	if (round_y < 0)
-	{
-		if (round_x < 0)
-			round_x = 0;
-		if (round_z < 0)
-			round_z = 0;
+        m->surrounding_z[round_x][round_y][1] += w;
+        return 1;
+    }
+    if(round_y < 0)
+    {
+        if(round_x < 0)
+            round_x = 0;
+        if(round_z < 0)
+            round_z = 0;
 
-		if (round_x >= voxels_x)
-			round_x = voxels_x - 1;
-		if (round_z <= voxels_z)
-			round_z = voxels_z - 1;
+        if(round_x >= voxels_x)
+            round_x = voxels_x - 1;
+        if(round_z <= voxels_z)
+            round_z = voxels_z - 1;
 
-		m->surrounding_y[round_x][round_z][0] += w;
-		return 1;
-	}
-	if (round_y >= voxels_y)
-	{
-		if (round_x < 0)
-			round_x = 0;
-		if (round_z < 0)
-			round_z = 0;
+        m->surrounding_y[round_x][round_z][0] += w;
+        return 1;
+    }
+    if(round_y >= voxels_y)
+    {
+        if(round_x < 0)
+            round_x = 0;
+        if(round_z < 0)
+            round_z = 0;
 
-		if (round_x >= voxels_x)
-			round_x = voxels_x - 1;
-		if (round_z <= voxels_z)
-			round_z = voxels_z - 1;
+        if(round_x >= voxels_x)
+            round_x = voxels_x - 1;
+        if(round_z <= voxels_z)
+            round_z = voxels_z - 1;
 
-		m->surrounding_y[round_x][round_z][1] += w;
-		return 1;
-	}
-	if (round_x < 0)
-	{
-		if (round_y < 0)
-			round_y = 0;
-		if (round_z < 0)
-			round_z = 0;
+        m->surrounding_y[round_x][round_z][1] += w;
+        return 1;
+    }
+    if(round_x < 0)
+    {
+        if(round_y < 0)
+            round_y = 0;
+        if(round_z < 0)
+            round_z = 0;
 
-		if (round_y >= voxels_y)
-			round_y = voxels_y - 1;
-		if (round_z <= voxels_z)
-			round_z = voxels_z - 1;
+        if(round_y >= voxels_y)
+            round_y = voxels_y - 1;
+        if(round_z <= voxels_z)
+            round_z = voxels_z - 1;
 
-		m->surrounding_x[round_y][round_z][0] += w;
-		return 1;
-	}
-	if (round_x >= voxels_x)
-	{
-		if (round_y < 0)
-			round_y = 0;
-		if (round_z < 0)
-			round_z = 0;
+        m->surrounding_x[round_y][round_z][0] += w;
+        return 1;
+    }
+    if(round_x >= voxels_x)
+    {
+        if(round_y < 0)
+            round_y = 0;
+        if(round_z < 0)
+            round_z = 0;
 
-		if (round_y >= voxels_y)
-			round_y = voxels_y - 1;
-		if (round_z <= voxels_z)
-			round_z = voxels_z - 1;
+        if(round_y >= voxels_y)
+            round_y = voxels_y - 1;
+        if(round_z <= voxels_z)
+            round_z = voxels_z - 1;
 
-		m->surrounding_x[round_y][round_z][1] += w;
-		return 1;
-	}
-	return 0;
+        m->surrounding_x[round_y][round_z][1] += w;
+        return 1;
+    }
+    return 0;
 }
 void Photon::GenDir(float g) // generate cos(theta) and phi based on anisotropy parameter g
 {
     if(g != 0)
     {
-        cosTheta = 1.0 / (2.0 * g) * (1 + g*g - pow((1 - g*g) / (1 - g + 2 * g * RandomNumber()), 2));
+        cosTheta = 1.0f / (2.0f * g) * (1 + g*g - powf((1 - g*g) / (1 - g + 2 * g * RandomNumber()), 2));
     }
     else
         cosTheta = 2 * RandomNumber() - 1;
@@ -478,75 +478,75 @@ void Photon::GenDir(float g) // generate cos(theta) and phi based on anisotropy 
 
 void Photon::UpdateDir(Medium * m)
 {
-	GenDir(m->g[regId]);
-	float temp_ux, temp_uy, temp_uz;
-	float sinTheta = sin(acos(cosTheta)); 
-	float temp_sqrt = 1.0 / sqrt(1 - uz*uz); 
-	if (abs(uz) < 0.999)
-	{
-		temp_ux = sinTheta * (ux * uz * cos(phi) - uy * sin(phi)) * temp_sqrt + ux * cosTheta;
-		temp_uy = sinTheta * (uy * uz * cos(phi) + ux * sin(phi)) * temp_sqrt + uy * cosTheta;
-		temp_uz = -sinTheta * cos(phi) / temp_sqrt + uz * cosTheta;
-		ux = temp_ux;
-		uy = temp_uy;
-		uz = temp_uz;
-	}
-	else
-	{
-		ux = sinTheta * cos(phi);
-		uy = sinTheta * sin(phi);
-		uz = uz * cosTheta / abs(uz);
-	}
+    GenDir(m->g[regId]);
+    float temp_ux, temp_uy, temp_uz;
+    float sinTheta = sin(acos(cosTheta));
+    float temp_sqrt = 1.0f / sqrt(1 - uz*uz);
+    if(abs(uz) < 0.999)
+    {
+        temp_ux = sinTheta * (ux * uz * cos(phi) - uy * sin(phi)) * temp_sqrt + ux * cosTheta;
+        temp_uy = sinTheta * (uy * uz * cos(phi) + ux * sin(phi)) * temp_sqrt + uy * cosTheta;
+        temp_uz = -sinTheta * cos(phi) / temp_sqrt + uz * cosTheta;
+        ux = temp_ux;
+        uy = temp_uy;
+        uz = temp_uz;
+    }
+    else
+    {
+        ux = sinTheta * cos(phi);
+        uy = sinTheta * sin(phi);
+        uz = uz * cosTheta / abs(uz);
+    }
 }
 
 int Photon::CheckRefIndexMismatch(Medium * m)
 {
-	if (m->n[regId] - m->n[lastRegId])
-		return 0;
-	else return 1;
+    if(m->n[regId] - m->n[lastRegId])
+        return 0;
+    else return 1;
 }
 
 float Photon::GetReflectionCoef(Medium * m)
 {
-	return ((m->n[lastRegId] - m->n[regId])*(m->n[lastRegId] - m->n[regId])) / ((m->n[lastRegId] + m->n[regId])*(m->n[lastRegId] + m->n[regId]));
+    return ((m->n[lastRegId] - m->n[regId])*(m->n[lastRegId] - m->n[regId])) / ((m->n[lastRegId] + m->n[regId])*(m->n[lastRegId] + m->n[regId]));
 }
 
 void Photon::Reflect(Medium * m)
 {
-	if (prev_round_z != round_z)
-		uz = -uz;
-	if (prev_round_y != round_y)
-		uy = -uy;
-	if (prev_round_x != round_x)
-		ux = -ux;
+    if(prev_round_z != round_z)
+        uz = -uz;
+    if(prev_round_y != round_y)
+        uy = -uy;
+    if(prev_round_x != round_x)
+        ux = -ux;
 }
 
 void Photon::Transmis(Medium * m)
 {
-	if (prev_round_z != round_z)
-	{
-		float alpha_i = acos(abs(uz));
-		float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
-		ux *= m->n[lastRegId] / m->n[regId];
-		uy *= m->n[lastRegId] / m->n[regId];
-		uz *= sin(alpha_t) / abs(uz);
-	}
-	if (prev_round_y != round_y)
-	{
-		float alpha_i = acos(abs(uy));
-		float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
-		ux *= m->n[lastRegId] / m->n[regId];
-		uz *= m->n[lastRegId] / m->n[regId];
-		uy *= sin(alpha_t) / abs(uy);
-	}
-	if (prev_round_x != round_x)
-	{
-		float alpha_i = acos(abs(ux));
-		float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
-		uz *= m->n[lastRegId] / m->n[regId];
-		uy *= m->n[lastRegId] / m->n[regId];
-		ux *= sin(alpha_t) / abs(ux);
-	}
+    if(prev_round_z != round_z)
+    {
+        float alpha_i = acos(abs(uz));
+        float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
+        ux *= m->n[lastRegId] / m->n[regId];
+        uy *= m->n[lastRegId] / m->n[regId];
+        uz *= sin(alpha_t) / abs(uz);
+    }
+    if(prev_round_y != round_y)
+    {
+        float alpha_i = acos(abs(uy));
+        float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
+        ux *= m->n[lastRegId] / m->n[regId];
+        uz *= m->n[lastRegId] / m->n[regId];
+        uy *= sin(alpha_t) / abs(uy);
+    }
+    if(prev_round_x != round_x)
+    {
+        float alpha_i = acos(abs(ux));
+        float alpha_t = asin(sin(alpha_i) * m->n[lastRegId] / m->n[regId]);
+        uz *= m->n[lastRegId] / m->n[regId];
+        uy *= m->n[lastRegId] / m->n[regId];
+        ux *= sin(alpha_t) / abs(ux);
+    }
 }
 
 //////////////////////////////////////////////////
@@ -554,128 +554,128 @@ void Photon::Transmis(Medium * m)
 //////////////////////////////////////////////////
 Medium::Medium()
 {
-	number_of_regions = 1;								// number of regions inicialization
-	
-	structure = new int**[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		structure[temp] = new int*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			structure[temp1][temp2] = new int[voxels_z];
-	
-	energy = new float**[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		energy[temp] = new float*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			energy[temp1][temp2] = new float[voxels_z];
+    number_of_regions = 1;								// number of regions inicialization
 
-	fluence = new float**[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		fluence[temp] = new float*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			fluence[temp1][temp2] = new float[voxels_z];
+    structure = new int**[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        structure[temp] = new int*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            structure[temp1][temp2] = new int[voxels_z];
 
-	surrounding_x = new float**[voxels_y];					// allocation of surrounding matrix 
-	for (int temp = 0; temp < voxels_y; temp++)				// this one for front and rear x plane
-		surrounding_x[temp] = new float*[voxels_z];
-	for (int temp1 = 0; temp1 < voxels_y; temp1++)
-		for (int temp2 = 0; temp2 < voxels_z; temp2++)
-			surrounding_x[temp1][temp2] = new float[2];
-	for (int temp = 0; temp < voxels_y; temp++)			
-		for (int temp2 = 0; temp2 < voxels_z; temp2++)
-			for (int temp3 = 0; temp3 < 2; temp3++)
-				surrounding_x[temp][temp2][temp3] = 0;
+    energy = new float**[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        energy[temp] = new float*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            energy[temp1][temp2] = new float[voxels_z];
 
-	surrounding_y = new float**[voxels_x];					// allocation of surrounding matrix 
-	for (int temp = 0; temp < voxels_x; temp++)				// this one for front and rear y plane
-		surrounding_y[temp] = new float*[voxels_z];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_z; temp2++)
-			surrounding_y[temp1][temp2] = new float[2];
-	for (int temp = 0; temp < voxels_x; temp++)
-		for (int temp2 = 0; temp2 < voxels_z; temp2++)
-			for (int temp3 = 0; temp3 < 2; temp3++)
-				surrounding_y[temp][temp2][temp3] = 0;
+    fluence = new float**[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        fluence[temp] = new float*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            fluence[temp1][temp2] = new float[voxels_z];
 
-	surrounding_z = new float**[voxels_x];					// allocation of surrounding matrix 
-	for (int temp = 0; temp < voxels_x; temp++)				// this one for front and rear z plane
-		surrounding_z[temp] = new float*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			surrounding_z[temp1][temp2] = new float[2];
-	for (int temp = 0; temp < voxels_x; temp++)
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < 2; temp3++)
-				surrounding_z[temp][temp2][temp3] = 0;
+    surrounding_x = new float**[voxels_y];					// allocation of surrounding matrix 
+    for(int temp = 0; temp < voxels_y; temp++)				// this one for front and rear x plane
+        surrounding_x[temp] = new float*[voxels_z];
+    for(int temp1 = 0; temp1 < voxels_y; temp1++)
+        for(int temp2 = 0; temp2 < voxels_z; temp2++)
+            surrounding_x[temp1][temp2] = new float[2];
+    for(int temp = 0; temp < voxels_y; temp++)
+        for(int temp2 = 0; temp2 < voxels_z; temp2++)
+            for(int temp3 = 0; temp3 < 2; temp3++)
+                surrounding_x[temp][temp2][temp3] = 0;
 
-	for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				structure[temp][temp2][temp3] = 0;
-	for (int temp = 0; temp < voxels_x; temp++)			// matrix with absorbed energy inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				energy[temp][temp2][temp3] = 0;
-    for (int temp = 0; temp < voxels_x; temp++)			// matrix with photon fluence inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				fluence[temp][temp2][temp3] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		ua[temp] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		us[temp] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		inv_albedo[temp] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		g[temp] = 1;
-	for (int temp = 0; temp < max_regions; temp++)
-		n[temp] = 1;
-    for (int temp = 0; temp < max_regions; temp++)
-		k[temp] = 0;
-    for (int temp = 0; temp < max_regions; temp++)
-		rho[temp] = 0;
-    for (int temp = 0; temp < max_regions; temp++)
-		c_h[temp] = 0;
-	for (int temp = 0; temp < max_regions; temp++)
-		w_g[temp] = 0;
+    surrounding_y = new float**[voxels_x];					// allocation of surrounding matrix 
+    for(int temp = 0; temp < voxels_x; temp++)				// this one for front and rear y plane
+        surrounding_y[temp] = new float*[voxels_z];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_z; temp2++)
+            surrounding_y[temp1][temp2] = new float[2];
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_z; temp2++)
+            for(int temp3 = 0; temp3 < 2; temp3++)
+                surrounding_y[temp][temp2][temp3] = 0;
 
-	// Preparing array for time-resolved simulations
-	num_time_steps = (int)ceil((time_end - time_start) / time_step);
+    surrounding_z = new float**[voxels_x];					// allocation of surrounding matrix 
+    for(int temp = 0; temp < voxels_x; temp++)				// this one for front and rear z plane
+        surrounding_z[temp] = new float*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            surrounding_z[temp1][temp2] = new float[2];
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < 2; temp3++)
+                surrounding_z[temp][temp2][temp3] = 0;
 
-	energy_t = new float***[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		energy_t[temp] = new float**[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			energy_t[temp1][temp2] = new float*[voxels_z];
-	for (int temp = 0; temp < voxels_x; temp++)
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				energy_t[temp][temp2][temp3] = new float[num_time_steps];
-    for (int temp = 0; temp < voxels_x; temp++)
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-                            for (int temp4 = 0; temp4 < num_time_steps; temp4++)
-                                energy_t[temp][temp2][temp3][temp4] = 0;
-	
-	energy_next = new float***[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		energy_next[temp] = new float**[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			energy_next[temp1][temp2] = new float*[voxels_z];
-	for (int temp = 0; temp < voxels_x; temp++)
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				energy_next[temp][temp2][temp3] = new float[num_time_steps];
-	
-	for (int temp = 0; temp < voxels_x; temp++)
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				for (int temp4 = 0; temp4 < num_time_steps; temp4++)
-					energy_next[temp][temp2][temp3][temp4] = 0;
+    for(int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                structure[temp][temp2][temp3] = 0;
+    for(int temp = 0; temp < voxels_x; temp++)			// matrix with absorbed energy inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                energy[temp][temp2][temp3] = 0;
+    for(int temp = 0; temp < voxels_x; temp++)			// matrix with photon fluence inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                fluence[temp][temp2][temp3] = 0;
+    for(int temp = 0; temp < max_regions; temp++)
+        ua[temp] = 0;
+    for(int temp = 0; temp < max_regions; temp++)
+        us[temp] = 0;
+    for(int temp = 0; temp < max_regions; temp++)
+        inv_albedo[temp] = 0;
+    for(int temp = 0; temp < max_regions; temp++)
+        g[temp] = 1;
+    for(int temp = 0; temp < max_regions; temp++)
+        n[temp] = 1;
+    for(int temp = 0; temp < max_regions; temp++)
+        k[temp] = 0;
+    for(int temp = 0; temp < max_regions; temp++)
+        rho[temp] = 0;
+    for(int temp = 0; temp < max_regions; temp++)
+        c_h[temp] = 0;
+    for(int temp = 0; temp < max_regions; temp++)
+        w_g[temp] = 0;
+
+    // Preparing array for time-resolved simulations
+    num_time_steps = (int)ceil((time_end - time_start) / time_step);
+
+    energy_t = new float***[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        energy_t[temp] = new float**[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            energy_t[temp1][temp2] = new float*[voxels_z];
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                energy_t[temp][temp2][temp3] = new float[num_time_steps];
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp4 = 0; temp4 < num_time_steps; temp4++)
+                    energy_t[temp][temp2][temp3][temp4] = 0;
+
+    energy_next = new float***[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        energy_next[temp] = new float**[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            energy_next[temp1][temp2] = new float*[voxels_z];
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                energy_next[temp][temp2][temp3] = new float[num_time_steps];
+
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp4 = 0; temp4 < num_time_steps; temp4++)
+                    energy_next[temp][temp2][temp3][temp4] = 0;
 }
 
 Medium::~Medium()
@@ -684,43 +684,43 @@ Medium::~Medium()
 
 void Medium::PrintMediumProperties()
 {
-	cout << "Structure: " << endl;
-	for (int temp = 0; temp < voxels_x; temp++)
-	{
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-		{
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				cout << "  " << structure[temp][temp2][temp3];
-			cout << endl;
-		}
-		cout << endl;
-	}
-	cout << endl;
-	cout << "Absorption coefficients: " << endl;
-	for (int temp = 0; temp < max_regions; temp++)
-		cout << "  " << ua[temp];
-	cout << endl;
-	cout << "Scattering coefficients: " << endl;
-	for (int temp = 0; temp < max_regions; temp++)
-		cout << "  " << us[temp];
-	cout << endl;	
-	cout << "Inverse Albedo values: " << endl;
-	for (int temp = 0; temp < max_regions; temp++)
-		cout << "  " << inv_albedo[temp];
-	cout << endl;
-	cout << "Anisotropy parameter: " << endl;
-	for (int temp = 0; temp < max_regions; temp++)
-		cout << "  " << g[temp];
-	cout << endl;
-	cout << "Refractive indices: " << endl;
-	for (int temp = 0; temp < max_regions; temp++)
-		cout << "  " << n[temp];
-	cout << endl;
+    cout << "Structure: " << endl;
+    for(int temp = 0; temp < voxels_x; temp++)
+    {
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+        {
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                cout << "  " << structure[temp][temp2][temp3];
+            cout << endl;
+        }
+        cout << endl;
+    }
+    cout << endl;
+    cout << "Absorption coefficients: " << endl;
+    for(int temp = 0; temp < max_regions; temp++)
+        cout << "  " << ua[temp];
+    cout << endl;
+    cout << "Scattering coefficients: " << endl;
+    for(int temp = 0; temp < max_regions; temp++)
+        cout << "  " << us[temp];
+    cout << endl;
+    cout << "Inverse Albedo values: " << endl;
+    for(int temp = 0; temp < max_regions; temp++)
+        cout << "  " << inv_albedo[temp];
+    cout << endl;
+    cout << "Anisotropy parameter: " << endl;
+    for(int temp = 0; temp < max_regions; temp++)
+        cout << "  " << g[temp];
+    cout << endl;
+    cout << "Refractive indices: " << endl;
+    for(int temp = 0; temp < max_regions; temp++)
+        cout << "  " << n[temp];
+    cout << endl;
 }
 
 int Medium::RetRegId(Photon * p)
 {
-	return structure[p->round_x][p->round_y][p->round_z];
+    return structure[p->round_x][p->round_y][p->round_z];
 }
 
 void Medium::CreateCube(int start_x, int start_y, int start_z, int dim_x, int dim_y, int dim_z, float set_ua, float set_us, float set_g, float set_n)
@@ -733,17 +733,17 @@ void Medium::CreateCube(int start_x, int start_y, int start_z, int dim_x, int di
     dim_z *= units;
     set_ua /= (float)units;
     set_us /= (float)units;
-    
-	for (int temp1 = 0; temp1 < dim_x; temp1++)
-		for (int temp2 = 0; temp2 < dim_y; temp2++)
-			for (int temp3 = 0; temp3 < dim_z; temp3++)
-				structure[start_x + temp1][start_y + temp2][start_z + temp3] = number_of_regions;
-	ua[number_of_regions] = set_ua;
-	us[number_of_regions] = set_us;
-	inv_albedo[number_of_regions] = 1 / (set_ua + set_us);
-	g[number_of_regions] = set_g;
-	n[number_of_regions] = set_n;
-	number_of_regions++;
+
+    for(int temp1 = 0; temp1 < dim_x; temp1++)
+        for(int temp2 = 0; temp2 < dim_y; temp2++)
+            for(int temp3 = 0; temp3 < dim_z; temp3++)
+                structure[start_x + temp1][start_y + temp2][start_z + temp3] = number_of_regions;
+    ua[number_of_regions] = set_ua;
+    us[number_of_regions] = set_us;
+    inv_albedo[number_of_regions] = 1 / (set_ua + set_us);
+    g[number_of_regions] = set_g;
+    n[number_of_regions] = set_n;
+    number_of_regions++;
 }
 
 void Medium::CreateBall(int center_x, int center_y, int center_z, int radius, float set_ua, float set_us, float set_g, float set_n)
@@ -754,42 +754,42 @@ void Medium::CreateBall(int center_x, int center_y, int center_z, int radius, fl
     radius *= units;
     set_ua /= (float)units;
     set_us /= (float)units;
-    
+
     for(int temp1 = -radius; temp1 < radius; temp1++)
         for(int temp2 = -radius; temp2 < radius; temp2++)
             for(int temp3 = -radius; temp3 < radius; temp3++)
                 if((temp1*temp1 + temp2*temp2 + temp3*temp3) < radius*radius)
                     structure[center_x + temp1][center_y + temp2][center_z + temp3] = number_of_regions;
     ua[number_of_regions] = set_ua;
-	us[number_of_regions] = set_us;
-	inv_albedo[number_of_regions] = 1 / (set_ua + set_us);
-	g[number_of_regions] = set_g;
-	n[number_of_regions] = set_n;
-	number_of_regions++;        
+    us[number_of_regions] = set_us;
+    inv_albedo[number_of_regions] = 1 / (set_ua + set_us);
+    g[number_of_regions] = set_g;
+    n[number_of_regions] = set_n;
+    number_of_regions++;
 }
 
 void Medium::CreateLine(float start_x, float start_y, float start_z, float dir_x, float dir_y, float dir_z, float length, float set_ua, float set_us, float set_g, float set_n)
 {
-	float temp_norm = sqrt(dir_x*dir_x + dir_y*dir_y + dir_z*dir_z);
-	start_x *= units;
-	start_y *= units;
-	start_z *= units;
-	length *= units;
-	dir_x /= temp_norm;
-	dir_y /= temp_norm;
-	dir_z /= temp_norm;
-	set_ua /= (float)units;
-	set_us /= (float)units;
-	
-	for (int temp = 0; temp < (int)round(length); temp++)
-		structure[(int)round(start_x + dir_x*temp)][(int)round(start_y + dir_y*temp)][(int)round(start_z + dir_z*temp)] = number_of_regions;
+    float temp_norm = sqrt(dir_x*dir_x + dir_y*dir_y + dir_z*dir_z);
+    start_x *= units;
+    start_y *= units;
+    start_z *= units;
+    length *= units;
+    dir_x /= temp_norm;
+    dir_y /= temp_norm;
+    dir_z /= temp_norm;
+    set_ua /= (float)units;
+    set_us /= (float)units;
 
-	ua[number_of_regions] = set_ua;
-	us[number_of_regions] = set_us;
-	inv_albedo[number_of_regions] = 1 / (set_ua + set_us);
-	g[number_of_regions] = set_g;
-	n[number_of_regions] = set_n;
-	number_of_regions++;
+    for(int temp = 0; temp < (int)round(length); temp++)
+        structure[(int)round(start_x + dir_x*temp)][(int)round(start_y + dir_y*temp)][(int)round(start_z + dir_z*temp)] = number_of_regions;
+
+    ua[number_of_regions] = set_ua;
+    us[number_of_regions] = set_us;
+    inv_albedo[number_of_regions] = 1 / (set_ua + set_us);
+    g[number_of_regions] = set_g;
+    n[number_of_regions] = set_n;
+    number_of_regions++;
 }
 
 void Medium::AbsorbEnergy(Photon * p)
@@ -801,56 +801,56 @@ void Medium::AbsorbEnergy(Photon * p)
 
 void Medium::AbsorbEnergyBeer(Photon * p)
 {
-	float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
+    float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
     energy[p->prev_round_x][p->prev_round_y][p->prev_round_z] += (p->w - temp);
     p->w = temp;
 }
 
 void Medium::AbsorbEnergyBeer_Time(Photon * p)
 {
-	float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
-	energy_t[p->prev_round_x][p->prev_round_y][p->prev_round_z][p->timeId] += (p->w - temp);
-	p->w = temp;
+    float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
+    energy_t[p->prev_round_x][p->prev_round_y][p->prev_round_z][p->timeId] += (p->w - temp);
+    p->w = temp;
 }
 
 void Medium::AbsorbEnergyBeer_Time_secondPulse(Photon * p)
 {
-	float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
-	energy_next[p->prev_round_x][p->prev_round_y][p->prev_round_z][p->timeId] += (p->w - temp);
-	p->w = temp;
+    float temp = p->w * exp(-ua[p->regId] * p->step);							// Lambert-Beer law
+    energy_next[p->prev_round_x][p->prev_round_y][p->prev_round_z][p->timeId] += (p->w - temp);
+    p->w = temp;
 }
 void Medium::RescaleEnergy(long num_photons)
 {
-    for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-                            energy[temp][temp2][temp3] /= (num_photons / pow(units,3));
+    for(int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                energy[temp][temp2][temp3] /= (num_photons / powf((float)units, 3));
 }
 
 void Medium::RescaleEnergy_Time(long num_photons, float time_min_step)
 {
-	for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				for (int temp4 = 0; temp4 < num_time_steps; temp4++)
-				energy_t[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / pow(units, 3));
+    for(int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp4 = 0; temp4 < num_time_steps; temp4++)
+                    energy_t[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / powf((float)units, 3));
 }
 
 void Medium::RescaleEnergy_Time_secondPulse(long num_photons, float time_min_step)
 {
-	for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				for (int temp4 = 0; temp4 < num_time_steps; temp4++)
-					energy_next[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / pow(units, 3));
+    for(int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp4 = 0; temp4 < num_time_steps; temp4++)
+                    energy_next[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / pow((float)units, 3));
 }
 
 void Medium::RecordFluence()
 {
-    for (int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				fluence[temp][temp2][temp3] = energy[temp][temp2][temp3] / ua[structure[temp][temp2][temp3]];
+    for(int temp = 0; temp < voxels_x; temp++)			// structure Ids inicialization
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                fluence[temp][temp2][temp3] = energy[temp][temp2][temp3] / ua[structure[temp][temp2][temp3]];
 }
 
 //////////////////////////////////////////////////////
@@ -859,17 +859,17 @@ void Medium::RecordFluence()
 
 Heat::Heat()
 {
-	temperature = new float**[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		temperature[temp] = new float*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			temperature[temp1][temp2] = new float[voxels_z];
-	
-	for (int temp = 0; temp < voxels_x; temp++)					// set human body temperature
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-					temperature[temp][temp2][temp3]= 36.5;		
+    temperature = new float**[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        temperature[temp] = new float*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            temperature[temp1][temp2] = new float[voxels_z];
+
+    for(int temp = 0; temp < voxels_x; temp++)					// set human body temperature
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                temperature[temp][temp2][temp3] = 36.5;
 }
 
 Heat::~Heat()
@@ -881,94 +881,94 @@ void Heat::AddThermalCoef(Medium * m, int mediumId, float specific_heat, float d
     m->c_h[mediumId] = specific_heat;
     m->rho[mediumId] = density;
     m->k[mediumId] = conduction;
-	m->w_g[mediumId] = blood_perfusivity;
+    m->w_g[mediumId] = blood_perfusivity;
 }
 
 void Heat::LaplaceOperator()
 {
-	float ***temperature_help = new float**[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		temperature_help[temp] = new float*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			temperature_help[temp1][temp2] = new float[voxels_z];
+    float ***temperature_help = new float**[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        temperature_help[temp] = new float*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            temperature_help[temp1][temp2] = new float[voxels_z];
 
-	for (int temp = 0; temp < voxels_x; temp++)					// set human body temperature
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				temperature_help[temp][temp2][temp3] = 36.5;
+    for(int temp = 0; temp < voxels_x; temp++)					// set human body temperature
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                temperature_help[temp][temp2][temp3] = 36.5;
 
-	for (int temp = 1; temp < voxels_x - 1; temp++)					// calculate operator
-		for (int temp2 = 1; temp2 < voxels_y - 1; temp2++)
-			for (int temp3 = 1; temp3 < voxels_z - 1; temp3++)
-				temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1]) / 6.0;
+    for(int temp = 1; temp < voxels_x - 1; temp++)					// calculate operator
+        for(int temp2 = 1; temp2 < voxels_y - 1; temp2++)
+            for(int temp3 = 1; temp3 < voxels_z - 1; temp3++)
+                temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1]) / 6.0f;
 
-	for (int temp = 1; temp < voxels_x - 1; temp++)					// give back into main matrix
-		for (int temp2 = 1; temp2 < voxels_y - 1; temp2++)
-			for (int temp3 = 1; temp3 < voxels_z - 1; temp3++)
-				temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
+    for(int temp = 1; temp < voxels_x - 1; temp++)					// give back into main matrix
+        for(int temp2 = 1; temp2 < voxels_y - 1; temp2++)
+            for(int temp3 = 1; temp3 < voxels_z - 1; temp3++)
+                temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
 }
 
 void Heat::PoissonEquation(Medium * m)
 {
-	float ***temperature_help = new float**[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		temperature_help[temp] = new float*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			temperature_help[temp1][temp2] = new float[voxels_z];
+    float ***temperature_help = new float**[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        temperature_help[temp] = new float*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            temperature_help[temp1][temp2] = new float[voxels_z];
 
-	for (int temp = 0; temp < voxels_x; temp++)					// set human body temperature
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				temperature_help[temp][temp2][temp3] = 36.5;
+    for(int temp = 0; temp < voxels_x; temp++)					// set human body temperature
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                temperature_help[temp][temp2][temp3] = 36.5;
 
-	for (int temp = 1; temp < voxels_x - 1; temp++)					// calculate operator
-		for (int temp2 = 1; temp2 < voxels_y - 1; temp2++)
-			for (int temp3 = 1; temp3 < voxels_z - 1; temp3++)
-			{
-				int tempId = m->structure[temp][temp2][temp3];
-				temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1] + (m->energy[temp][temp2][temp3] / m->k[tempId])) / 6.0;
-			}
+    for(int temp = 1; temp < voxels_x - 1; temp++)					// calculate operator
+        for(int temp2 = 1; temp2 < voxels_y - 1; temp2++)
+            for(int temp3 = 1; temp3 < voxels_z - 1; temp3++)
+            {
+                int tempId = m->structure[temp][temp2][temp3];
+                temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1] + (m->energy[temp][temp2][temp3] / m->k[tempId])) / 6.0f;
+            }
 
-	for (int temp = 1; temp < voxels_x - 1; temp++)					// give back into main matrix
-		for (int temp2 = 1; temp2 < voxels_y - 1; temp2++)
-			for (int temp3 = 1; temp3 < voxels_z - 1; temp3++)
-				temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
+    for(int temp = 1; temp < voxels_x - 1; temp++)					// give back into main matrix
+        for(int temp2 = 1; temp2 < voxels_y - 1; temp2++)
+            for(int temp3 = 1; temp3 < voxels_z - 1; temp3++)
+                temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
 
 }
 
 void Heat::PennesEquation(Medium * m, float arterial_temperature)
 {
-	float ***temperature_help = new float**[voxels_x];						// dynamic allocation 
-	for (int temp = 0; temp < voxels_x; temp++)
-		temperature_help[temp] = new float*[voxels_y];
-	for (int temp1 = 0; temp1 < voxels_x; temp1++)
-		for (int temp2 = 0; temp2 < voxels_x; temp2++)
-			temperature_help[temp1][temp2] = new float[voxels_z];
+    float ***temperature_help = new float**[voxels_x];						// dynamic allocation 
+    for(int temp = 0; temp < voxels_x; temp++)
+        temperature_help[temp] = new float*[voxels_y];
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp2 = 0; temp2 < voxels_x; temp2++)
+            temperature_help[temp1][temp2] = new float[voxels_z];
 
-	for (int temp = 0; temp < voxels_x; temp++)					// set human body temperature
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				temperature_help[temp][temp2][temp3] = 36.5;
+    for(int temp = 0; temp < voxels_x; temp++)					// set human body temperature
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                temperature_help[temp][temp2][temp3] = 36.5;
 
-	for (int temp = 1; temp < voxels_x - 1; temp++)					// calculate operator
-		for (int temp2 = 1; temp2 < voxels_y - 1; temp2++)
-			for (int temp3 = 1; temp3 < voxels_z - 1; temp3++)
-			{
-				int tempId = m->structure[temp][temp2][temp3];
-				temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1] + (m->energy[temp][temp2][temp3] / m->k[tempId]) - AproximateBloodPerfusivity(0.255, -0.137, 2.3589, 315, temperature[temp][temp2][temp3] + 273) * m->c_h[tempId] * (temperature[temp][temp2][temp3] - arterial_temperature) / m->k[tempId]) / 6.0;
-			}
+    for(int temp = 1; temp < voxels_x - 1; temp++)					// calculate operator
+        for(int temp2 = 1; temp2 < voxels_y - 1; temp2++)
+            for(int temp3 = 1; temp3 < voxels_z - 1; temp3++)
+            {
+                int tempId = m->structure[temp][temp2][temp3];
+                temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1] + (m->energy[temp][temp2][temp3] / m->k[tempId]) - AproximateBloodPerfusivity(0.255f, -0.137f, 2.3589f, 315.0f, temperature[temp][temp2][temp3] + 273.0f) * m->c_h[tempId] * (temperature[temp][temp2][temp3] - arterial_temperature) / m->k[tempId]) / 6.0f;
+            }
 
-	for (int temp = 1; temp < voxels_x - 1; temp++)					// give back into main matrix
-		for (int temp2 = 1; temp2 < voxels_y - 1; temp2++)
-			for (int temp3 = 1; temp3 < voxels_z - 1; temp3++)
-				temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
+    for(int temp = 1; temp < voxels_x - 1; temp++)					// give back into main matrix
+        for(int temp2 = 1; temp2 < voxels_y - 1; temp2++)
+            for(int temp3 = 1; temp3 < voxels_z - 1; temp3++)
+                temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
 }
 
 float Heat::AproximateBloodPerfusivity(float omega0, float omega1, float omega2, float omega3, float temperature)
 {
-	return (omega0 + omega1 * (atan(omega2*(temperature - omega3)))) / 1e6;		// conversion to milimeters and grams
+    return (omega0 + omega1 * (atan(omega2*(temperature - omega3)))) / 1e6f;		// conversion to milimeters and grams
 }
 
 //////////////////////////////////////////////////////
@@ -976,193 +976,193 @@ float Heat::AproximateBloodPerfusivity(float omega0, float omega1, float omega2,
 //////////////////////////////////////////////////////
 void RunPhoton_steady(Medium * m, Source * s)
 {
-	Photon * p = new Photon;
-	//s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
-	s->TimeProfile_infiniteSharp();
-	p->GetSourceParameters(s);
-	p->regId = m->RetRegId(p);
-	p->lastRegId = p->regId;
-	p->remStep = p->GenStep(m->inv_albedo[p->regId]);
+    Photon * p = new Photon;
+    //s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+    s->TimeProfile_infiniteSharp();
+    p->GetSourceParameters(s);
+    p->regId = m->RetRegId(p);
+    p->lastRegId = p->regId;
+    p->remStep = p->GenStep(m->inv_albedo[p->regId]);
 
 
-	while (p->w > PHOTON_DEATH)
-	{
-		if (p->CheckRefIndexMismatch(m))
-			p->Move(m);
-		else
-		{
-			if (RandomNumber() < p->GetReflectionCoef(m))
-				p->Reflect(m);
-			else
-				p->Transmis(m);
-			p->Move(m);
-		}
-		if (p->CheckBoundaries(m)) break;
-		p->lastRegId = p->regId;
-		p->regId = m->RetRegId(p);
-		m->AbsorbEnergyBeer(p);
-	}
+    while(p->w > PHOTON_DEATH)
+    {
+        if(p->CheckRefIndexMismatch(m))
+            p->Move(m);
+        else
+        {
+            if(RandomNumber() < p->GetReflectionCoef(m))
+                p->Reflect(m);
+            else
+                p->Transmis(m);
+            p->Move(m);
+        }
+        if(p->CheckBoundaries(m)) break;
+        p->lastRegId = p->regId;
+        p->regId = m->RetRegId(p);
+        m->AbsorbEnergyBeer(p);
+    }
 
-	delete p;
+    delete p;
 }
 
 void RunPhoton_time(Medium * m, Source * s)
 {
     Photon * p = new Photon;
-	//s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
-	s->TimeProfile_flat(pulseDuration);
+    //s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+    s->TimeProfile_flat(pulseDuration);
     p->GetSourceParameters(s);
     p->regId = m->RetRegId(p);
     p->lastRegId = p->regId;
     p->remStep = p->GenStep(m->inv_albedo[p->regId]);
-        
-        
-	while(p->w > PHOTON_DEATH) 
-	{
-		if (p->CheckRefIndexMismatch(m))
-			p->Move(m);
-		else
-		{
-			if (RandomNumber() < p->GetReflectionCoef(m))
-				p->Reflect(m);
-			else
-				p->Transmis(m);
-			p->Move(m);
-		}
-        if (p->CheckBoundaries(m)) break;
-		if (p->CheckTOF(time_end)) break;
-		p->timeId = p->GetTimeId();
-		p->lastRegId = p->regId;
-		p->regId = m->RetRegId(p);
-		m->AbsorbEnergyBeer_Time(p);		
-	}
-        
-        delete p;
+
+
+    while(p->w > PHOTON_DEATH)
+    {
+        if(p->CheckRefIndexMismatch(m))
+            p->Move(m);
+        else
+        {
+            if(RandomNumber() < p->GetReflectionCoef(m))
+                p->Reflect(m);
+            else
+                p->Transmis(m);
+            p->Move(m);
+        }
+        if(p->CheckBoundaries(m)) break;
+        if(p->CheckTOF(time_end)) break;
+        p->timeId = p->GetTimeId();
+        p->lastRegId = p->regId;
+        p->regId = m->RetRegId(p);
+        m->AbsorbEnergyBeer_Time(p);
+    }
+
+    delete p;
 }
 
 void RunPhotonNew_secondPulse(Medium * m, Source * s)
 {
-	Photon * p = new Photon;
-	s->CollimatedGaussianBeam(5.0, 8.0, 0.0, 0.5, 0.0, 0.0, 1.0);
-	s->TimeProfile_flat(pulseDuration);
-	p->GetSourceParameters(s);
-	p->regId = m->RetRegId(p);
-	p->lastRegId = p->regId;
-	p->remStep = p->GenStep(m->inv_albedo[p->regId]);
+    Photon * p = new Photon;
+    s->CollimatedGaussianBeam(5.0, 8.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+    s->TimeProfile_flat(pulseDuration);
+    p->GetSourceParameters(s);
+    p->regId = m->RetRegId(p);
+    p->lastRegId = p->regId;
+    p->remStep = p->GenStep(m->inv_albedo[p->regId]);
 
-	while (p->w > PHOTON_DEATH)
-	{
-		p->Move(m);
-		if (p->CheckBoundaries(m)) break;
-		if (p->CheckTOF(time_end)) break;
-		p->timeId = p->GetTimeId();
-		p->lastRegId = p->regId;
-		p->regId = m->RetRegId(p);
-		m->AbsorbEnergyBeer_Time_secondPulse(p);
-	}
+    while(p->w > PHOTON_DEATH)
+    {
+        p->Move(m);
+        if(p->CheckBoundaries(m)) break;
+        if(p->CheckTOF(time_end)) break;
+        p->timeId = p->GetTimeId();
+        p->lastRegId = p->regId;
+        p->regId = m->RetRegId(p);
+        m->AbsorbEnergyBeer_Time_secondPulse(p);
+    }
 
-	delete p;
+    delete p;
 }
 
 void PrintAbsEnergy(Medium * m)
 {
-	for(int temp1 = 0; temp1 < voxels_x; temp1++)
-	{
-		for(int temp2 = 0; temp2 < voxels_y; temp2++)
-		{
-			cout << endl;
-			for(int temp3 = 0; temp3 < voxels_z; temp3++)
-				cout << m->energy[temp1][temp2][temp3] << " ";
-		}
-		cout << endl;
-	}
-	cout << endl;
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+    {
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+        {
+            cout << endl;
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                cout << m->energy[temp1][temp2][temp3] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
 }
 
 void WriteAbsorbedEnergyToFile(Medium * m)
 {
-	ofstream myFile;
-	myFile.open("Results_absorbedEnergy.txt");
-	for(int temp1 = 0; temp1 < voxels_x; temp1++)
-	{
-		for(int temp2 = 0; temp2 < voxels_y; temp2++)
-			{
-				for(int temp3 = 0; temp3 < voxels_z; temp3++)
-					myFile << m->energy[temp1][temp2][temp3] << " ";
-				myFile << endl;
-		}
-		myFile << endl;
-	}
-	myFile.close();
+    ofstream myFile;
+    myFile.open("Results_absorbedEnergy.txt");
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+    {
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+        {
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                myFile << m->energy[temp1][temp2][temp3] << " ";
+            myFile << endl;
+        }
+        myFile << endl;
+    }
+    myFile.close();
 }
 
 void WriteAbsorbedEnergyToFile_Time(Medium * m)
 {
-	for (int temp4 = 0; temp4 < m->num_time_steps; temp4++)
-	{
-		stringstream ss;
-		ss << "ResultsAbsorbedEnergyTime_" << temp4 << ".txt";
-		ofstream myFile(ss.str().c_str());
-		if(myFile.is_open())
-			{
-                for (int temp1 = 0; temp1 < voxels_x; temp1++)
-				{
-					for (int temp2 = 0; temp2 < voxels_y; temp2++)
-					{
-						for (int temp3 = 0; temp3 < voxels_z; temp3++)
-							myFile << m->energy_t[temp1][temp2][temp3][temp4] << " ";
-						myFile << endl;
-					}
-						myFile << endl;
-				}
-				myFile.close();
-			}
-            else
-				cout << "File could not be opened." << endl;
-	}
+    for(int temp4 = 0; temp4 < m->num_time_steps; temp4++)
+    {
+        stringstream ss;
+        ss << "ResultsAbsorbedEnergyTime_" << temp4 << ".txt";
+        ofstream myFile(ss.str().c_str());
+        if(myFile.is_open())
+        {
+            for(int temp1 = 0; temp1 < voxels_x; temp1++)
+            {
+                for(int temp2 = 0; temp2 < voxels_y; temp2++)
+                {
+                    for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                        myFile << m->energy_t[temp1][temp2][temp3][temp4] << " ";
+                    myFile << endl;
+                }
+                myFile << endl;
+            }
+            myFile.close();
+        }
+        else
+            cout << "File could not be opened." << endl;
+    }
 }
 
 void WriteAbsorbedEnergyToFile_Time_secondPulse(Medium * m)
 {
-	for (int temp4 = 0; temp4 < m->num_time_steps; temp4++)
-	{
-		stringstream ss;
-		ss << "ResultsAbsorbedEnergyTime_SecondPulse_" << temp4 << ".txt";
-		ofstream myFile(ss.str().c_str());
-		if (myFile.is_open())
-		{
-			for (int temp1 = 0; temp1 < voxels_x; temp1++)
-			{
-				for (int temp2 = 0; temp2 < voxels_y; temp2++)
-				{
-					for (int temp3 = 0; temp3 < voxels_z; temp3++)
-						myFile << m->energy_next[temp1][temp2][temp3][temp4] << " ";
-					myFile << endl;
-				}
-				myFile << endl;
-			}
-			myFile.close();
-		}
-		else
-			cout << "File could not be opened." << endl;
-	}
+    for(int temp4 = 0; temp4 < m->num_time_steps; temp4++)
+    {
+        stringstream ss;
+        ss << "ResultsAbsorbedEnergyTime_SecondPulse_" << temp4 << ".txt";
+        ofstream myFile(ss.str().c_str());
+        if(myFile.is_open())
+        {
+            for(int temp1 = 0; temp1 < voxels_x; temp1++)
+            {
+                for(int temp2 = 0; temp2 < voxels_y; temp2++)
+                {
+                    for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                        myFile << m->energy_next[temp1][temp2][temp3][temp4] << " ";
+                    myFile << endl;
+                }
+                myFile << endl;
+            }
+            myFile.close();
+        }
+        else
+            cout << "File could not be opened." << endl;
+    }
 }
 
 void WritePhotonFluenceToFile(Medium * m)
 {
-	ofstream myFile;
-	myFile.open("Results_photonFluence.txt");
-	for(int temp1 = 0; temp1 < voxels_x; temp1++)
-	{
-		for(int temp2 = 0; temp2 < voxels_y; temp2++)
-		{
-			for(int temp3 = 0; temp3 < voxels_z; temp3++)
-				myFile << m->fluence[temp1][temp2][temp3] << " ";
-			myFile << endl;
-		}
-		myFile << endl;
-	}
-	myFile.close();
+    ofstream myFile;
+    myFile.open("Results_photonFluence.txt");
+    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+    {
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+        {
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                myFile << m->fluence[temp1][temp2][temp3] << " ";
+            myFile << endl;
+        }
+        myFile << endl;
+    }
+    myFile.close();
 }
 
 
@@ -1170,7 +1170,7 @@ void CreateNewThread_time(Medium * m, Source * s, long numPhotons)		// Time-reso
 {
     for(long i = 0; i < numPhotons; i++)
     {
-        RunPhoton_time(m,s);
+        RunPhoton_time(m, s);
     }
 }
 
@@ -1181,18 +1181,18 @@ inline int int_floor(float x)
 }
 void CreateNewThread_steady(Medium * m, Source * s, long numPhotons)
 {
-	for (long i = 0; i < numPhotons; i++)
-	{
-		RunPhoton_steady(m, s);
-	}
+    for(long i = 0; i < numPhotons; i++)
+    {
+        RunPhoton_steady(m, s);
+    }
 }
 
 void CreateNewThread_secondPulse(Medium * m, Source * s, long numPhotons)
 {
-	for (long i = 0; i < numPhotons; i++)
-	{
-		RunPhotonNew_secondPulse(m, s);
-	}
+    for(long i = 0; i < numPhotons; i++)
+    {
+        RunPhotonNew_secondPulse(m, s);
+    }
 }
 float RandomNumber()
 {
@@ -1205,13 +1205,13 @@ float RandomNumber()
 }
 void Prepare_SecondPulse(Medium * m, Source * s, float delay)
 {
-	float period = 1e9 / s->freq;		//	in ns
-	int pulseTimeId = (int)floor(delay / time_step);
+    float period = 1e9f / s->freq;		//	in ns
+    int pulseTimeId = (int)floor(delay / time_step);
 
-	//	copy last matrix
-	for (int temp = 0; temp < voxels_x; temp++)
-		for (int temp2 = 0; temp2 < voxels_y; temp2++)
-			for (int temp3 = 0; temp3 < voxels_z; temp3++)
-				for (int temp4 = 0; temp4 < (int)floor((time_end - delay) / time_step); temp4++)
-					m->energy_next[temp][temp2][temp3][temp4] += m->energy_t[temp][temp2][temp3][pulseTimeId + temp4];
+    //	copy last matrix
+    for(int temp = 0; temp < voxels_x; temp++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp4 = 0; temp4 < (int)floor((time_end - delay) / time_step); temp4++)
+                    m->energy_next[temp][temp2][temp3][temp4] += m->energy_t[temp][temp2][temp3][pulseTimeId + temp4];
 }

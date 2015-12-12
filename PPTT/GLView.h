@@ -7,7 +7,6 @@
 /*	GLView defines Result viewer                          */
 /**********************************************************/
 
-/* TODO list: -withdraw Region class, replace with matrix in Space region */
 
 #ifndef GLVIEW_H
 #define	GLVIEW_H
@@ -20,10 +19,6 @@ static int stepCounter = 0; // time
 static bool showboundary = false;
 static float adjustSize = 1;
 static int viewSelector = 0; // selected view
-static float angle = 0.0;
-static float lx = 0.0f, lz = -1.0f, ly = 0.0f;
-static float x = 50.0f, z = 150.0f, y = 50.0f;
-static float deltaAngle = 0.0f;
 static int xOrigin = -1;
 
 
@@ -42,12 +37,13 @@ class GLView
 public:
     void run();
     void init(int argc, char ** argv);
-    void savemedium(Medium *m,Heat *h);
+    void savemedium(Medium *m, Heat *h);
 };
 
 
 void draw();
-void drawHelp(std::string s,float x, float y);
+void drawHelp(std::string s, float x, float y);
+void drawAxis();
 void colorPick(float intensity);
 void handleResize(int w, int h);
 void processSpecialKeys(int key, int xx, int yy);
