@@ -16,7 +16,7 @@
 #include "Camera.h"
 
 static int stepCounter = 0; // time
-static bool showboundary = false;
+static bool showboundary = true;
 static float adjustSize = 1;
 static int viewSelector = 0; // selected view
 static int xOrigin = -1;

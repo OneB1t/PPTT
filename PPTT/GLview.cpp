@@ -209,23 +209,25 @@ void draw()
     switch(viewSelector)
     {
         case 0:
-        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
+        
+        for(int x = 0 + showboundary; x < voxels_x - showboundary; x++)
         {
-            for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
+            for(int y = 0 + showboundary; y < voxels_y - showboundary; y++)
             {
-                for(int temp3 = 0 + showboundary; temp3 < voxels_z - showboundary; temp3++)
+                for(int z = 0 + showboundary; z < voxels_z - showboundary; z++)
                 {
-                    float size = m_draw->energy_t[temp1][temp2][temp3][stepCounter] * adjustSize;
+                    float size = m_draw->energy_t[x][y][z][stepCounter] * adjustSize;
 
-                    if(size != 0)
+                    if(size >= 0.1f)
                     {
                         if(size > 20)
                             size = 20;
-                        glPushMatrix();
                         getColor(size);
-                        glTranslatef(temp1, temp2, temp3);
-                        glutSolidCube(size / 5);
-                        glPopMatrix();
+                        //glutSolidCube(size / 5);
+                        glPointSize(size);
+                        glBegin(GL_POINTS);
+                        glVertex3f(x, y,z);
+                        glEnd();
                     }
 
 
@@ -241,7 +243,7 @@ void draw()
                 for(int temp3 = 0; temp3 < voxels_z; temp3++)
                 {
                     float color2 = m_draw->structure[temp1][temp2][temp3];
-                    if(color2 > 1.0)
+                    if(color2 > 5.0)
                     {
                         glPushMatrix();
                         if(color2 > 2.0)
@@ -347,6 +349,7 @@ void draw()
         }
         break;
     }
+    drawAxis();
     drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 30);
     drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
     drawHelp("F1 - forward", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 70);
