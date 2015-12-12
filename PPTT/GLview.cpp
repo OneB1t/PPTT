@@ -148,8 +148,8 @@ void mouseMove(int x, int y)
 
     // this will only be true when the left button is down
     if(xOrigin >= 0) {
-        cam.addAzimuth(PI * (cam.ox - x) / GLUT_WINDOW_WIDTH);
-        cam.addZenith(-1 * PI * (y - cam.oy) / GLUT_WINDOW_WIDTH);
+        cam.addAzimuth(0.1 * PI * (cam.ox - x) / GLUT_WINDOW_WIDTH);
+        cam.addZenith(-0.1 * PI * (y - cam.oy) / GLUT_WINDOW_WIDTH);
           cam.ox = x;
           cam.oy = y;
     }

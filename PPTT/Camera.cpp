@@ -4,11 +4,11 @@
 
 Camera::Camera()
 {
-    azimuth = 5.0f;
-    zenith = 0.0f;
+    azimuth = 0.0f;
+    zenith = -1.5f;
     radius = 1.0f;
-    eyeVector = Vec3D(0,1,0);
-    pos = Vec3D(50.0f, 150.0f, 50.0f);
+    eyeVector = Vec3D(0,-1,0);
+    pos = Vec3D(150.0f, 150.0f, 300.0f);
     computeCameraMatrix();
 }
 
@@ -79,6 +79,9 @@ void Camera::up(float speed)
 }
 void Camera::move(Vec3D dir)
 {
+    dir.x *= 10;
+    dir.y *= 10;
+    dir.z *= 10;
     pos = pos.add(dir);
     computeCameraMatrix();
 }
