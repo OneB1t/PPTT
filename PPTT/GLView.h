@@ -14,6 +14,7 @@
 #include <cmath>
 #include <string>
 #include "PPTT_core.h"
+#include "Camera.h"
 
 static int stepCounter = 0; // time
 static bool showboundary = false;
@@ -25,6 +26,7 @@ static float x = 50.0f, z = 150.0f, y = 50.0f;
 static float deltaAngle = 0.0f;
 static int xOrigin = -1;
 
+
 // slice view parameters
 static int sliceX = 0;
 static int sliceY = 0;
@@ -32,6 +34,8 @@ static int sliceZ = 0;
 
 static Medium * m_draw;
 static Heat * h_draw;
+static Camera cam;
+
 class GLView;
 class GLView
 {
@@ -40,6 +44,8 @@ public:
     void init(int argc, char ** argv);
     void savemedium(Medium *m,Heat *h);
 };
+
+
 void draw();
 void drawHelp(std::string s,float x, float y);
 void colorPick(float intensity);

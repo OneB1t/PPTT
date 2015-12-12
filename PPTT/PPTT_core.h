@@ -16,8 +16,8 @@
 #define PHOTON_DEATH	0.0001
 #define MAX_SOURCE_SIZE (0x100000)
 
-const float PI = 3.14159265358979323846;
-const float light_speed = 299.792458;  // mm per ns
+const float PI = 3.14159265358979323846f;
+const float light_speed = 299.792458f;  // mm per ns
 const int voxels_x = 150;
 const int voxels_y = 150;
 const int voxels_z = 150;
@@ -26,9 +26,9 @@ const int units = 10;               // voxels per mm
 
 
 const float time_start = 0;
-const float time_step = 0.00125;	// in ns
-const float time_end = 0.12;
-const float pulseDuration = 0.0025;
+const float time_step = 0.00125f;	// in ns
+const float time_end = 0.12f;
+const float pulseDuration = 0.0025f;
 const int timeSegments = 96;
 
 typedef struct tag_my_struct {

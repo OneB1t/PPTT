@@ -31,11 +31,13 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='CPU_Debug|x64'">
       </PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="PPTT\Camera.cpp" />
     <ClCompile Include="PPTT\GLview.cpp" />
     <ClCompile Include="PPTT\PPTT_core.cpp" />
     <ClCompile Include="PPTT\PPTT_io.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PPTT\Camera.h" />
     <ClInclude Include="PPTT\GLView.h" />
     <ClInclude Include="PPTT\PPTT_core.h" />
     <ClInclude Include="PPTT\PPTT_io.h" />

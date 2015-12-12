@@ -22,7 +22,7 @@ using namespace std;
 const long numBatches = 1;
 long numPhotons = 0;
 const int numThreads = 8;
-const int usedPlatform = 1;
+const int usedPlatform = 0; // 0 - openCL 1 - CPU
 thread myThreads[numThreads];
 
 int main(int argc, char *argv[]) {

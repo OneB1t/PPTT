@@ -30,9 +30,10 @@ void GLView::init(int argc, char** argv)
     glutInitWindowSize(1200, 800); //Window size
     glutCreateWindow("PPTT - matrix view"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
+    cam = Camera();
 }
 
-void GLView::savemedium(Medium * m,Heat * h)
+void GLView::savemedium(Medium * m, Heat * h)
 {
     m_draw = m;
     h_draw = h;
@@ -54,7 +55,7 @@ void handleResize(int w, int h)
         2000.0);				//The far z clipping coordinate
 }
 
-void processSpecialKeys(int key, int xx, int yy) 
+void processSpecialKeys(int key, int xx, int yy)
 {
     float fraction = 10.0f;
 
@@ -117,7 +118,7 @@ void processSpecialKeys(int key, int xx, int yy)
         break;
         case GLUT_KEY_F7:
         if(showboundary)
-               showboundary = false;
+            showboundary = false;
         else
             showboundary = true;
         break;
@@ -125,11 +126,10 @@ void processSpecialKeys(int key, int xx, int yy)
     }
 }
 
-void mouseButton(int button, int state, int x, int y) 
+void mouseButton(int button, int state, int x, int y)
 {
     // only start motion if the left button is pressed
     if(button == GLUT_LEFT_BUTTON) {
-
         // when the button is released
         if(state == GLUT_UP) {
             angle += deltaAngle;
@@ -137,6 +137,8 @@ void mouseButton(int button, int state, int x, int y)
         }
         else {// state = GLUT_DOWN
             xOrigin = x;
+            cam.ox = x;
+            cam.oy = y;
         }
     }
 }
@@ -146,13 +148,10 @@ void mouseMove(int x, int y)
 
     // this will only be true when the left button is down
     if(xOrigin >= 0) {
-
-        // update deltaAngle
-        deltaAngle = (x - xOrigin) * 0.001f;
-
-        // update camera's direction
-        lx = sin(angle + deltaAngle);
-        lz = -cos(angle + deltaAngle);
+        cam.addAzimuth(PI * (cam.ox - x) / GLUT_WINDOW_WIDTH);
+        cam.addZenith(-1 * PI * (y - cam.oy) / GLUT_WINDOW_WIDTH);
+          cam.ox = x;
+          cam.oy = y;
     }
 }
 
@@ -161,23 +160,22 @@ void processNormalKeys(unsigned char key, int x, int y)
     float fraction = 10.0f;
     switch(key) {
         case 'a':
-        angle -= 0.05f;
-        lx = sin(angle);
-        lz = -cos(angle);
+        cam.left(5);
         break;
         case 'd':
-        angle += 0.05f;
-        lx = sin(angle);
-        lz = -cos(angle);
+        cam.right(5);
         break;
-        case GLUT_KEY_UP:
         case 'w':
-        x += lx * fraction;
-        z += lz * fraction;
+        cam.move(cam.to);
         break;
         case 's':
-        x -= lx * fraction;
-        z -= lz * fraction;
+        cam.moveback(cam.to);
+        break;
+        case 'q':
+        cam.down(5);
+        break;
+        case 'e':
+        cam.up(5);
         break;
         case 'u':
         sliceX++;
@@ -209,7 +207,7 @@ void processNormalKeys(unsigned char key, int x, int y)
         if(sliceZ < 0)
             sliceZ = voxels_z - 1;
         break;
-}
+    }
 }
 
 //Draws the 3D scene
@@ -218,13 +216,13 @@ void draw()
     //Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
-    glLoadIdentity(); //Reset the drawing perspective
-    gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
-    glPushMatrix();
+    glLoadIdentity(); //Reset the drawing perspective   
+    gluLookAt(cam.from.x,cam.from.y,cam.from.z,cam.from.x + cam.to.x, cam.from.y + cam.to.y,cam.from.z + cam.to.z,cam.upV.x,cam.upV.y,cam.upV.z);
+   
     glColor3ub(255, 0, 0);
     glTranslatef(0, 0, 0);
     glutSolidCube(1);
-    glTranslatef(voxels_x / 2 , voxels_y / 2, voxels_z / 2);
+    glTranslatef(voxels_x / 2, voxels_y / 2, voxels_z / 2);
     glPopMatrix();
 
     switch(viewSelector)
@@ -242,7 +240,7 @@ void draw()
                     {
                         if(size > 20)
                             size = 20;
-                        glPushMatrix();    
+                        glPushMatrix();
                         getColor(size);
                         glTranslatef(temp1, temp2, temp3);
                         glutSolidCube(size / 5);
@@ -266,7 +264,7 @@ void draw()
                     {
                         glPushMatrix();
                         if(color2 > 2.0)
-                            glColor3ub(255, 0,0);
+                            glColor3ub(255, 0, 0);
                         else
                         {
                             glColor3ub(0, 255, 0);
@@ -368,7 +366,7 @@ void draw()
         }
         break;
     }
-    drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)-30);
+    drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 30);
     drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
     drawHelp("F1 - forward", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 70);
     drawHelp("F2 - back", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 90);
@@ -383,22 +381,22 @@ void draw()
     switch(viewSelector)
     {
         case 0:
-            drawHelp("View mode: Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("View mode: Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
         case 1:
-            drawHelp("View mode: Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("View mode: Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
         case 2:
-            drawHelp("View mode: X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-            drawHelp("sliceX: " + std::to_string(sliceX),glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        drawHelp("View mode: X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 3:
-            drawHelp("View mode: Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-            drawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        drawHelp("View mode: Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 4:
-            drawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-            drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        drawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 5:
         drawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
@@ -410,7 +408,7 @@ void draw()
 }
 
 
-void drawHelp(std::string s, float x, float y) 
+void drawHelp(std::string s, float x, float y)
 {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();

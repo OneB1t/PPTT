@@ -1009,7 +1009,7 @@ void RunPhoton_steady(Medium * m, Source * s)
 void RunPhoton_time(Medium * m, Source * s)
 {
     Photon * p = new Photon;
-	s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
+	//s->CollimatedGaussianBeam(5.0, 5.0, 0.0, 0.5, 0.0, 0.0, 1.0);
 	s->TimeProfile_flat(pulseDuration);
     p->GetSourceParameters(s);
     p->regId = m->RetRegId(p);
