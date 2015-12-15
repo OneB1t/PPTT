@@ -199,7 +199,7 @@ void draw()
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
     glLoadIdentity(); //Reset the drawing perspective   
     gluLookAt(cam.from.x, cam.from.y, cam.from.z, cam.from.x + cam.to.x, cam.from.y + cam.to.y, cam.from.z + cam.to.z, cam.upV.x, cam.upV.y, cam.upV.z);
-
+    glPushMatrix();
     glColor3ub(255, 0, 0);
     glTranslatef(0, 0, 0);
     glutSolidCube(1);

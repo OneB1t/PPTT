@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     Heat * h = new Heat;
 
     //  inserting brain layers
-    m->CreateCube(0, 0, 0, 10, 10, 10, 0.07, 37.4, 0.977, 1.37);		// adipose tissue @ 700 nm
+    m->CreateCube(0, 0, 0, 15, 15, 15, 0.07, 37.4, 0.977, 1.37);		// adipose tissue @ 700 nm
     //m->CreateBall(1,1,1,1,0.02,9.0,0.89,1.37);
 
     m->CreateCube(1, 1, 0, 8, 8, 8, 0.15, 1.67, 0.7, 1.37);		// AuNR in intralipid

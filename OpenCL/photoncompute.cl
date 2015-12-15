@@ -19,10 +19,10 @@ typedef struct medium_struct{
     float pulseDuration;
     int finished;
 	int num_time_steps;
-  // medium struct
-  int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
-  float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
-  float fluence[voxels_x][voxels_y][voxels_z];            //      matrix with photon fluence
+    // medium struct
+    int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
+    float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
+    fluence[voxels_x][voxels_y][voxels_z];            //      matrix with photon fluence
     float ua[max_regions];							//	absorption coef by id
     float us[max_regions];							//  scattering coef by id
     float inv_albedo[max_regions];					//  1 / (ua + us)
@@ -33,8 +33,9 @@ typedef struct medium_struct{
     float c_h[max_regions];                                         // specific heat of tissue
     float w_g[max_regions];
     float energy_t[voxels_x][voxels_y][voxels_z][timeSegment];
-
-
+    float surrounding_x[voxels_x][voxels_y][2];
+    float surrounding_y[voxels_y][voxels_z][2];
+    float surrounding_z[voxels_x][voxels_z][2];
 }m_str;
 
 typedef struct photon_struct
@@ -304,11 +305,11 @@ void Transmis(__global m_str *m_str,p_str *photon)
 	}
 }
 
-int CheckRefIndexMismatch(__global m_str *m_str,p_str *photon)
+bool CheckRefIndexMismatch(__global m_str *m_str,p_str *photon)
 {
 	if (m_str[0].n[(*photon).regId] - m_str[0].n[(*photon).lastRegId])
-		return 0;
-	else return 1;
+		return false;
+	return true;
 }
 
 void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
@@ -317,19 +318,19 @@ void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 	float sinTheta = sin(acos((*photon).cosTheta));
 	float sinPhotonPhi = sin((*photon).phi);
 	float cosPhotonPhi = cos((*photon).phi);
-	if (fabs((*photon).vector.z) < 0.99999)
-	{
+	//if (fabs((*photon).vector.z) < 0.99999)
+	//{
 		float temp = 1.0 / sqrt(1 - (*photon).vector.z*(*photon).vector.z);
 		(*photon).vector.x = sinTheta * ((*photon).vector.x * (*photon).vector.z * cosPhotonPhi - (*photon).vector.y * sinPhotonPhi) * temp + (*photon).vector.x * (*photon).cosTheta;
 		(*photon).vector.y = sinTheta * ((*photon).vector.y * (*photon).vector.z * cosPhotonPhi + (*photon).vector.x * sinPhotonPhi) * temp + (*photon).vector.y * (*photon).cosTheta;
 		(*photon).vector.z = -sinTheta * cosPhotonPhi / temp + (*photon).vector.z * (*photon).cosTheta;
-	}
+	/*}
 	else
 	{
 		(*photon).vector.x = sinTheta * cosPhotonPhi;
 		(*photon).vector.y = sinTheta * sinPhotonPhi;
 		(*photon).vector.z = (*photon).vector.z * (*photon).cosTheta / fabs((*photon).vector.z);
-	}
+	}*/
 }
 
 void RoundPosition(p_str *photon)
@@ -339,26 +340,59 @@ void RoundPosition(p_str *photon)
     (*photon).roundposition.y = (int)floor((*photon).position.y);
     (*photon).roundposition.z = (int)floor((*photon).position.z);
 }
+bool CheckBoundaries(__global m_str *m_str,p_str *photon)
+{
+    if((*photon).position.z < 1)
+    {
+        m_str[0].surrounding_z[(*photon).roundposition.x][(*photon).roundposition.y][0] += (*photon).position.w;
+        return true;
+    }
+    if((*photon).position.z >= voxels_z - 1)
+    {
+        m_str[0].surrounding_z[(*photon).roundposition.x][(*photon).roundposition.y][1] += (*photon).position.w;
+        return true;
+    }
+    if((*photon).position.y < 1)
+    {
+        m_str[0].surrounding_y[(*photon).roundposition.x][(*photon).roundposition.z][0] += (*photon).position.w;
+        return true;
+    }
+    if((*photon).position.y >= voxels_y - 1)
+    {
+        m_str[0].surrounding_y[(*photon).roundposition.x][(*photon).roundposition.z][1] += (*photon).position.w;
+        return true;
+    }
+    if((*photon).position.x < 1)
+    {
+        m_str[0].surrounding_x[(*photon).roundposition.y][(*photon).roundposition.z][0] += (*photon).position.w;
+        return true;
+    }
+    if((*photon).position.x >= voxels_x - 1)
+    {
+        m_str[0].surrounding_x[(*photon).roundposition.y][(*photon).roundposition.z][1] += (*photon).position.w;
+        return true;
+    }
+    return false;
+}
+
 
 void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 {
     float temp_step = FindEdgeDistance(photon,rng);
     (*photon).remStep = (*photon).remStep * (m_str[0].us[(*photon).lastRegId] / m_str[0].us[(*photon).regId]);
-
-    if(temp_step > (*photon).remStep)
+//    if(temp_step > (*photon).remStep)
     {
-			  (*photon).step = (*photon).remStep;
-			  (*photon).position.xyz = (*photon).position.xyz + (*photon).vector.xyz * (*photon).step;
-
+		(*photon).step = (*photon).remStep;
+		(*photon).position.xyz = (*photon).position.xyz + (*photon).vector.xyz * (*photon).step;
         (*photon).time_of_flight += GetTOF(m_str, photon, (*photon).step);
         (*photon).remStep = GenStep(m_str[0].inv_albedo[(*photon).regId],rng);
         UpdateDir(m_str,photon,rng);
         RoundPosition(photon);
     }
-    else
+ /*   else
     {
         (*photon).step = temp_step;
-			  (*photon).position.xyz = (*photon).position.xyz + (*photon).vector.xyz * (*photon).step;
+		(*photon).position.xyz = (*photon).position.xyz + (*photon).vector.xyz * (*photon).step;
         (*photon).time_of_flight += GetTOF(m_str, photon, (*photon).step);
         (*photon).remStep -= temp_step;
         if((*photon).remStep > 0)
@@ -369,7 +403,7 @@ void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
             (*photon).remStep = GenStep(m_str[0].inv_albedo[(*photon).regId],rng);
             UpdateDir(m_str,photon,rng);
         }
-    }
+    }*/
 }
 
 
@@ -379,7 +413,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     mwc64x_state_t rng;
 	seed(&rng, 0, random);
 	// create new photon
-    p_str photon;     
+    __private p_str photon;     
     photon.timeId = 0;
 
     photon.position.x = source[0].x;
@@ -397,7 +431,6 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];
     photon.lastRegId = photon.regId;
     photon.remStep = GenStep(m_str[0].inv_albedo[photon.regId],&rng);
-    //int i= 0;
     while(photon.position.w > PHOTON_DEATH) 
     {
         if (CheckRefIndexMismatch(m_str,&photon))
@@ -416,26 +449,10 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
             }
             Move(m_str , &photon, &rng);
         }
-        
-
-        if(photon.position.x < 1.0 || photon.position.x > voxels_x - 2)
-        {
-            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
+        if(CheckBoundaries(m_str , &photon))   
             break;        
-        }
-        if(photon.position.y < 1.0 || photon.position.y > voxels_y - 2)
-        {
-            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
-            break;        
-        }
-        if(photon.position.z < 1.0 || photon.position.z > voxels_z - 2)
-        {
-            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
-            break;        
-        }
         if(photon.time_of_flight >= m_str[0].time_end)
             break;
-
 
         photon.timeId = floor(photon.time_of_flight / m_str[0].time_step);
         photon.lastRegId = photon.regId;
@@ -443,16 +460,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 
 	    float temp = photon.position.w * (1 - (m_str[0].ua[photon.regId] * photon.step) + (m_str[0].ua[photon.regId] * m_str[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
 	    m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += (photon.position.w - temp);
-	    photon.position.w = temp;
-        //i++;
-        // failsafe
-        //if(i > 10000)
-        //{
-        //    m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += photon.position.w;
-        //    m_str[0].finished = m_str[0].finished + 1; // count number of time ended photons
-        //   break;
-        //}
-        
+	    photon.position.w = temp;        
     }
 
 }
