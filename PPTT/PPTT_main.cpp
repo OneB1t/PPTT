@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
             ms[0].time_step = time_step;
             ms[0].finished = 0;
             size_t globalWorkItems[] = { numPhotons };  // basically number of photons per batch
-            size_t localWorkItems[] = { 1 };  // basically number of photons per batch
+            size_t localWorkItems[] = { 256 };  // basically number of photons per batch
 
             // copy memory buffers to GPU
             cl_mem mediumMemoryBlock = clCreateBuffer(context, NULL, sizeof(ms[0]), NULL, &status);
@@ -213,6 +213,8 @@ int main(int argc, char *argv[]) {
                 for(long i = 0; i < numThreads; i++)
                     myThreads[i].join();
             }
+            end = clock();
+            cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
         }
         break;
     }

@@ -134,7 +134,7 @@ float timeProfile_flat(float pulse_duration,mwc64x_state_t *rng)
 
 float FindEdgeDistance(p_str *photon,mwc64x_state_t *rng)
 {
-		float3 temp;
+	__private float3 temp;
 	
     //  Calculate distances
     if((*photon).vector.x > 0.0)
@@ -257,8 +257,7 @@ float GetTOF(__global m_str *m_str,p_str *photon, float step_size)
 
 float GenStep(float invAlbedo, mwc64x_state_t *rng)
 {
-    float temp = -log(RandomNumber(rng)) * invAlbedo;
-    return temp;
+    return(-log(RandomNumber(rng)) * invAlbedo);
 }
 
 float GetReflectionCoef(__global m_str *m_str,p_str *photon)
@@ -280,16 +279,16 @@ void Transmis(__global m_str *m_str,p_str *photon)
 {
   if ((*photon).prevroundposition.z != (*photon).roundposition.z)
 	{
-		float alpha_i = acos(fabs((*photon).vector.z));
-		float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
+		__private float alpha_i = acos(fabs((*photon).vector.z));
+		__private float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
 		(*photon).vector.x *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
 		(*photon).vector.y *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
 		(*photon).vector.z *= sin(alpha_t) / fabs((*photon).vector.z);
 	}
 	if ((*photon).prevroundposition.y != (*photon).roundposition.y)
 	{
-		float alpha_i = acos(fabs((*photon).vector.y));
-		float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
+		__private float alpha_i = acos(fabs((*photon).vector.y));
+		__private float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
 		(*photon).vector.x *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
 		(*photon).vector.z *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
 		(*photon).vector.y *= sin(alpha_t) / fabs((*photon).vector.y);
@@ -297,8 +296,8 @@ void Transmis(__global m_str *m_str,p_str *photon)
 	if ((*photon).prevroundposition.x != (*photon).roundposition.x)
 	{
 		
-		float alpha_i = acos(fabs((*photon).vector.x));
-		float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
+		__private float alpha_i = acos(fabs((*photon).vector.x));
+		__private float alpha_t = asin(sin(alpha_i) * m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId]);
 		(*photon).vector.y *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
 		(*photon).vector.z *= m_str[0].n[(*photon).lastRegId] / m_str[0].n[(*photon).regId];
 		(*photon).vector.x *= sin(alpha_t) / fabs((*photon).vector.x);
@@ -315,11 +314,11 @@ bool CheckRefIndexMismatch(__global m_str *m_str,p_str *photon)
 void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 {
 	GenDir(m_str[0].g[(*photon).regId],photon,rng);
-	float sinTheta = sin(acos((*photon).cosTheta));
-	float sinPhotonPhi = sin((*photon).phi);
-	float cosPhotonPhi = cos((*photon).phi);
-	//if (fabs((*photon).vector.z) < 0.99999)
-	//{
+	__private float sinTheta = sin(acos((*photon).cosTheta));
+	__private float sinPhotonPhi = sin((*photon).phi);
+	__private float cosPhotonPhi = cos((*photon).phi);
+	if (fabs((*photon).vector.z) < 0.99999)
+	{
 		float temp = 1.0 / sqrt(1 - (*photon).vector.z*(*photon).vector.z);
 		(*photon).vector.x = sinTheta * ((*photon).vector.x * (*photon).vector.z * cosPhotonPhi - (*photon).vector.y * sinPhotonPhi) * temp + (*photon).vector.x * (*photon).cosTheta;
 		(*photon).vector.y = sinTheta * ((*photon).vector.y * (*photon).vector.z * cosPhotonPhi + (*photon).vector.x * sinPhotonPhi) * temp + (*photon).vector.y * (*photon).cosTheta;
