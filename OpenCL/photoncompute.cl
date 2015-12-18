@@ -323,13 +323,13 @@ void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 		(*photon).vector.x = sinTheta * ((*photon).vector.x * (*photon).vector.z * cosPhotonPhi - (*photon).vector.y * sinPhotonPhi) * temp + (*photon).vector.x * (*photon).cosTheta;
 		(*photon).vector.y = sinTheta * ((*photon).vector.y * (*photon).vector.z * cosPhotonPhi + (*photon).vector.x * sinPhotonPhi) * temp + (*photon).vector.y * (*photon).cosTheta;
 		(*photon).vector.z = -sinTheta * cosPhotonPhi / temp + (*photon).vector.z * (*photon).cosTheta;
-	/*}
+	}
 	else
 	{
 		(*photon).vector.x = sinTheta * cosPhotonPhi;
 		(*photon).vector.y = sinTheta * sinPhotonPhi;
 		(*photon).vector.z = (*photon).vector.z * (*photon).cosTheta / fabs((*photon).vector.z);
-	}*/
+	}
 }
 
 void RoundPosition(p_str *photon)
@@ -379,7 +379,7 @@ void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 {
     float temp_step = FindEdgeDistance(photon,rng);
     (*photon).remStep = (*photon).remStep * (m_str[0].us[(*photon).lastRegId] / m_str[0].us[(*photon).regId]);
-//    if(temp_step > (*photon).remStep)
+    if(temp_step > (*photon).remStep)
     {
 		(*photon).step = (*photon).remStep;
 		(*photon).position.xyz = (*photon).position.xyz + (*photon).vector.xyz * (*photon).step;
@@ -388,7 +388,7 @@ void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
         UpdateDir(m_str,photon,rng);
         RoundPosition(photon);
     }
- /*   else
+   else
     {
         (*photon).step = temp_step;
 		(*photon).position.xyz = (*photon).position.xyz + (*photon).vector.xyz * (*photon).step;
@@ -402,7 +402,7 @@ void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
             (*photon).remStep = GenStep(m_str[0].inv_albedo[(*photon).regId],rng);
             UpdateDir(m_str,photon,rng);
         }
-    }*/
+    }
 }
 
 
