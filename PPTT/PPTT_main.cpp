@@ -11,6 +11,8 @@
 #include <iostream>
 #include <ctime>
 #include <thread>
+#include <vector>
+#include <iomanip> 
 #include "PPTT_core.h"
 #include "GLView.h"
 #include "CL\CL.h"
@@ -55,17 +57,82 @@ int main(int argc, char *argv[]) {
     cl_device_id device;
     cl_event event;
     cl_int status = 0;
-    cl_uint platforms, devices;
+    cl_uint devices;
     size_t streamBufferSize = 0;
     char build_c[8192];
     size_t srcsize, worksize;
+
+    char name[256];
+    char version[256];
+    cl_uint num_platforms;
 
     switch(usePlatform)
     {
         case 0: // OpenCL
         {
-            clErrorCheck(clGetPlatformIDs(1, &platform, &platforms));
-            clErrorCheck(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, &devices));
+            cout << "Detecting OpenCL platforms" << endl;
+            char name[256];
+            char version[256];
+            cl_uint num_platforms;
+            clErrorCheck(clGetPlatformIDs(0, NULL, &num_platforms));
+            vector<cl_platform_id> platforms(num_platforms);
+            clErrorCheck(clGetPlatformIDs(num_platforms, platforms.data(), NULL));
+            vector<cl_uint> num_platform_devices(num_platforms);
+            cl_uint num_devices = 0;
+            for(cl_uint i = 0; i < num_platforms; ++i)
+            {
+                const auto platform = platforms[i];
+                clErrorCheck(clGetPlatformInfo(platform, CL_PLATFORM_NAME, sizeof(name), name, NULL));
+                clErrorCheck(clGetPlatformInfo(platform, CL_PLATFORM_VERSION, sizeof(version), version, NULL));
+                cout << i << ' ' << name << ", " << version << endl;
+                clErrorCheck(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num_platform_devices[i]));
+                num_devices += num_platform_devices[i];
+            }
+
+            cout << "Detecting OpenCL devices" << endl;
+            if(!num_devices)
+            {
+                cerr << "No OpenCL devices detected" << endl;
+                return 2;
+            }
+            vector<cl_device_id> devices(num_devices);
+            vector<bool> cl12(num_devices);
+            vector<cl_bool> host_unified_memory(num_devices);
+            cout << "D                           Name  CL CU GMEM(MB) LMEM(KB) CMEM(KB) LMEMTYPE ECC" << endl;
+            const char* local_mem_types[] = { "NONE", "LOCAL", "GLOBAL" };
+            for(cl_uint i = 0, dev = 0; i < num_platforms; ++i)
+            {
+                const auto platform = platforms[i];
+                const auto npd = num_platform_devices[i];
+                clErrorCheck(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, npd, &devices[dev], NULL));
+                for(int d = 0; d < npd; ++d, ++dev)
+                {
+                    const auto device = devices[dev];
+                    cl_uint max_compute_units;
+                    cl_ulong global_mem_size;
+                    cl_ulong local_mem_size;
+                    cl_ulong max_constant_buffer_size;
+                    cl_bool error_correction_support;
+                    cl_device_local_mem_type local_mem_type;
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_NAME, sizeof(name), name, NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_OPENCL_C_VERSION, sizeof(version), version, NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(max_compute_units), &max_compute_units, NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(global_mem_size), &global_mem_size, NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(local_mem_size), &local_mem_size, NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, sizeof(max_constant_buffer_size), &max_constant_buffer_size, NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_ERROR_CORRECTION_SUPPORT, sizeof(error_correction_support), &error_correction_support, NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_HOST_UNIFIED_MEMORY, sizeof(host_unified_memory[dev]), &host_unified_memory[dev], NULL));
+                    clErrorCheck(clGetDeviceInfo(device, CL_DEVICE_LOCAL_MEM_TYPE, sizeof(local_mem_type), &local_mem_type, NULL));
+                    cl12[dev] = version[9] > '1' || version[11] >= '2';
+                    const string name_str(name);
+                    const size_t name_len = name_str.size();
+                    cout << dev << setw(31) << (name_len <= 30 ? name_str : name_str.substr(name_str.find(' ', name_len - 31) + 1)) << ' ' << version[9] << '.' << version[11] << setw(3) << max_compute_units << setw(9) << global_mem_size / 1048576 << setw(9) << local_mem_size / 1024 << setw(9) << max_constant_buffer_size / 1024 << setw(9) << local_mem_types[local_mem_type] << setw(4) << error_correction_support << endl;
+                }
+            }
+            // hardcoded values for platform and device this needs UI selector
+            platform = platforms[0];
+            cl_device_id device = devices[0];
+
             cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform,0 };
             cl_context context = clCreateContext(properties, 1, &device, NULL, NULL, &error);
             clErrorCheck(error);
