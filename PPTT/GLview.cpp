@@ -68,7 +68,7 @@ void processSpecialKeys(int key, int xx, int yy)
         case GLUT_KEY_F2:
         stepCounter = stepCounter - 1;
         if(stepCounter < 0)
-            stepCounter = timeSegments -1;
+            stepCounter = timeSegments - 1;
         if(stepCounter > timeSegments - 1)
             stepCounter = 0;
         break;
@@ -95,7 +95,7 @@ void processSpecialKeys(int key, int xx, int yy)
         break;
         case GLUT_KEY_F6:
         viewSelector++;
-        if(viewSelector > 5)
+        if(viewSelector > 6)
             viewSelector = 0;
         break;
         case GLUT_KEY_F7:
@@ -209,12 +209,12 @@ void draw()
     switch(viewSelector)
     {
         case 0:
-        
-        for(int x = 0 + showboundary; x < voxels_x - showboundary; x++)
+
+        for(int x = 0; x < voxels_x; x++)
         {
-            for(int y = 0 + showboundary; y < voxels_y - showboundary; y++)
+            for(int y = 0; y < voxels_y; y++)
             {
-                for(int z = 0 + showboundary; z < voxels_z - showboundary; z++)
+                for(int z = 0; z < voxels_z; z++)
                 {
                     float size = m_draw->energy_t[x][y][z][stepCounter] * adjustSize;
 
@@ -226,7 +226,7 @@ void draw()
                         //glutSolidCube(size / 5);
                         glPointSize(size);
                         glBegin(GL_POINTS);
-                        glVertex3f(x, y,z);
+                        glVertex3f(x, y, z);
                         glEnd();
                     }
 
@@ -261,9 +261,9 @@ void draw()
         }
         break;
         case 2: // sliceX
-        for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
+        for(int temp2 = 0; temp2 < voxels_y; temp2++)
         {
-            for(int temp3 = 0 + showboundary; temp3 < voxels_z - showboundary; temp3++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
             {
                 float size = m_draw->energy_t[sliceX][temp2][temp3][stepCounter] * adjustSize;
 
@@ -283,9 +283,9 @@ void draw()
         }
         break;
         case 3: // sliceY
-        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
+        for(int temp1 = 0; temp1 < voxels_x; temp1++)
         {
-            for(int temp3 = 0 + showboundary; temp3 < voxels_z - showboundary; temp3++)
+            for(int temp3 = 0; temp3 < voxels_z; temp3++)
             {
                 float size = m_draw->energy_t[temp1][sliceY][temp3][stepCounter] * adjustSize;
 
@@ -305,9 +305,9 @@ void draw()
         }
         break;
         case 4: // sliceZ
-        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
+        for(int temp1 = 0; temp1 < voxels_x; temp1++)
         {
-            for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
+            for(int temp2 = 0; temp2 < voxels_y; temp2++)
             {
                 float size = m_draw->energy_t[temp1][temp2][sliceZ][stepCounter] * adjustSize;
 
@@ -327,9 +327,9 @@ void draw()
         }
         break;
         case 5: // temperature
-        for(int temp1 = 0 + showboundary; temp1 < voxels_x - showboundary; temp1++)
+        for(int temp1 = 0; temp1 < voxels_x; temp1++)
         {
-            for(int temp2 = 0 + showboundary; temp2 < voxels_y - showboundary; temp2++)
+            for(int temp2 = 0; temp2 < voxels_y; temp2++)
             {
                 float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize - 36;
 
@@ -345,6 +345,54 @@ void draw()
                 }
 
 
+            }
+        }
+        break;
+        case 6: // boundary matrix
+        for(int side = 0; side < 2; side++)
+        {
+            for(int temp1 = 0; temp1 < voxels_x; temp1++)
+            {
+                for(int temp2 = 0; temp2 < voxels_y; temp2++)
+                {
+                    float size = m_draw->surrounding_x[temp1][temp2][side] * adjustSize;
+
+                    if(size != 0)
+                    {
+                        if(size > 20)
+                            size = 20;
+                        glPushMatrix();
+                        getColor(size);
+                        glTranslatef(temp1, temp2, side * voxels_x);
+                        glutSolidCube(size / 5);
+                        glPopMatrix();
+                    }
+                    size = m_draw->surrounding_y[temp1][temp2][side] * adjustSize;
+
+                    if(size != 0)
+                    {
+                        if(size > 20)
+                            size = 20;
+                        glPushMatrix();
+                        getColor(size);
+                        glTranslatef(temp1, side * voxels_y,temp2);
+                        glutSolidCube(size / 5);
+                        glPopMatrix();
+                    }
+                    size = m_draw->surrounding_z[temp1][temp2][side] * adjustSize;
+
+                    if(size != 0)
+                    {
+                        if(size > 20)
+                            size = 20;
+                        glPushMatrix();
+                        getColor(size);
+                        glTranslatef(side * voxels_z,temp1,temp2);
+                        glutSolidCube(size / 5);
+                        glPopMatrix();
+                    }
+
+                }
             }
         }
         break;

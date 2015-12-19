@@ -185,6 +185,20 @@ int main(int argc, char *argv[]) {
                         for(int temp4 = 0; temp4 < num_time_steps; temp4++)
                             m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
 
+            for(int side = 0; side < 2; side++)
+            {
+                for(int temp1 = 0; temp1 < voxels_x; temp1++)
+                {
+                    for(int temp2 = 0; temp2 < voxels_y; temp2++)// this will stop working if medium is not square
+                    {
+                        m->surrounding_x[temp1][temp2][side] = ms[0].surrounding_x[temp1][temp2][side];
+                        m->surrounding_y[temp1][temp2][side] = ms[0].surrounding_y[temp1][temp2][side];
+                        m->surrounding_z[temp1][temp2][side] = ms[0].surrounding_z[temp1][temp2][side];
+                    }
+                }
+            }
+
+
             clReleaseMemObject(mediumMemoryBlock);
             clReleaseMemObject(structureMemoryBlock);
             if(cq != 0)
