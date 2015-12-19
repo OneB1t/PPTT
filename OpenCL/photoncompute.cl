@@ -1,4 +1,10 @@
 #define PHOTON_DEATH	0.0001
+#define VOXELS_X 150
+#define VOXELS_Y 150
+#define VOXELS_Z 150
+#define MAX_REGIONS 16
+#define TIME_SEGMENTS 96
+#define UNITS 10
 
 static const float PI     =         3.14159265358979323846;
 static const float light_speed =    299.792458;  // mm per ns
@@ -7,7 +13,6 @@ static const int voxels_x = 150;
 static const int voxels_y = 150;
 static const int voxels_z = 150;
 static const int timeSegment = 96;
-static const int max_regions =  16;
 
 typedef struct { uint x; uint c; } mwc64x_state_t;
 
@@ -20,22 +25,22 @@ typedef struct medium_struct{
     int finished;
 	int num_time_steps;
     // medium struct
-    int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
-    float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
-    fluence[voxels_x][voxels_y][voxels_z];            //      matrix with photon fluence
-    float ua[max_regions];							//	absorption coef by id
-    float us[max_regions];							//  scattering coef by id
-    float inv_albedo[max_regions];					//  1 / (ua + us)
-    float g[max_regions];							//  anisotropy parameter
-    float n[max_regions];                                               //	refractive index
-    float k[max_regions];                                           // heat conduction coeficient
-    float rho[max_regions];                                         // tissue density
-    float c_h[max_regions];                                         // specific heat of tissue
-    float w_g[max_regions];
-    float energy_t[voxels_x][voxels_y][voxels_z][timeSegment];
-    float surrounding_x[voxels_x][voxels_y][2];
-    float surrounding_y[voxels_y][voxels_z][2];
-    float surrounding_z[voxels_x][voxels_z][2];
+    int structure[VOXELS_X][VOXELS_Y][VOXELS_Z];	//	matrix with id of every media, air = 0
+    float energy[VOXELS_X][VOXELS_Y][VOXELS_Z];		//	matrix with absorbed energy
+    float fluence[VOXELS_X][VOXELS_Y][VOXELS_Z];            //      matrix with photon fluence
+    float ua[MAX_REGIONS];							//	absorption coef by id
+    float us[MAX_REGIONS];							//  scattering coef by id
+    float inv_albedo[MAX_REGIONS];					//  1 / (ua + us)
+    float g[MAX_REGIONS];							//  anisotropy parameter
+    float n[MAX_REGIONS];                                               //	refractive index
+    float k[MAX_REGIONS];                                           // heat conduction coeficient
+    float rho[MAX_REGIONS];                                         // tissue density
+    float c_h[MAX_REGIONS];                                         // specific heat of tissue
+    float w_g[MAX_REGIONS];
+    float energy_t[VOXELS_X][VOXELS_Y][VOXELS_Z][TIME_SEGMENTS];
+    float surrounding_x[VOXELS_X][VOXELS_Y][2];
+    float surrounding_y[VOXELS_Y][VOXELS_Z][2];
+    float surrounding_z[VOXELS_X][VOXELS_Z][2];
 }m_str;
 
 typedef struct photon_struct
