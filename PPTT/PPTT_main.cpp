@@ -21,7 +21,9 @@
 
 using namespace std;
 const int numThreads = 8;
-const int usePlatform = 0; // 0 - openCL 1 - CPU c++
+int usePlatform = 2; // 1 - openCL 2 - CPU c++
+int openCLPlatform = 0;
+int openCLDevice = 0;
 long numPhotons = 0;
 thread myThreads[numThreads];
 
@@ -31,6 +33,7 @@ int main(int argc, char *argv[]) {
 
     int Time_Selection = ChooseSteadyOrTime();          // 1 for steady state, 2 for time resolved
     numPhotons = HowManyPhotons();
+    usePlatform = OpenCLOrCPU();
 
     start = clock();
     Medium * m = new Medium;
@@ -68,7 +71,7 @@ int main(int argc, char *argv[]) {
 
     switch(usePlatform)
     {
-        case 0: // OpenCL
+        case 1: // OpenCL
         {
             cout << "Detecting OpenCL platforms" << endl;
             char name[256];
@@ -82,13 +85,14 @@ int main(int argc, char *argv[]) {
             for(cl_uint i = 0; i < num_platforms; ++i)
             {
                 const auto platform = platforms[i];
+                cout << "ID   Name" << endl;
                 clErrorCheck(clGetPlatformInfo(platform, CL_PLATFORM_NAME, sizeof(name), name, NULL));
                 clErrorCheck(clGetPlatformInfo(platform, CL_PLATFORM_VERSION, sizeof(version), version, NULL));
                 cout << i << ' ' << name << ", " << version << endl;
                 clErrorCheck(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num_platform_devices[i]));
                 num_devices += num_platform_devices[i];
             }
-
+            platform = platforms[OpenCLPlatform()];
             cout << "Detecting OpenCL devices" << endl;
             if(!num_devices)
             {
@@ -98,7 +102,7 @@ int main(int argc, char *argv[]) {
             vector<cl_device_id> devices(num_devices);
             vector<bool> cl12(num_devices);
             vector<cl_bool> host_unified_memory(num_devices);
-            cout << "D                           Name  CL CU GMEM(MB) LMEM(KB) CMEM(KB) LMEMTYPE ECC" << endl;
+            cout << "ID                          Name  CL CU GMEM(MB) LMEM(KB) CMEM(KB) LMEMTYPE ECC" << endl;
             const char* local_mem_types[] = { "NONE", "LOCAL", "GLOBAL" };
             for(cl_uint i = 0, dev = 0; i < num_platforms; ++i)
             {
@@ -129,9 +133,7 @@ int main(int argc, char *argv[]) {
                     cout << dev << setw(31) << (name_len <= 30 ? name_str : name_str.substr(name_str.find(' ', name_len - 31) + 1)) << ' ' << version[9] << '.' << version[11] << setw(3) << max_compute_units << setw(9) << global_mem_size / 1048576 << setw(9) << local_mem_size / 1024 << setw(9) << max_constant_buffer_size / 1024 << setw(9) << local_mem_types[local_mem_type] << setw(4) << error_correction_support << endl;
                 }
             }
-            // hardcoded values for platform and device this needs UI selector
-            platform = platforms[0];
-            cl_device_id device = devices[0];
+            cl_device_id device = devices[OpenCLDevice()];
 
             cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform,0 };
             cl_context context = clCreateContext(properties, 1, &device, NULL, NULL, &error);
@@ -214,7 +216,6 @@ int main(int argc, char *argv[]) {
             ms[0].time_step = time_step;
             ms[0].finished = 0;
             size_t globalWorkItems[] = { numPhotons };  // basically number of photons per batch
-            size_t localWorkItems[] = { 256 };  // basically number of photons per batch
 
             // copy memory buffers to GPU
             cl_mem mediumMemoryBlock = clCreateBuffer(context, NULL, sizeof(ms[0]), NULL, &status);
@@ -230,8 +231,7 @@ int main(int argc, char *argv[]) {
             status = clSetKernelArg(computePhoton, 2, sizeof(int), &randomValue);
 
             batch_start = clock();
-            status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
-            random = rand();
+            status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, NULL, 0, NULL, NULL);
             clEnqueueWriteBuffer(cq, randomValue, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
             batch_end = clock();
             cout << "Batch Simulation duration was " << (float)(batch_end - batch_start) / CLOCKS_PER_SEC << " seconds." << endl;
@@ -240,10 +240,6 @@ int main(int argc, char *argv[]) {
             clErrorCheck(error);
             error = clFinish(cq);
             clErrorCheck(error);
-
-            end = clock();
-            cout << "Number of unfinished photons:" << ms[0].finished << endl;
-            cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
             int num_time_steps = (int)ceil((time_end - time_start) / time_step);
             for(int temp = 0; temp < voxels_x; temp++)
@@ -278,7 +274,7 @@ int main(int argc, char *argv[]) {
                 clReleaseContext(context);
         }
         break;
-        case 1: // CPU
+        case 2: // CPU
         {
             if(Time_Selection == 2)
             {
@@ -294,11 +290,11 @@ int main(int argc, char *argv[]) {
                 for(long i = 0; i < numThreads; i++)
                     myThreads[i].join();
             }
-            end = clock();
-            cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
         }
         break;
     }
+    end = clock();
+    cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
     m->RescaleEnergy_Time(numPhotons, time_step);
     h->PennesEquation(m, 35);
     //m->RecordFluence();

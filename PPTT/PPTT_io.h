@@ -19,6 +19,8 @@ using namespace std;
 void Introduction();
 char ChooseSteadyOrTime();
 char OpenCLOrCPU();
+char OpenCLPlatform();
+char OpenCLDevice();
 long HowManyPhotons();
 
 void WriteTemperature(Medium * m, Heat * h);

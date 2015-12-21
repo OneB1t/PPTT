@@ -48,6 +48,27 @@ char OpenCLOrCPU()
     return selection;
 }
 
+char OpenCLPlatform()
+{
+    cout << "Select OpenCL platform ID: " << endl;
+    cout << "You have selected ";
+    int selection;
+    cin >> selection;
+    cout << endl;
+    return selection;
+}
+
+char OpenCLDevice()
+{
+    cout << "Select OpenCL device ID: " << endl;
+    cout << "You have selected ";
+    int selection;
+    cin >> selection;
+    cout << endl;
+    return selection;
+}
+
+
 long HowManyPhotons()
 {
     cout << "How many photons should participate in simulation? " << endl;
