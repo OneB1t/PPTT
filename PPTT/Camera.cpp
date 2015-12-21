@@ -1,3 +1,4 @@
+
 #include "Camera.h";
 #include "PPTT_core.h"
 #include <cmath>
@@ -117,7 +118,7 @@ Vec3D Vec3D::mul(float d)
 
 Vec3D Vec3D::normalized()
 {
-    double len = sqrt(x*x + y*y + z*z);
+    float len = sqrt(x*x + y*y + z*z);
     if(len == 0.0f)
         return Vec3D(0, 0, 0);
     return Vec3D(x / len, y / len, z / len);

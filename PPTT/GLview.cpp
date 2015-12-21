@@ -15,7 +15,7 @@ void GLView::run()
     glutSpecialFunc(processSpecialKeys);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMove);
-    glutMainLoop(); //Start the main loop. glutMainLoop doesn't return.
+    glutMainLoop();
 }
 
 void GLView::init(int argc, char** argv)
@@ -30,7 +30,7 @@ void GLView::init(int argc, char** argv)
     glutInitWindowSize(1200, 800); //Window size
     glutCreateWindow("PPTT - matrix view"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
-    cam = Camera();
+    camera = Camera();
 }
 
 void GLView::savemedium(Medium * m, Heat * h)
@@ -104,6 +104,18 @@ void processSpecialKeys(int key, int xx, int yy)
         else
             showboundary = true;
         break;
+        case GLUT_KEY_F8:
+        fullscreen++;
+        if(fullscreen > 1)
+            fullscreen = 0;
+        if(fullscreen)
+            glutFullScreen();
+        else
+        {
+            glutReshapeWindow(1200, 800);        /* Restore us */
+            glutPositionWindow(0, 30);
+        }
+        break;
 
     }
 }
@@ -118,8 +130,8 @@ void mouseButton(int button, int state, int x, int y)
         }
         else {// state = GLUT_DOWN
             xOrigin = x;
-            cam.ox = x;
-            cam.oy = y;
+            camera.ox = x;
+            camera.oy = y;
         }
     }
 }
@@ -129,10 +141,10 @@ void mouseMove(int x, int y)
 
     // this will only be true when the left button is down
     if(xOrigin >= 0) {
-        cam.addAzimuth(0.1 * PI * (cam.ox - x) / GLUT_WINDOW_WIDTH);
-        cam.addZenith(-0.1 * PI * (y - cam.oy) / GLUT_WINDOW_WIDTH);
-        cam.ox = x;
-        cam.oy = y;
+        camera.addAzimuth(0.1 * PI * (camera.ox - x) / GLUT_WINDOW_WIDTH);
+        camera.addZenith(-0.1 * PI * (y - camera.oy) / GLUT_WINDOW_WIDTH);
+        camera.ox = x;
+        camera.oy = y;
     }
 }
 
@@ -141,22 +153,22 @@ void processNormalKeys(unsigned char key, int x, int y)
     float fraction = 10.0f;
     switch(key) {
         case 'a':
-        cam.left(5);
+        camera.left(5);
         break;
         case 'd':
-        cam.right(5);
+        camera.right(5);
         break;
         case 'w':
-        cam.move(cam.to);
+        camera.move(camera.to);
         break;
         case 's':
-        cam.moveback(cam.to);
+        camera.moveback(camera.to);
         break;
         case 'q':
-        cam.down(5);
+        camera.down(5);
         break;
         case 'e':
-        cam.up(5);
+        camera.up(5);
         break;
         case 'u':
         sliceX++;
@@ -198,7 +210,7 @@ void draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
     glLoadIdentity(); //Reset the drawing perspective   
-    gluLookAt(cam.from.x, cam.from.y, cam.from.z, cam.from.x + cam.to.x, cam.from.y + cam.to.y, cam.from.z + cam.to.z, cam.upV.x, cam.upV.y, cam.upV.z);
+    gluLookAt(camera.from.x, camera.from.y, camera.from.z, camera.from.x + camera.to.x, camera.from.y + camera.to.y, camera.from.z + camera.to.z, camera.upV.x, camera.upV.y, camera.upV.z);
     glPushMatrix();
     glColor3ub(255, 0, 0);
     glTranslatef(0, 0, 0);
@@ -375,7 +387,7 @@ void draw()
                             size = 20;
                         glPushMatrix();
                         getColor(size);
-                        glTranslatef(temp1, side * voxels_y,temp2);
+                        glTranslatef(temp1, side * voxels_y, temp2);
                         glutSolidCube(size / 5);
                         glPopMatrix();
                     }
@@ -387,7 +399,7 @@ void draw()
                             size = 20;
                         glPushMatrix();
                         getColor(size);
-                        glTranslatef(side * voxels_z,temp1,temp2);
+                        glTranslatef(side * voxels_z, temp1, temp2);
                         glutSolidCube(size / 5);
                         glPopMatrix();
                     }
@@ -433,6 +445,9 @@ void draw()
         case 5:
         drawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 6:
+        drawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
     }
     glEnd();

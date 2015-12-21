@@ -13,29 +13,27 @@
 #include <thread>
 #include <vector>
 #include <iomanip> 
-#include "PPTT_core.h"
-#include "GLView.h"
 #include "CL\CL.h"
 #include <GL\glut.h>
 #include "PPTT_io.h"
+#include "PPTT_core.h"
+#include "GLView.h"
 
 using namespace std;
-const int numThreads = 8;
-int usePlatform = 2; // 1 - openCL 2 - CPU c++
+int usePlatform = 2; // 1 - openCL 2 - CPU
 int openCLPlatform = 0;
 int openCLDevice = 0;
 long numPhotons = 0;
-thread myThreads[numThreads];
+int timeSelection = 0;
+clock_t startTime, endTime, simulationStart, simulationEnd;
 
 int main(int argc, char *argv[]) {
     Introduction();
-    clock_t start, end, batch_start, batch_end;
-
-    int Time_Selection = ChooseSteadyOrTime();          // 1 for steady state, 2 for time resolved
+    timeSelection = ChooseSteadyOrTime();          // 1 for steady state, 2 for time resolved
     numPhotons = HowManyPhotons();
     usePlatform = OpenCLOrCPU();
 
-    start = clock();
+    startTime = clock();
     Medium * m = new Medium;
     Heat * h = new Heat;
 
@@ -55,19 +53,14 @@ int main(int argc, char *argv[]) {
 
     Source * s = new Source;
     s->CollimatedGaussianBeam(5.0, 2.0, 2.5, 2.0, 0.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
-    cl_int error;
-    cl_platform_id platform;
-    cl_device_id device;
-    cl_event event;
+    cl_int error = 0;
+    cl_platform_id platform = 0;
+    cl_device_id device = 0;
+    cl_event event = 0;
     cl_int status = 0;
-    cl_uint devices;
-    size_t streamBufferSize = 0;
+    cl_uint devices = 0;
     char build_c[8192];
-    size_t srcsize, worksize;
-
-    char name[256];
-    char version[256];
-    cl_uint num_platforms;
+    size_t srcsize, streamBufferSize = 0;
 
     switch(usePlatform)
     {
@@ -109,7 +102,7 @@ int main(int argc, char *argv[]) {
                 const auto platform = platforms[i];
                 const auto npd = num_platform_devices[i];
                 clErrorCheck(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, npd, &devices[dev], NULL));
-                for(int d = 0; d < npd; ++d, ++dev)
+                for(cl_uint d = 0; d < npd; ++d, ++dev)
                 {
                     const auto device = devices[dev];
                     cl_uint max_compute_units;
@@ -141,19 +134,17 @@ int main(int argc, char *argv[]) {
             cl_command_queue cq = clCreateCommandQueueWithProperties(context, device, 0, &error);
             clErrorCheck(error);
 
-            FILE *fp;
-            char fileName[] = "photoncompute.cl";
 
-            /* Load the source code containing the kernel*/
-            fp = fopen(fileName, "r");
+            char fileName[] = "photoncompute.cl";
+            FILE *fp = fopen(fileName, "r");
             if(!fp) {
                 fprintf(stderr, "Failed to load kernel.\n");
             }
-            char * source_str = (char*)malloc(MAX_SOURCE_SIZE);
-            srcsize = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
+            char * sourceString = (char*)malloc(MAX_SOURCE_SIZE);
+            srcsize = fread(sourceString, 1, MAX_SOURCE_SIZE, fp);
             fclose(fp);
 
-            const char *srcptr[] = { source_str, };
+            const char *srcptr[] = { sourceString, };
             /* Submit the source code of the kernel to OpenCL, and create a program object with it */
             cl_program prog = clCreateProgramWithSource(context, 1, srcptr, &srcsize, &error);
             clErrorCheck(error);
@@ -187,7 +178,7 @@ int main(int argc, char *argv[]) {
             ss[0].uy = s->uy;
             ss[0].uz = s->uz;
 
-            for(int temp = 0; temp < voxels_x; temp++)			// matrix with photon fluence inicialization
+            for(int temp = 0; temp < voxels_x; temp++)			// matrix with fluence inicialization
                 for(int temp2 = 0; temp2 < voxels_y; temp2++)
                     for(int temp3 = 0; temp3 < voxels_z; temp3++)
                     {
@@ -215,7 +206,7 @@ int main(int argc, char *argv[]) {
             ms[0].pulseDuration = pulseDuration;
             ms[0].time_step = time_step;
             ms[0].finished = 0;
-            size_t globalWorkItems[] = { numPhotons };  // basically number of photons per batch
+            size_t globalWorkItems[] = { (size_t)numPhotons };
 
             // copy memory buffers to GPU
             cl_mem mediumMemoryBlock = clCreateBuffer(context, NULL, sizeof(ms[0]), NULL, &status);
@@ -230,11 +221,11 @@ int main(int argc, char *argv[]) {
             cl_mem randomValue = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, &status);
             status = clSetKernelArg(computePhoton, 2, sizeof(int), &randomValue);
 
-            batch_start = clock();
+            simulationStart = clock();
             status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, NULL, 0, NULL, NULL);
             clEnqueueWriteBuffer(cq, randomValue, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
-            batch_end = clock();
-            cout << "Batch Simulation duration was " << (float)(batch_end - batch_start) / CLOCKS_PER_SEC << " seconds." << endl;
+            simulationEnd = clock();
+            cout << "Batch Simulation duration was " << (float)(simulationEnd - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
 
             status = clEnqueueReadBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), ms, 0, NULL, NULL);
             clErrorCheck(error);
@@ -276,25 +267,19 @@ int main(int argc, char *argv[]) {
         break;
         case 2: // CPU
         {
-            if(Time_Selection == 2)
+            if(timeSelection == 2)
             {
-                for(long i = 0; i < numThreads; i++)
-                    myThreads[i] = thread(CreateNewThread_time, m, s, (long)floor(numPhotons / numThreads));
-                for(long i = 0; i < numThreads; i++)
-                    myThreads[i].join();
+                CreateNewThread_time(m, s, numPhotons);
             }
             else
             {
-                for(long i = 0; i < numThreads; i++)
-                    myThreads[i] = thread(CreateNewThread_time, m, s, (long)floor(numPhotons / numThreads));
-                for(long i = 0; i < numThreads; i++)
-                    myThreads[i].join();
+                CreateNewThread_time(m, s, numPhotons);
             }
         }
         break;
     }
-    end = clock();
-    cout << "Simulation duration was " << (float)(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
+    endTime = clock();
+    cout << "Simulation duration was " << (float)(endTime - startTime) / CLOCKS_PER_SEC << " seconds." << endl;
     m->RescaleEnergy_Time(numPhotons, time_step);
     h->PennesEquation(m, 35);
     //m->RecordFluence();

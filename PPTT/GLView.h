@@ -16,6 +16,7 @@
 #include "Camera.h"
 
 static int stepCounter = 0; // time
+static int fullscreen = 0;
 static bool showboundary = true;
 static float adjustSize = 1;
 static int viewSelector = 0; // selected view
@@ -29,7 +30,7 @@ static int sliceZ = 0;
 
 static Medium * m_draw;
 static Heat * h_draw;
-static Camera cam;
+static Camera camera;
 
 class GLView;
 class GLView

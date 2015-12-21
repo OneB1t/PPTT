@@ -8,11 +8,6 @@
 
 static const float PI     =         3.14159265358979323846;
 static const float light_speed =    299.792458;  // mm per ns
-static const int units = 10;               // voxels per mm
-static const int voxels_x = 150;
-static const int voxels_y = 150;
-static const int voxels_z = 150;
-static const int timeSegment = 96;
 
 typedef struct { uint x; uint c; } mwc64x_state_t;
 
@@ -134,7 +129,7 @@ float RandomNumber(mwc64x_state_t *rng)
 
 float timeProfile_flat(float pulse_duration,mwc64x_state_t *rng)
 {
-	return pulse_duration * RandomNumber(rng);  // hacked this need random
+	return pulse_duration * RandomNumber(rng);
 }
 
 float FindEdgeDistance(p_str *photon,mwc64x_state_t *rng)
@@ -351,7 +346,7 @@ bool CheckBoundaries(__global m_str *m_str,p_str *photon)
         m_str[0].surrounding_z[(*photon).roundposition.x][(*photon).roundposition.y][0] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.z >= voxels_z - 1)
+    if((*photon).position.z >= VOXELS_Z - 1)
     {
         m_str[0].surrounding_z[(*photon).roundposition.x][(*photon).roundposition.y][1] += (*photon).position.w;
         return true;
@@ -361,7 +356,7 @@ bool CheckBoundaries(__global m_str *m_str,p_str *photon)
         m_str[0].surrounding_y[(*photon).roundposition.x][(*photon).roundposition.z][0] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.y >= voxels_y - 1)
+    if((*photon).position.y >= VOXELS_Y- 1)
     {
         m_str[0].surrounding_y[(*photon).roundposition.x][(*photon).roundposition.z][1] += (*photon).position.w;
         return true;
@@ -371,7 +366,7 @@ bool CheckBoundaries(__global m_str *m_str,p_str *photon)
         m_str[0].surrounding_x[(*photon).roundposition.y][(*photon).roundposition.z][0] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.x >= voxels_x - 1)
+    if((*photon).position.x >= VOXELS_X - 1)
     {
         m_str[0].surrounding_x[(*photon).roundposition.y][(*photon).roundposition.z][1] += (*photon).position.w;
         return true;
