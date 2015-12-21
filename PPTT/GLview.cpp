@@ -176,31 +176,37 @@ void processNormalKeys(unsigned char key, int x, int y)
         sliceX++;
         if(sliceX > voxels_x - 1)
             sliceX = 0;
+        viewChanged = true;
         break;
         case 'i':
         sliceX--;
         if(sliceX < 0)
             sliceX = voxels_x - 1;
+        viewChanged = true;
         break;
         case 'j':
         sliceY++;
         if(sliceY > voxels_y - 1)
             sliceY = 0;
+        viewChanged = true;
         break;
         case 'k':
         sliceY--;
         if(sliceY < 0)
             sliceY = voxels_y - 1;
+        viewChanged = true;
         break;
         case 'n':
         sliceZ++;
         if(sliceZ > voxels_z - 1)
             sliceZ = 0;
+        viewChanged = true;
         break;
         case 'm':
         sliceZ--;
         if(sliceZ < 0)
             sliceZ = voxels_z - 1;
+        viewChanged = true;
         break;
     }
 }
