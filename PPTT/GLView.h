@@ -14,6 +14,7 @@
 #include <string>
 #include "PPTT_core.h"
 #include "Camera.h"
+#include <GL\glut.h>
 
 static int stepCounter = 0; // time
 static int fullscreen = 0;
@@ -21,6 +22,8 @@ static bool showboundary = true;
 static float adjustSize = 1;
 static int viewSelector = 0; // selected view
 static int xOrigin = -1;
+static bool viewChanged = true;
+static GLuint voxelsList;
 
 
 // slice view parameters
@@ -52,4 +55,6 @@ void processNormalKeys(unsigned char key, int x, int y);
 void mouseButton(int button, int state, int x, int y);
 void mouseMove(int x, int y);
 void getColor(float t);
+void createDisplayList();
+void drawDisplayList();
 #endif	/* GLVIEW_H */

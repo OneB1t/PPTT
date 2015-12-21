@@ -31,6 +31,7 @@ void GLView::init(int argc, char** argv)
     glutCreateWindow("PPTT - matrix view"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
     camera = Camera();
+    drawAxis();
 }
 
 void GLView::savemedium(Medium * m, Heat * h)
@@ -118,6 +119,7 @@ void processSpecialKeys(int key, int xx, int yy)
         break;
 
     }
+    viewChanged = true;
 }
 
 void mouseButton(int button, int state, int x, int y)
@@ -211,17 +213,176 @@ void draw()
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
     glLoadIdentity(); //Reset the drawing perspective   
     gluLookAt(camera.from.x, camera.from.y, camera.from.z, camera.from.x + camera.to.x, camera.from.y + camera.to.y, camera.from.z + camera.to.z, camera.upV.x, camera.upV.y, camera.upV.z);
-    glPushMatrix();
-    glColor3ub(255, 0, 0);
-    glTranslatef(0, 0, 0);
-    glutSolidCube(1);
-    glTranslatef(voxels_x / 2, voxels_y / 2, voxels_z / 2);
-    glPopMatrix();
+    drawAxis();
+    if(viewChanged)
+    {
+        createDisplayList();
+        viewChanged = false;
+    }
+    else
+    {
+        drawDisplayList();
+    }
 
+    drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 30);
+    drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
+    drawHelp("F1 - forward", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 70);
+    drawHelp("F2 - back", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 90);
+    drawHelp("F3 - increase energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 110);
+    drawHelp("F4 - decrease energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 130);
+    drawHelp("F5 - reset energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 150);
+    drawHelp("F6 - show medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 170);
+    drawHelp("F7 - show boundary energy matrix", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 190);
+    drawHelp("Simulation step counter: " + std::to_string(stepCounter + 1) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
+    drawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
+    drawHelp("Time per step: " + std::to_string(time_step) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
     switch(viewSelector)
     {
         case 0:
+        drawHelp("View mode: Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        break;
+        case 1:
+        drawHelp("View mode: Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        break;
+        case 2:
+        drawHelp("View mode: X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 3:
+        drawHelp("View mode: Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 4:
+        drawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 5:
+        drawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 6:
+        drawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        break;
+    }
+    glEnd();
+    glutSwapBuffers(); //Send scene to the screen to be shown
+}
 
+
+void drawHelp(std::string s, float x, float y)
+{
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT));
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glColor3f(1.0f, 0.0f, 0.0f);//needs to be called before RasterPos
+    glRasterPos2i(x - 300, y);
+    for(int i = 0; i < s.length(); i++)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i]);
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glutPostRedisplay();
+}
+
+void drawAxis()
+{
+    /* Create a display list for drawing axes */
+    GLuint axes_list = glGenLists(1);
+    glNewList(axes_list, GL_COMPILE_AND_EXECUTE);
+
+    glColor4ub(0, 0, 255, 255);
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(0.75f, 0.25f, 0.0f);
+    glVertex3f(0.75f, -0.25f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(0.75f, 0.0f, 0.25f);
+    glVertex3f(0.75f, 0.0f, -0.25f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 0.75f, 0.25f);
+    glVertex3f(0.0f, 0.75f, -0.25f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.25f, 0.75f, 0.0f);
+    glVertex3f(-0.25f, 0.75f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.25f, 0.0f, 0.75f);
+    glVertex3f(-0.25f, 0.0f, 0.75f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.0f, 0.25f, 0.75f);
+    glVertex3f(0.0f, -0.25f, 0.75f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glEnd();
+
+    glColor4ub(255, 255, 0, 255);
+    glRasterPos3f(1.1f, 0.0f, 0.0f);
+
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'x');
+    glRasterPos3f(0.0f, 1.1f, 0.0f);
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'y');
+    glRasterPos3f(0.0f, 0.0f, 1.1f);
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'z');
+
+    glEndList();
+
+}
+
+void getColor(float t)
+{
+    float invMaxH = 1.0f / (255);
+    float zRel = (t * 10) * invMaxH;
+    float cR = 0, cG = 0, cB = 0;
+    if(0 <= zRel && zRel < 0.2f)
+    {
+        cB = 1.0f;
+        cG = zRel * 5.0f;
+    }
+    else if(0.2f <= zRel && zRel < 0.4f)
+    {
+        cG = 1.0f;
+        cB = 1.0f - (zRel - 0.2f) * 5.0f;
+    }
+    else if(0.4f <= zRel && zRel < 0.6f)
+    {
+        cG = 1.0f;
+        cR = (zRel - 0.4f) * 5.0f;
+    }
+    else if(0.6f <= zRel && zRel < 0.8f)
+    {
+        cR = 1.0f;
+        cG = 1.0f - (zRel - 0.6f) * 5.0f;
+    }
+    else
+    {
+        cR = 1.0f;
+        cG = (zRel - 0.8f) * 5.0f;
+        cB = cG;
+    }
+    glColor3f(cR, cG, cB);
+}
+
+void createDisplayList()
+{
+    /* Create a display list for drawing axes */
+    voxelsList = glGenLists(1);
+    glNewList(voxelsList, GL_COMPILE_AND_EXECUTE);
+    switch(viewSelector)
+    {
+        case 0:
         for(int x = 0; x < voxels_x; x++)
         {
             for(int y = 0; y < voxels_y; y++)
@@ -235,7 +396,6 @@ void draw()
                         if(size > 20)
                             size = 20;
                         getColor(size);
-                        //glutSolidCube(size / 5);
                         glPointSize(size);
                         glBegin(GL_POINTS);
                         glVertex3f(x, y, z);
@@ -409,155 +569,10 @@ void draw()
         }
         break;
     }
-    drawAxis();
-    drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 30);
-    drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
-    drawHelp("F1 - forward", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 70);
-    drawHelp("F2 - back", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 90);
-    drawHelp("F3 - increase energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 110);
-    drawHelp("F4 - decrease energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 130);
-    drawHelp("F5 - reset energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 150);
-    drawHelp("F6 - show medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 170);
-    drawHelp("F7 - show boundary energy matrix", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 190);
-    drawHelp("Simulation step counter: " + std::to_string(stepCounter + 1) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
-    drawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
-    drawHelp("Time per step: " + std::to_string(time_step) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
-    switch(viewSelector)
-    {
-        case 0:
-        drawHelp("View mode: Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        break;
-        case 1:
-        drawHelp("View mode: Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        break;
-        case 2:
-        drawHelp("View mode: X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
-        break;
-        case 3:
-        drawHelp("View mode: Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
-        break;
-        case 4:
-        drawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
-        break;
-        case 5:
-        drawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
-        break;
-        case 6:
-        drawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        break;
-    }
-    glEnd();
-    glutSwapBuffers(); //Send scene to the screen to be shown
-}
-
-
-void drawHelp(std::string s, float x, float y)
-{
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT));
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glColor3f(1.0f, 0.0f, 0.0f);//needs to be called before RasterPos
-    glRasterPos2i(x - 300, y);
-    for(int i = 0; i < s.length(); i++)
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i]);
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glEnable(GL_TEXTURE_2D);
-
-    glutPostRedisplay();
-}
-
-void drawAxis()
-{
-    /* Create a display list for drawing axes */
-    GLuint axes_list = glGenLists(1);
-    glNewList(axes_list, GL_COMPILE);
-
-    glColor4ub(0, 0, 255, 255);
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.75f, 0.25f, 0.0f);
-    glVertex3f(0.75f, -0.25f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.75f, 0.0f, 0.25f);
-    glVertex3f(0.75f, 0.0f, -0.25f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, 0.75f, 0.25f);
-    glVertex3f(0.0f, 0.75f, -0.25f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.25f, 0.75f, 0.0f);
-    glVertex3f(-0.25f, 0.75f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glEnd();
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.25f, 0.0f, 0.75f);
-    glVertex3f(-0.25f, 0.0f, 0.75f);
-    glVertex3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 0.25f, 0.75f);
-    glVertex3f(0.0f, -0.25f, 0.75f);
-    glVertex3f(0.0f, 0.0f, 1.0f);
-    glEnd();
-
-    glColor4ub(255, 255, 0, 255);
-    glRasterPos3f(1.1f, 0.0f, 0.0f);
-
-    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'x');
-    glRasterPos3f(0.0f, 1.1f, 0.0f);
-    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'y');
-    glRasterPos3f(0.0f, 0.0f, 1.1f);
-    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'z');
-
     glEndList();
-
 }
 
-void getColor(float t)
+void drawDisplayList()
 {
-    float invMaxH = 1.0f / (255);
-    float zRel = (t * 10) * invMaxH;
-    float cR = 0, cG = 0, cB = 0;
-    if(0 <= zRel && zRel < 0.2f)
-    {
-        cB = 1.0f;
-        cG = zRel * 5.0f;
-    }
-    else if(0.2f <= zRel && zRel < 0.4f)
-    {
-        cG = 1.0f;
-        cB = 1.0f - (zRel - 0.2f) * 5.0f;
-    }
-    else if(0.4f <= zRel && zRel < 0.6f)
-    {
-        cG = 1.0f;
-        cR = (zRel - 0.4f) * 5.0f;
-    }
-    else if(0.6f <= zRel && zRel < 0.8f)
-    {
-        cR = 1.0f;
-        cG = 1.0f - (zRel - 0.6f) * 5.0f;
-    }
-    else
-    {
-        cR = 1.0f;
-        cG = (zRel - 0.8f) * 5.0f;
-        cB = cG;
-    }
-    glColor3f(cR, cG, cB);
+    glCallList(voxelsList);
 }
