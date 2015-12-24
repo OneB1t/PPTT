@@ -39,22 +39,22 @@ class GLView;
 class GLView
 {
 public:
-    void run();
-    void init(int argc, char ** argv);
-    void savemedium(Medium *m, Heat *h);
+    void Run();
+    void Init(int argc, char ** argv);
+    void SaveMedium(Medium *m, Heat *h);
 };
 
 
-void draw();
-void drawHelp(std::string s, float x, float y);
-void drawAxis();
+void Draw();
+void DrawHelp(std::string s, float x, float y);
+void DrawAxis();
 void colorPick(float intensity);
-void handleResize(int w, int h);
-void processSpecialKeys(int key, int xx, int yy);
-void processNormalKeys(unsigned char key, int x, int y);
-void mouseButton(int button, int state, int x, int y);
-void mouseMove(int x, int y);
-void getColor(float t);
-void createDisplayList();
-void drawDisplayList();
+void HandleResize(int w, int h);
+void ProcessSpecialKeys(int key, int xx, int yy);
+void ProcessNormalKeys(unsigned char key, int x, int y);
+void MouseButton(int button, int state, int x, int y);
+void MouseMove(int x, int y);
+void GetColor(float t);
+void CreateDisplayList();
+void DrawDisplayList();
 #endif	/* GLVIEW_H */

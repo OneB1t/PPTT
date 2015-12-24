@@ -81,11 +81,11 @@ void WriteTemperature(Medium * m, Heat * h)
 {
     ofstream myFile;
     myFile.open("Temperature.txt");
-    for(int temp1 = 0; temp1 < voxels_x; temp1++)
+    for(int temp1 = 0; temp1 < voxelsX; temp1++)
     {
-        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+        for(int temp2 = 0; temp2 < voxelsY; temp2++)
         {
-            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
                 myFile << h->temperature[temp1][temp2][temp3] << " ";
             myFile << endl;
         }

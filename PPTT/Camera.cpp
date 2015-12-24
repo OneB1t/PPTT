@@ -80,17 +80,17 @@ void Camera::up(float speed)
 }
 void Camera::move(Vec3D dir)
 {
-    dir.x *= 30;
-    dir.y *= 30;
-    dir.z *= 30;
+    dir.x *= 10;
+    dir.y *= 10;
+    dir.z *= 10;
     pos = pos.add(dir);
     computeCameraMatrix();
 }
 void Camera::moveback(Vec3D dir)
 {
-    dir.x = -dir.x * 30;
-    dir.y = -dir.y * 30;
-    dir.z = -dir.z * 30;
+    dir.x = -dir.x * 10;
+    dir.y = -dir.y * 10;
+    dir.z = -dir.z * 10;
     pos = pos.add(dir);
     computeCameraMatrix();
 }

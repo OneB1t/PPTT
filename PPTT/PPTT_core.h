@@ -18,17 +18,17 @@
 #define MAX_SOURCE_SIZE (0x100000)
 
 const float PI = 3.14159265358979323846f;
-const float light_speed = 299.792458f;  // mm per ns
-const int voxels_x = 150;
-const int voxels_y = 150;
-const int voxels_z = 150;
-const int max_regions = 16;
+const float lightSpeed = 299.792458f;  // mm per ns
+const int voxelsX = 150;
+const int voxelsY = 150;
+const int voxelsZ = 150;
+const int maxRegions = 16;
 const int units = 10;               // voxels per mm
 
 
-const float time_start = 0;
-const float time_step = 0.00125f;	// in ns
-const float time_end = 0.12f;
+const float timeStart = 0;
+const float timeStep = 0.00125f;	// in ns
+const float timeEnd = 0.12f;
 const float pulseDuration = 0.0025f;
 const int timeSegments = 96;
 
@@ -40,29 +40,29 @@ typedef struct tag_my_struct {
     int finished;
     int num_time_steps;
     // medium struct
-    int structure[voxels_x][voxels_y][voxels_z];	//	matrix with id of every media, air = 0
-    float energy[voxels_x][voxels_y][voxels_z];		//	matrix with absorbed energy
-    float fluence[voxels_x][voxels_z][voxels_z];            //      matrix with photon fluence
-    float ua[max_regions];							//	absorption coef by id
-    float us[max_regions];							//  scattering coef by id
-    float inv_albedo[max_regions];					//  1 / (ua + us)
-    float g[max_regions];							//  anisotropy parameter
-    float n[max_regions];                                               //	refractive index
-    float k[max_regions];                                           // heat conduction coeficient
-    float rho[max_regions];                                         // tissue density
-    float c_h[max_regions];                                         // specific heat of tissue
-    float w_g[max_regions];
-    float energy_t[voxels_x][voxels_y][voxels_z][timeSegments];
-    float surrounding_x[voxels_x][voxels_y][2];
-    float surrounding_y[voxels_y][voxels_z][2];
-    float surrounding_z[voxels_x][voxels_z][2];
+    int structure[voxelsX][voxelsY][voxelsZ];	//	matrix with id of every media, air = 0
+    float energy[voxelsX][voxelsY][voxelsZ];		//	matrix with absorbed energy
+    float fluence[voxelsX][voxelsZ][voxelsZ];            //      matrix with photon fluence
+    float ua[maxRegions];							//	absorption coef by id
+    float us[maxRegions];							//  scattering coef by id
+    float inv_albedo[maxRegions];					//  1 / (ua + us)
+    float g[maxRegions];							//  anisotropy parameter
+    float n[maxRegions];                                               //	refractive index
+    float k[maxRegions];                                           // heat conduction coeficient
+    float rho[maxRegions];                                         // tissue density
+    float c_h[maxRegions];                                         // specific heat of tissue
+    float w_g[maxRegions];
+    float energy_t[voxelsX][voxelsY][voxelsZ][timeSegments];
+    float surrounding_x[voxelsX][voxelsY][2];
+    float surrounding_y[voxelsY][voxelsZ][2];
+    float surrounding_z[voxelsX][voxelsZ][2];
 }m_str;
 
 typedef struct source_struct
 {
     float x, y, z;	// entering position
     float ux, uy, uz; // direction
-    float release_time;
+    float releaseTime;
 }s_str;
 
 class Source;
@@ -80,7 +80,7 @@ public:
     }; // beam type from Optical-Thermal Response of Laser-irradiated tissue
     float x, y, z;	// entering position
     float ux, uy, uz; // direction
-    float release_time;
+    float releaseTime;
     float freq;			// laser repetition rate
     float power, energy;	// average power and energy in a pulse
 
@@ -103,13 +103,13 @@ public:
     ~Photon();
 
     float x, y, z;					// photon position
-    int round_x, round_y, round_z, prev_round_x, prev_round_y, prev_round_z;	//  rounded position for faster operation with matrix indices 
+    int roundX, roundY, roundZ, prevRoundX, prevRoundY, prevRoundZ;	//  rounded position for faster operation with matrix indices 
     float ux, uy, uz;				// photon direction
     float w;						// photon weight
     int regId, lastRegId;						// regionId position of the photon
     float step, remStep, stepToNextVoxel;			// photon generated step and remaing step
     float cosTheta, phi;
-    float time_of_flight;				// in nanoseconds
+    float timeOfFlight;				// in nanoseconds
     int timeId;
 
     void GetSourceParameters(Source * s);
@@ -139,21 +139,21 @@ public:
     ~Medium();
 
     int ***structure;	//	matrix with id of every media, air = 0
-    int number_of_regions;							//  number of defined regions
+    int numberOfRegions;							//  number of defined regions
     float ***energy;								//	matrix with absorbed energy
     float ***fluence;            //      matrix with photon fluence
-    float ***surrounding_x;
-    float ***surrounding_y;
-    float ***surrounding_z;
-    float ua[max_regions];							//	absorption coef by id
-    float us[max_regions];							//  scattering coef by id
-    float inv_albedo[max_regions];					//  1 / (ua + us)
-    float g[max_regions];							//  anisotropy parameter
-    float n[max_regions];                                               //	refractive index
-    float k[max_regions];                                           // heat conduction coeficient
-    float rho[max_regions];                                         // tissue density
-    float c_h[max_regions];                                         // specific heat of tissue
-    float w_g[max_regions];							// blood perfusivity
+    float ***surroundingX;
+    float ***surroundingY;
+    float ***surroundingZ;
+    float ua[maxRegions];							//	absorption coef by id
+    float us[maxRegions];							//  scattering coef by id
+    float invAlbedo[maxRegions];					//  1 / (ua + us)
+    float g[maxRegions];							//  anisotropy parameter
+    float n[maxRegions];                                               //	refractive index
+    float k[maxRegions];                                           // heat conduction coeficient
+    float rho[maxRegions];                                         // tissue density
+    float c_h[maxRegions];                                         // specific heat of tissue
+    float w_g[maxRegions];							// blood perfusivity
 
     /////////////////////////////////////////////////////////
     //   Timing variables
@@ -184,7 +184,7 @@ public:
     Heat();
     ~Heat();
 
-    float time_start, time_step, time_end;
+    float timeStart, timeStep, timeEnd;
     float ***temperature;
     void AddThermalCoef(Medium * m, int mediumId, float specific_heat, float density, float conduction, float blood_perfusivity);
 
@@ -210,16 +210,14 @@ void WriteAbsorbedEnergyToFile_Time(Medium * m);
 void WriteAbsorbedEnergyToFile_Time_secondPulse(Medium * m);
 void CreateNewThread_time(Medium * m, Source * s, long numPhotons);
 void CreateNewThread_steady(Medium * m, Source * s, long numPhotons);
-void clErrorCheck(cl_int error);
+void ClErrorCheck(cl_int error);
 
 // second pulse
 void Prepare_SecondPulse(Medium * m, Source * s, float delay);
 void CreateNewThread_secondPulse(Medium * m, Source * s, long numPhotons);
 void RunPhotonNew_secondPulse(Medium * m, Source * s);
 
-float RandomNumber();
-
-float RandomNumber(); // from 0 to 1
-inline int int_floor(float x);
+inline float RandomNumber(); // from 0 to 1
+inline int IntFloor(float x);
 #endif	/* PPTT_CORE_H */
 

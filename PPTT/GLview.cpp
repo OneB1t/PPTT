@@ -6,19 +6,19 @@
 #include <iostream>
 #include <string>
 
-void GLView::run()
+void GLView::Run()
 {
-    glutDisplayFunc(draw);
-    glutReshapeFunc(handleResize);
-    glutIdleFunc(draw);
-    glutKeyboardFunc(processNormalKeys);
-    glutSpecialFunc(processSpecialKeys);
-    glutMouseFunc(mouseButton);
-    glutMotionFunc(mouseMove);
+    glutDisplayFunc(Draw);
+    glutReshapeFunc(HandleResize);
+    glutIdleFunc(Draw);
+    glutKeyboardFunc(ProcessNormalKeys);
+    glutSpecialFunc(ProcessSpecialKeys);
+    glutMouseFunc(MouseButton);
+    glutMotionFunc(MouseMove);
     glutMainLoop();
 }
 
-void GLView::init(int argc, char** argv)
+void GLView::Init(int argc, char** argv)
 {
     //Initialize GLUT
     glutInit(&argc, argv);
@@ -31,17 +31,17 @@ void GLView::init(int argc, char** argv)
     glutCreateWindow("PPTT - matrix view"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
     camera = Camera();
-    drawAxis();
+    DrawAxis();
 }
 
-void GLView::savemedium(Medium * m, Heat * h)
+void GLView::SaveMedium(Medium * m, Heat * h)
 {
     m_draw = m;
     h_draw = h;
 }
 
 //Called when the window is resized
-void handleResize(int w, int h)
+void HandleResize(int w, int h)
 {
     //Tell OpenGL how to convert from coordinates to pixel values
     glViewport(0, 0, w, h);
@@ -56,7 +56,7 @@ void handleResize(int w, int h)
         2000.0);				//The far z clipping coordinate
 }
 
-void processSpecialKeys(int key, int xx, int yy)
+void ProcessSpecialKeys(int key, int xx, int yy)
 {
     float fraction = 10.0f;
 
@@ -122,7 +122,7 @@ void processSpecialKeys(int key, int xx, int yy)
     viewChanged = true;
 }
 
-void mouseButton(int button, int state, int x, int y)
+void MouseButton(int button, int state, int x, int y)
 {
     // only start motion if the left button is pressed
     if(button == GLUT_LEFT_BUTTON) {
@@ -138,7 +138,7 @@ void mouseButton(int button, int state, int x, int y)
     }
 }
 
-void mouseMove(int x, int y)
+void MouseMove(int x, int y)
 {
 
     // this will only be true when the left button is down
@@ -150,7 +150,7 @@ void mouseMove(int x, int y)
     }
 }
 
-void processNormalKeys(unsigned char key, int x, int y)
+void ProcessNormalKeys(unsigned char key, int x, int y)
 {
     float fraction = 10.0f;
     switch(key) {
@@ -174,100 +174,100 @@ void processNormalKeys(unsigned char key, int x, int y)
         break;
         case 'u':
         sliceX++;
-        if(sliceX > voxels_x - 1)
+        if(sliceX > voxelsX - 1)
             sliceX = 0;
         viewChanged = true;
         break;
         case 'i':
         sliceX--;
         if(sliceX < 0)
-            sliceX = voxels_x - 1;
+            sliceX = voxelsX - 1;
         viewChanged = true;
         break;
         case 'j':
         sliceY++;
-        if(sliceY > voxels_y - 1)
+        if(sliceY > voxelsY - 1)
             sliceY = 0;
         viewChanged = true;
         break;
         case 'k':
         sliceY--;
         if(sliceY < 0)
-            sliceY = voxels_y - 1;
+            sliceY = voxelsY - 1;
         viewChanged = true;
         break;
         case 'n':
         sliceZ++;
-        if(sliceZ > voxels_z - 1)
+        if(sliceZ > voxelsZ - 1)
             sliceZ = 0;
         viewChanged = true;
         break;
         case 'm':
         sliceZ--;
         if(sliceZ < 0)
-            sliceZ = voxels_z - 1;
+            sliceZ = voxelsZ - 1;
         viewChanged = true;
         break;
     }
 }
 
 //Draws the 3D scene
-void draw()
+void Draw()
 {
     //Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
     glLoadIdentity(); //Reset the drawing perspective   
     gluLookAt(camera.from.x, camera.from.y, camera.from.z, camera.from.x + camera.to.x, camera.from.y + camera.to.y, camera.from.z + camera.to.z, camera.upV.x, camera.upV.y, camera.upV.z);
-    drawAxis();
+    DrawAxis();
     if(viewChanged)
     {
-        createDisplayList();
+        CreateDisplayList();
         viewChanged = false;
     }
     else
     {
-        drawDisplayList();
+        DrawDisplayList();
     }
 
-    drawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 30);
-    drawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
-    drawHelp("F1 - forward", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 70);
-    drawHelp("F2 - back", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 90);
-    drawHelp("F3 - increase energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 110);
-    drawHelp("F4 - decrease energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 130);
-    drawHelp("F5 - reset energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 150);
-    drawHelp("F6 - show medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 170);
-    drawHelp("F7 - show boundary energy matrix", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 190);
-    drawHelp("Simulation step counter: " + std::to_string(stepCounter + 1) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
-    drawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
-    drawHelp("Time per step: " + std::to_string(time_step) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
+    DrawHelp("Camera control: WSAD + Mouse", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 30);
+    DrawHelp("Simulation control:", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 50);
+    DrawHelp("F1 - forward", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 70);
+    DrawHelp("F2 - back", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 90);
+    DrawHelp("F3 - increase energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 110);
+    DrawHelp("F4 - decrease energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 130);
+    DrawHelp("F5 - reset energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 150);
+    DrawHelp("F6 - show medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 170);
+    DrawHelp("F7 - show boundary energy matrix", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 190);
+    DrawHelp("Simulation step counter: " + std::to_string(stepCounter + 1) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
+    DrawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
+    DrawHelp("Time per step: " + std::to_string(timeStep) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
     switch(viewSelector)
     {
         case 0:
-        drawHelp("View mode: Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("View mode: Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
         case 1:
-        drawHelp("View mode: Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("View mode: Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
         case 2:
-        drawHelp("View mode: X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelp("View mode: X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 3:
-        drawHelp("View mode: Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelp("View mode: Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 4:
-        drawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelp("View mode: Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 5:
-        drawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        drawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 6:
-        drawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
     }
     glEnd();
@@ -275,7 +275,7 @@ void draw()
 }
 
 
-void drawHelp(std::string s, float x, float y)
+void DrawHelp(std::string s, float x, float y)
 {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -296,7 +296,7 @@ void drawHelp(std::string s, float x, float y)
     glutPostRedisplay();
 }
 
-void drawAxis()
+void DrawAxis()
 {
     /* Create a display list for drawing axes */
     GLuint axes_list = glGenLists(1);
@@ -347,7 +347,7 @@ void drawAxis()
 
 }
 
-void getColor(float t)
+void GetColor(float t)
 {
     float invMaxH = 1.0f / (255);
     float zRel = (t * 10) * invMaxH;
@@ -381,7 +381,7 @@ void getColor(float t)
     glColor3f(cR, cG, cB);
 }
 
-void createDisplayList()
+void CreateDisplayList()
 {
     /* Create a display list for drawing axes */
     voxelsList = glGenLists(1);
@@ -389,11 +389,11 @@ void createDisplayList()
     switch(viewSelector)
     {
         case 0:
-        for(int x = 0; x < voxels_x; x++)
+        for(int x = 0; x < voxelsX; x++)
         {
-            for(int y = 0; y < voxels_y; y++)
+            for(int y = 0; y < voxelsY; y++)
             {
-                for(int z = 0; z < voxels_z; z++)
+                for(int z = 0; z < voxelsZ; z++)
                 {
                     float size = m_draw->energy_t[x][y][z][stepCounter] * adjustSize;
 
@@ -401,7 +401,7 @@ void createDisplayList()
                     {
                         if(size > 20)
                             size = 20;
-                        getColor(size);
+                        GetColor(size);
                         glPointSize(size);
                         glBegin(GL_POINTS);
                         glVertex3f(x, y, z);
@@ -414,11 +414,11 @@ void createDisplayList()
         }
         break;
         case 1:
-        for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
-            for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp2 = 0; temp2 < voxelsY; temp2++)
             {
-                for(int temp3 = 0; temp3 < voxels_z; temp3++)
+                for(int temp3 = 0; temp3 < voxelsZ; temp3++)
                 {
                     float color2 = m_draw->structure[temp1][temp2][temp3];
                     if(color2 > 5.0)
@@ -439,9 +439,9 @@ void createDisplayList()
         }
         break;
         case 2: // sliceX
-        for(int temp2 = 0; temp2 < voxels_y; temp2++)
+        for(int temp2 = 0; temp2 < voxelsY; temp2++)
         {
-            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
             {
                 float size = m_draw->energy_t[sliceX][temp2][temp3][stepCounter] * adjustSize;
 
@@ -450,7 +450,7 @@ void createDisplayList()
                     if(size > 20)
                         size = 20;
                     glPushMatrix();
-                    getColor(size);
+                    GetColor(size);
                     glTranslatef(sliceX, temp2, temp3);
                     glutSolidCube(size / 5);
                     glPopMatrix();
@@ -461,9 +461,9 @@ void createDisplayList()
         }
         break;
         case 3: // sliceY
-        for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
-            for(int temp3 = 0; temp3 < voxels_z; temp3++)
+            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
             {
                 float size = m_draw->energy_t[temp1][sliceY][temp3][stepCounter] * adjustSize;
 
@@ -472,7 +472,7 @@ void createDisplayList()
                     if(size > 20)
                         size = 20;
                     glPushMatrix();
-                    getColor(size);
+                    GetColor(size);
                     glTranslatef(temp1, sliceY, temp3);
                     glutSolidCube(size / 5);
                     glPopMatrix();
@@ -483,9 +483,9 @@ void createDisplayList()
         }
         break;
         case 4: // sliceZ
-        for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
-            for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp2 = 0; temp2 < voxelsY; temp2++)
             {
                 float size = m_draw->energy_t[temp1][temp2][sliceZ][stepCounter] * adjustSize;
 
@@ -494,7 +494,7 @@ void createDisplayList()
                     if(size > 20)
                         size = 20;
                     glPushMatrix();
-                    getColor(size);
+                    GetColor(size);
                     glTranslatef(temp1, temp2, sliceZ);
                     glutSolidCube(size / 5);
                     glPopMatrix();
@@ -505,9 +505,9 @@ void createDisplayList()
         }
         break;
         case 5: // temperature
-        for(int temp1 = 0; temp1 < voxels_x; temp1++)
+        for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
-            for(int temp2 = 0; temp2 < voxels_y; temp2++)
+            for(int temp2 = 0; temp2 < voxelsY; temp2++)
             {
                 float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize - 36;
 
@@ -516,7 +516,7 @@ void createDisplayList()
                     if(size > 20)
                         size = 20;
                     glPushMatrix();
-                    getColor(size);
+                    GetColor(size);
                     glTranslatef(temp1, temp2, sliceZ);
                     glutSolidCube(size / 5);
                     glPopMatrix();
@@ -529,43 +529,43 @@ void createDisplayList()
         case 6: // boundary matrix
         for(int side = 0; side < 2; side++)
         {
-            for(int temp1 = 0; temp1 < voxels_x; temp1++)
+            for(int temp1 = 0; temp1 < voxelsX; temp1++)
             {
-                for(int temp2 = 0; temp2 < voxels_y; temp2++)
+                for(int temp2 = 0; temp2 < voxelsY; temp2++)
                 {
-                    float size = m_draw->surrounding_x[temp1][temp2][side] * adjustSize;
+                    float size = m_draw->surroundingX[temp1][temp2][side] * adjustSize;
 
                     if(size != 0)
                     {
                         if(size > 20)
                             size = 20;
                         glPushMatrix();
-                        getColor(size);
-                        glTranslatef(temp1, temp2, side * voxels_x);
+                        GetColor(size);
+                        glTranslatef(temp1, temp2, side * voxelsX);
                         glutSolidCube(size / 5);
                         glPopMatrix();
                     }
-                    size = m_draw->surrounding_y[temp1][temp2][side] * adjustSize;
+                    size = m_draw->surroundingY[temp1][temp2][side] * adjustSize;
 
                     if(size != 0)
                     {
                         if(size > 20)
                             size = 20;
                         glPushMatrix();
-                        getColor(size);
-                        glTranslatef(temp1, side * voxels_y, temp2);
+                        GetColor(size);
+                        glTranslatef(temp1, side * voxelsY, temp2);
                         glutSolidCube(size / 5);
                         glPopMatrix();
                     }
-                    size = m_draw->surrounding_z[temp1][temp2][side] * adjustSize;
+                    size = m_draw->surroundingZ[temp1][temp2][side] * adjustSize;
 
                     if(size != 0)
                     {
                         if(size > 20)
                             size = 20;
                         glPushMatrix();
-                        getColor(size);
-                        glTranslatef(side * voxels_z, temp1, temp2);
+                        GetColor(size);
+                        glTranslatef(side * voxelsZ, temp1, temp2);
                         glutSolidCube(size / 5);
                         glPopMatrix();
                     }
@@ -578,7 +578,7 @@ void createDisplayList()
     glEndList();
 }
 
-void drawDisplayList()
+void DrawDisplayList()
 {
     glCallList(voxelsList);
 }
