@@ -96,7 +96,7 @@ void ProcessSpecialKeys(int key, int xx, int yy)
         break;
         case GLUT_KEY_F6:
         viewSelector++;
-        if(viewSelector > 6)
+        if(viewSelector > 7)
             viewSelector = 0;
         break;
         case GLUT_KEY_F7:
@@ -267,6 +267,9 @@ void Draw()
         DrawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 6:
+        DrawHelp("View mode: Energy for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        break;
+        case 7:
         DrawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
     }
@@ -526,7 +529,32 @@ void CreateDisplayList()
             }
         }
         break;
-        case 6: // boundary matrix
+        case 6: // draw energy for steady simulation
+        for(int x = 0; x < voxelsX; x++)
+        {
+            for(int y = 0; y < voxelsY; y++)
+            {
+                for(int z = 0; z < voxelsZ; z++)
+                {
+                    float size = m_draw->energy[x][y][z] * adjustSize;
+
+                    if(size >= 0.1f)
+                    {
+                        if(size > 20)
+                            size = 20;
+                        GetColor(size);
+                        glPointSize(size);
+                        glBegin(GL_POINTS);
+                        glVertex3f(x, y, z);
+                        glEnd();
+                    }
+
+
+                }
+            }
+        }
+        break;
+        case 7: // boundary matrix
         for(int side = 0; side < 2; side++)
         {
             for(int temp1 = 0; temp1 < voxelsX; temp1++)

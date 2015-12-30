@@ -63,6 +63,10 @@ typedef struct source_struct
     float x, y, z;	// entering position
     float ux, uy, uz; // direction
     float releaseTime;
+    int simulationType;
+    float freq;			// laser repetition rate
+    float power;
+    float energy;	// average power and energy in a pulse
 }s_str;
 
 class Source;

@@ -5,6 +5,7 @@
 #define MAX_REGIONS 16
 #define TIME_SEGMENTS 96
 #define UNITS 10
+#define PULSE_DURATION 0.0025f
 
 static const float PI     =         3.14159265358979323846;
 static const float light_speed =    299.792458;  // mm per ns
@@ -56,6 +57,10 @@ typedef struct source_struct
 	float x, y, z;	// entering position
 	float ux, uy, uz; // direction
 	float release_time;
+    int simulationType;
+    float freq;			// laser repetition rate
+    float power;
+    float energy;	// average power and energy in a pulse
 }s_str;
 
 ulong AddMod64(ulong a, ulong b, ulong M)
@@ -127,9 +132,24 @@ float RandomNumber(mwc64x_state_t *rng)
     return ((float)next(rng) / 0xffffffff);
 }
 
-float timeProfile_flat(float pulse_duration,mwc64x_state_t *rng)
+float timeProfileFlat(float pulse_duration,mwc64x_state_t *rng)
 {
 	return pulse_duration * RandomNumber(rng);
+}
+
+float timeProfileInfiniteSharp()
+{
+    return 0.0f;
+}
+
+float timeProfileGaussian(float pulse_duration,mwc64x_state_t *rng)
+{
+    return pulse_duration * sqrt(-log(RandomNumber(rng))) + (3 * pulse_duration);
+}
+
+float timeProfileSech(float pulse_duration,mwc64x_state_t *rng)
+{
+    return 1 / cosh(RandomNumber(rng));
 }
 
 float FindEdgeDistance(p_str *photon,mwc64x_state_t *rng)
@@ -177,7 +197,7 @@ float FindEdgeDistance(p_str *photon,mwc64x_state_t *rng)
         else temp.z = 0.0;
     }
 
-		float3 temp2 = (0,0,0);
+		float3 temp2;
 		
         if(temp.x == 0 && temp.y == 0 && temp.z == 0)
         return 1.0;
@@ -426,7 +446,21 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 	photon.roundposition.y = floor(photon.position.y);
 	photon.roundposition.z = floor(photon.position.z);
 
-	photon.time_of_flight = source[0].release_time;
+    switch(source[0].simulationType)
+    {
+        case 1:
+            photon.time_of_flight = 0; //infinite sharp
+        break;
+        case 2:
+            photon.time_of_flight = timeProfileFlat(PULSE_DURATION,&rng);
+        break;
+        case 3:
+            photon.time_of_flight = timeProfileGaussian(PULSE_DURATION,&rng);
+        break;
+        case 4:
+            photon.time_of_flight = timeProfileSech(PULSE_DURATION,&rng);
+        break;
+    }
     photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];
     photon.lastRegId = photon.regId;
     photon.remStep = GenStep(m_str[0].inv_albedo[photon.regId],&rng);
@@ -458,7 +492,15 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
         photon.regId = m_str[0].structure[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z];
 
 	    float temp = photon.position.w * (1 - (m_str[0].ua[photon.regId] * photon.step) + (m_str[0].ua[photon.regId] * m_str[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
-	    m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += (photon.position.w - temp);
+        if(source[0].simulationType == 1) // steady
+        {
+            m_str[0].energy[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z] += (photon.position.w - temp);
+        }
+        else
+        {   
+            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += (photon.position.w - temp);
+        }
+
 	    photon.position.w = temp;        
     }
 

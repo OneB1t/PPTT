@@ -5,11 +5,11 @@
 
 Camera::Camera()
 {
-    azimuth = -1.35f;
-    zenith = -0.28f;
+    azimuth = 1.67f;
+    zenith = -0.17f;
     radius = 1.0f;
-    eyeVector = Vec3D(0, -1, 0);
-    pos = Vec3D(25.0f, 130.0f, 70.0f);
+    eyeVector = Vec3D(-0.1f, 1, -0.15f);
+    pos = Vec3D(50.0f, -100.0f, 50.0f);
     computeCameraMatrix();
 }
 

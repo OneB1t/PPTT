@@ -39,9 +39,11 @@ int main(int argc, char *argv[]) {
 
     else
     {
-        timeSelection = 0;          // 1 for steady state, 2 for time resolved
+        timeSelection = 1;          // 1 for steady state, 2 for time resolved
         numPhotons = 1000000;
         usePlatform = 1;
+        openCLPlatform = 0;
+        openCLDevice = 0;
     }
     startTime = clock();
     Medium * m = new Medium;
@@ -49,7 +51,7 @@ int main(int argc, char *argv[]) {
 
     //  inserting brain layers
     m->CreateCube(0, 0, 0, 15, 15, 15, 0.07, 37.4, 0.977, 1.37);		// adipose tissue @ 700 nm
-    m->CreateBall(1,1,1,0.5,0.02,9.0,0.89,1.37);
+    m->CreateBall(1, 1, 1, 0.5, 0.02, 9.0, 0.89, 1.37);
 
     //m->CreateCube(1, 1, 0, 8, 8, 8, 0.15, 1.67, 0.7, 1.37);		// AuNR in intralipid
     //m->CreateCube(1, 2.5, 1, 2.8, 2.8, 2.8, 0.045, 89.5, 0.96, 1.37);	// breast carcinoma @ 700nm
@@ -153,16 +155,14 @@ int main(int argc, char *argv[]) {
 
             else
             {
-                device = devices[0];
+                device = devices[openCLDevice];
             }
-            
 
             cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform,0 };
             cl_context context = clCreateContext(properties, 1, &device, NULL, NULL, &error);
             ClErrorCheck(error);
             cl_command_queue cq = clCreateCommandQueueWithProperties(context, device, 0, &error);
             ClErrorCheck(error);
-
 
             char fileName[] = "photoncompute.cl";
             FILE *fp = fopen(fileName, "r");
@@ -200,12 +200,16 @@ int main(int argc, char *argv[]) {
 
             // copy all into openCL structures
             ss[0].releaseTime = s->releaseTime;
+            ss[0].simulationType = timeSelection;
             ss[0].x = s->x;
             ss[0].y = s->y;
             ss[0].z = s->z;
             ss[0].ux = s->ux;
             ss[0].uy = s->uy;
             ss[0].uz = s->uz;
+            ss[0].freq = s->freq;
+            ss[0].power = s->power;
+            ss[0].energy = s->energy;
 
             for(int temp = 0; temp < voxelsX; temp++)			// matrix with fluence inicialization
                 for(int temp2 = 0; temp2 < voxelsY; temp2++)
@@ -268,6 +272,11 @@ int main(int argc, char *argv[]) {
                         for(int temp4 = 0; temp4 < num_time_steps; temp4++)
                             m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
 
+            for(int temp = 0; temp < voxelsX; temp++)
+                for(int temp2 = 0; temp2 < voxelsY; temp2++)
+                    for(int temp3 = 0; temp3 < voxelsZ; temp3++)
+                        m->energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
+
             for(int side = 0; side < 2; side++)
             {
                 for(int temp1 = 0; temp1 < voxelsX; temp1++)
@@ -296,19 +305,24 @@ int main(int argc, char *argv[]) {
         break;
         case 2: // CPU
         {
-            if(timeSelection == 2)
+            switch(timeSelection)
             {
-                CreateNewThread_time(m, s, numPhotons);
+                case 1:
+                    CreateNewThread_steady(m, s, numPhotons);
+                break;
+                case 2:
+                    CreateNewThread_time(m, s, numPhotons);
+                break;
+                default:
+                    CreateNewThread_time(m, s, numPhotons);
+                break;
             }
-            else
-            {
-                CreateNewThread_time(m, s, numPhotons);
-            }
+            break;
         }
-        break;
     }
     endTime = clock();
     cout << "Simulation duration was " << (float)(endTime - startTime) / CLOCKS_PER_SEC << " seconds." << endl;
+    m->RescaleEnergy(numPhotons);
     m->RescaleEnergy_Time(numPhotons, timeStep);
     h->PennesEquation(m, 35);
     //m->RecordFluence();
