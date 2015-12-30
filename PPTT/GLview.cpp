@@ -513,16 +513,22 @@ void CreateDisplayList()
             for(int temp2 = 0; temp2 < voxelsY; temp2++)
             {
                 float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize - 36;
+                float size2 = h_draw->temperature[temp1][sliceY][temp2] * adjustSize - 36;
+                float size3 = h_draw->temperature[sliceX] [temp1][temp2] * adjustSize - 36;
 
-                if(size != 0)
+                if(size >= 0.1f)
                 {
                     if(size > 20)
                         size = 20;
-                    glPushMatrix();
                     GetColor(size);
-                    glTranslatef(temp1, temp2, sliceZ);
-                    glutSolidCube(size / 5);
-                    glPopMatrix();
+                    glPointSize(15);
+                    glBegin(GL_POINTS);
+                    glVertex3f(temp1, temp2, sliceZ);
+                    GetColor(size2);
+                    glVertex3f(temp1, sliceY, temp2);
+                    GetColor(size3);
+                    glVertex3f(sliceX, temp1, temp2);
+                    glEnd();
                 }
 
 
