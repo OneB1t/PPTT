@@ -311,17 +311,13 @@ void DrawColorScale(std::string s, float x, float y)
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
-    int colorScale = glutGet(GLUT_WINDOW_HEIGHT) / 255;
+    float colorScale = glutGet(GLUT_WINDOW_HEIGHT) / 25;
     for(int i = 0; i < glutGet(GLUT_WINDOW_HEIGHT); i++)
     {
-        GetColor((i * colorScale * 10) / glutGet(GLUT_WINDOW_HEIGHT));
+        GetColor(i / colorScale);
         glBegin(GL_LINES);
-        for(int k = 0; k < colorScale; k++)
-        {
-            glVertex2i(0, k + i);
-            glVertex2i(100, k + i);
-        }
-
+        glVertex2i(0, i);
+        glVertex2i(100, i);
         glEnd();
     }
 
