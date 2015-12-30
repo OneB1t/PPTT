@@ -36,10 +36,9 @@ int main(int argc, char *argv[]) {
         numPhotons = HowManyPhotons();
         usePlatform = OpenCLOrCPU();
     }
-
     else
     {
-        timeSelection = 1;          // 1 for steady state, 2 for time resolved
+        timeSelection = 2;          // 1 for steady state, 2 for time resolved
         numPhotons = 1000000;
         usePlatform = 1;
         openCLPlatform = 0;
@@ -269,14 +268,11 @@ int main(int argc, char *argv[]) {
             for(int temp = 0; temp < voxelsX; temp++)
                 for(int temp2 = 0; temp2 < voxelsY; temp2++)
                     for(int temp3 = 0; temp3 < voxelsZ; temp3++)
+                    {
+                        m->energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
                         for(int temp4 = 0; temp4 < num_time_steps; temp4++)
                             m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
-
-            for(int temp = 0; temp < voxelsX; temp++)
-                for(int temp2 = 0; temp2 < voxelsY; temp2++)
-                    for(int temp3 = 0; temp3 < voxelsZ; temp3++)
-                        m->energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
-
+                    }
             for(int side = 0; side < 2; side++)
             {
                 for(int temp1 = 0; temp1 < voxelsX; temp1++)
@@ -308,13 +304,13 @@ int main(int argc, char *argv[]) {
             switch(timeSelection)
             {
                 case 1:
-                    CreateNewThread_steady(m, s, numPhotons);
+                CreateNewThread_steady(m, s, numPhotons);
                 break;
                 case 2:
-                    CreateNewThread_time(m, s, numPhotons);
+                CreateNewThread_time(m, s, numPhotons);
                 break;
                 default:
-                    CreateNewThread_time(m, s, numPhotons);
+                CreateNewThread_time(m, s, numPhotons);
                 break;
             }
             break;

@@ -264,7 +264,9 @@ void Draw()
         break;
         case 5:
         DrawHelp("View mode: Temperature - Z slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
+        DrawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 370);
         break;
         case 6:
         DrawHelp("View mode: Energy for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
@@ -273,6 +275,7 @@ void Draw()
         DrawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
     }
+    DrawColorScale("", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 500);
     glEnd();
     glutSwapBuffers(); //Send scene to the screen to be shown
 }
@@ -298,6 +301,38 @@ void DrawHelp(std::string s, float x, float y)
     glEnable(GL_TEXTURE_2D);
     glutPostRedisplay();
 }
+
+void DrawColorScale(std::string s, float x, float y)
+{
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT));
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    int colorScale = glutGet(GLUT_WINDOW_HEIGHT) / 255;
+    for(int i = 0; i < glutGet(GLUT_WINDOW_HEIGHT); i++)
+    {
+        GetColor((i * colorScale * 10) / glutGet(GLUT_WINDOW_HEIGHT));
+        glBegin(GL_LINES);
+        for(int k = 0; k < colorScale; k++)
+        {
+            glVertex2i(0, k + i);
+            glVertex2i(100, k + i);
+        }
+
+        glEnd();
+    }
+
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glutPostRedisplay();
+}
+
 
 void DrawAxis()
 {
@@ -402,21 +437,21 @@ void CreateDisplayList()
 
                     if(size >= 0.1f)
                     {
+                        glBegin(GL_POINTS);
                         if(size > 20)
                             size = 20;
                         GetColor(size);
                         glPointSize(size);
-                        glBegin(GL_POINTS);
                         glVertex3f(x, y, z);
                         glEnd();
                     }
-
-
                 }
             }
         }
+
         break;
         case 1:
+
         for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
             for(int temp2 = 0; temp2 < voxelsY; temp2++)
@@ -426,22 +461,19 @@ void CreateDisplayList()
                     float color2 = m_draw->structure[temp1][temp2][temp3];
                     if(color2 > 5.0)
                     {
-                        glPushMatrix();
-                        if(color2 > 2.0)
-                            glColor3ub(255, 0, 0);
-                        else
-                        {
-                            glColor3ub(0, 255, 0);
-                        }
-                        glTranslatef(temp1, temp2, temp3);
-                        glutSolidCube(color2 / 5);
-                        glPopMatrix();
+                        glBegin(GL_POINTS);
+                        GetColor(color2);
+                        glPointSize(15);
+                        glVertex3f(temp1, temp2, temp3);
+                        glEnd();
                     }
                 }
             }
         }
+
         break;
         case 2: // sliceX
+
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
         {
             for(int temp3 = 0; temp3 < voxelsZ; temp3++)
@@ -450,13 +482,11 @@ void CreateDisplayList()
 
                 if(size != 0)
                 {
-                    if(size > 20)
-                        size = 20;
-                    glPushMatrix();
+                    glBegin(GL_POINTS);
                     GetColor(size);
-                    glTranslatef(sliceX, temp2, temp3);
-                    glutSolidCube(size / 5);
-                    glPopMatrix();
+                    glPointSize(size * 5);
+                    glVertex3f(sliceX, temp2, temp3);
+                    glEnd();
                 }
 
 
@@ -464,6 +494,7 @@ void CreateDisplayList()
         }
         break;
         case 3: // sliceY
+
         for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
             for(int temp3 = 0; temp3 < voxelsZ; temp3++)
@@ -472,20 +503,18 @@ void CreateDisplayList()
 
                 if(size != 0)
                 {
-                    if(size > 20)
-                        size = 20;
-                    glPushMatrix();
+                    glBegin(GL_POINTS);
                     GetColor(size);
-                    glTranslatef(temp1, sliceY, temp3);
-                    glutSolidCube(size / 5);
-                    glPopMatrix();
+                    glPointSize(size * 5);
+                    glVertex3f(temp1, sliceY, temp3);
+                    glEnd();
                 }
-
-
             }
         }
+
         break;
         case 4: // sliceZ
+
         for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
             for(int temp2 = 0; temp2 < voxelsY; temp2++)
@@ -494,18 +523,15 @@ void CreateDisplayList()
 
                 if(size != 0)
                 {
-                    if(size > 20)
-                        size = 20;
-                    glPushMatrix();
+                    glBegin(GL_POINTS);
                     GetColor(size);
-                    glTranslatef(temp1, temp2, sliceZ);
-                    glutSolidCube(size / 5);
-                    glPopMatrix();
+                    glPointSize(size * 5);
+                    glVertex3f(temp1, temp2, sliceZ);
+                    glEnd();
                 }
-
-
             }
         }
+
         break;
         case 5: // temperature
         for(int temp1 = 0; temp1 < voxelsX; temp1++)
@@ -514,15 +540,16 @@ void CreateDisplayList()
             {
                 float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize - 36;
                 float size2 = h_draw->temperature[temp1][sliceY][temp2] * adjustSize - 36;
-                float size3 = h_draw->temperature[sliceX] [temp1][temp2] * adjustSize - 36;
+                float size3 = h_draw->temperature[sliceX][temp1][temp2] * adjustSize - 36;
 
                 if(size >= 0.1f)
                 {
+                    glBegin(GL_POINTS);
                     if(size > 20)
                         size = 20;
                     GetColor(size);
                     glPointSize(15);
-                    glBegin(GL_POINTS);
+
                     glVertex3f(temp1, temp2, sliceZ);
                     GetColor(size2);
                     glVertex3f(temp1, sliceY, temp2);
@@ -536,6 +563,7 @@ void CreateDisplayList()
         }
         break;
         case 6: // draw energy for steady simulation
+
         for(int x = 0; x < voxelsX; x++)
         {
             for(int y = 0; y < voxelsY; y++)
@@ -546,11 +574,12 @@ void CreateDisplayList()
 
                     if(size >= 0.1f)
                     {
+                        glBegin(GL_POINTS);
                         if(size > 20)
                             size = 20;
                         GetColor(size);
                         glPointSize(size);
-                        glBegin(GL_POINTS);
+
                         glVertex3f(x, y, z);
                         glEnd();
                     }
@@ -561,6 +590,7 @@ void CreateDisplayList()
         }
         break;
         case 7: // boundary matrix
+
         for(int side = 0; side < 2; side++)
         {
             for(int temp1 = 0; temp1 < voxelsX; temp1++)
@@ -568,45 +598,34 @@ void CreateDisplayList()
                 for(int temp2 = 0; temp2 < voxelsY; temp2++)
                 {
                     float size = m_draw->surroundingX[temp1][temp2][side] * adjustSize;
-
-                    if(size != 0)
+                    glBegin(GL_POINTS);
+                    if(size >= 0.1)
                     {
-                        if(size > 20)
-                            size = 20;
-                        glPushMatrix();
                         GetColor(size);
-                        glTranslatef(temp1, temp2, side * voxelsX);
-                        glutSolidCube(size / 5);
-                        glPopMatrix();
+                        glPointSize(15);
+                        glVertex3f(temp1, temp2, side * voxelsX);
                     }
                     size = m_draw->surroundingY[temp1][temp2][side] * adjustSize;
 
-                    if(size != 0)
+                    if(size >= 0.1)
                     {
-                        if(size > 20)
-                            size = 20;
-                        glPushMatrix();
                         GetColor(size);
-                        glTranslatef(temp1, side * voxelsY, temp2);
-                        glutSolidCube(size / 5);
-                        glPopMatrix();
+                        glVertex3f(temp1, side * voxelsY, temp2);
+
                     }
                     size = m_draw->surroundingZ[temp1][temp2][side] * adjustSize;
 
-                    if(size != 0)
+                    if(size >= 0.1)
                     {
-                        if(size > 20)
-                            size = 20;
-                        glPushMatrix();
                         GetColor(size);
-                        glTranslatef(side * voxelsZ, temp1, temp2);
-                        glutSolidCube(size / 5);
-                        glPopMatrix();
+                        glVertex3f(side * voxelsZ, temp1, temp2);
                     }
+                    glEnd();
 
                 }
             }
         }
+
         break;
     }
     glEndList();

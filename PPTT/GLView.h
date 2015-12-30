@@ -47,6 +47,7 @@ public:
 
 void Draw();
 void DrawHelp(std::string s, float x, float y);
+void DrawColorScale(std::string s, float x, float y);
 void DrawAxis();
 void colorPick(float intensity);
 void HandleResize(int w, int h);
