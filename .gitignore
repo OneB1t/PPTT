@@ -21,3 +21,9 @@ OpenCL/PPTT_debug.exe
 OpenCL/PPTT_debug.ilk
 OpenCL/PPTT_debug.pdb
 .vs/PPTT/v14/.suo
+CUDA/nvvm64_30_0.dll
+CUDA/PPTT.exe
+CUDA/PPTT.iobj
+CUDA/PPTT.ipdb
+CUDA/PPTT.pdb
+PPTT.VC.opendb

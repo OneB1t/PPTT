@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
             cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform,0 };
             cl_context context = clCreateContext(properties, 1, &device, NULL, NULL, &error);
             ClErrorCheck(error);
-            cl_command_queue cq = clCreateCommandQueueWithProperties(context, device, 0, &error);
+            cl_command_queue cq = clCreateCommandQueue(context, device, 0, &error);
             ClErrorCheck(error);
 
             char fileName[] = "photoncompute.cl";
