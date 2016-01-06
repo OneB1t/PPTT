@@ -16,9 +16,10 @@
 #include "CL\CL.h"
 #define PHOTON_DEATH		0.0001
 #define MAX_SOURCE_SIZE		(0x100000)
-#define JACOBI_ITERATIVE	0.1
+#define JACOBI_ITERATIVE	0.05
 #define BLOOD_DENSITY		0.000106	// g/mm3	[wiki]
 #define BLOOD_CAPACITY		3.617		// J/g°C	[http://www.itis.ethz.ch/virtual-population/tissue-properties/database/heat-capacity/]
+#define TIME_SCALE			1000	    // convert time-resolved heat transfer from nanoseconds to microseconds (1000) or miliseconds (1000000)
 
 const float PI = 3.14159265358979323846f;
 const float lightSpeed = 299.792458f;  // mm per ns
@@ -30,10 +31,10 @@ const int units = 10;               // voxels per mm
 
 
 const float timeStart = 0;
-const float timeStep = 0.00125f;	// in ns
+const float timeStep = 0.01f;	// in ns
 const float timeEnd = 0.12f;
 const float pulseDuration = 0.0025f;
-const int timeSegments = 96;
+const int timeSegments = 12;
 
 typedef struct tag_my_struct {
     float time_start;
@@ -192,15 +193,14 @@ public:
     Heat();
     ~Heat();
 
-    float timeStart, timeStep, timeEnd;
+    float h_timeStart, h_timeStep, h_timeEnd, h_num_time_steps;
     float ***temperature;
+	float ****temperature_time;
     void AddThermalCoef(Medium * m, int mediumId, float specific_heat, float density, float conduction, float blood_perfusivity);
 
     /* Numerical methods for solving heat transfer */
-    void LaplaceOperator();
-    void PoissonEquation(Medium * m);
-
     void PennesEquation(Medium * m, float arterial_temperature);
+	void PennesEquation_time(Medium * m, float arterial_temperature);
     float AproximateBloodPerfusivity(float omega0, float omega1, float omega2, float omega3, float temperature);  // in 
 };
 

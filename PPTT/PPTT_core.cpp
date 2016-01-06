@@ -860,12 +860,35 @@ void Medium::RecordFluence()
 
 Heat::Heat()
 {
-    temperature = new float**[voxelsX];						// dynamic allocation 
+	h_timeStart = timeStart * TIME_SCALE;
+	h_timeEnd = timeEnd * TIME_SCALE;
+	h_timeStep = timeStep * TIME_SCALE;
+
+	h_num_time_steps = (int)ceil((h_timeEnd - h_timeStart) / h_timeStep);
+
+	temperature = new float**[voxelsX];						// dynamic allocation 
     for(int temp = 0; temp < voxelsX; temp++)
         temperature[temp] = new float*[voxelsY];
     for(int temp1 = 0; temp1 < voxelsX; temp1++)
-        for(int temp2 = 0; temp2 < voxelsX; temp2++)
+        for(int temp2 = 0; temp2 < voxelsY; temp2++)
             temperature[temp1][temp2] = new float[voxelsZ];
+
+	temperature_time = new float***[voxelsX];
+	for (int temp = 0; temp < voxelsX; temp++)
+		temperature_time[temp] = new float**[voxelsY];
+	for (int temp1 = 0; temp1 < voxelsX; temp1++)
+		for (int temp2 = 0; temp2 < voxelsY; temp2++)
+			temperature_time[temp1][temp2] = new float*[voxelsZ];
+	for (int temp1 = 0; temp1 < voxelsX; temp1++)
+		for (int temp2 = 0; temp2 < voxelsY; temp2++)
+			for (int temp3 = 0; temp3 < voxelsZ; temp3++)
+				temperature_time[temp1][temp2][temp3] = new float[h_num_time_steps];
+
+	for (int temp1 = 0; temp1 < voxelsX; temp1++)
+		for (int temp2 = 0; temp2 < voxelsY; temp2++)
+			for (int temp3 = 0; temp3 < voxelsZ; temp3++)
+				for (int temp4 = 0; temp4 < h_num_time_steps; temp4++)
+				temperature_time[temp1][temp2][temp3][temp4] = 36.5;
 
     for(int temp = 0; temp < voxelsX; temp++)					// set human body temperature
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
@@ -885,95 +908,26 @@ void Heat::AddThermalCoef(Medium * m, int mediumId, float specific_heat, float d
     m->w_g[mediumId] = blood_perfusivity;
 }
 
-void Heat::LaplaceOperator()
-{
-    float ***temperature_help = new float**[voxelsX];						// dynamic allocation 
-    for(int temp = 0; temp < voxelsX; temp++)
-        temperature_help[temp] = new float*[voxelsY];
-    for(int temp1 = 0; temp1 < voxelsX; temp1++)
-        for(int temp2 = 0; temp2 < voxelsX; temp2++)
-            temperature_help[temp1][temp2] = new float[voxelsZ];
-
-    for(int temp = 0; temp < voxelsX; temp++)					// set human body temperature
-        for(int temp2 = 0; temp2 < voxelsY; temp2++)
-            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
-                temperature_help[temp][temp2][temp3] = 36.5;
-
-    for(int temp = 1; temp < voxelsX - 1; temp++)					// calculate operator
-        for(int temp2 = 1; temp2 < voxelsY - 1; temp2++)
-            for(int temp3 = 1; temp3 < voxelsZ - 1; temp3++)
-                temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1]) / 6.0f;
-
-    for(int temp = 1; temp < voxelsX - 1; temp++)					// give back into main matrix
-        for(int temp2 = 1; temp2 < voxelsY - 1; temp2++)
-            for(int temp3 = 1; temp3 < voxelsZ - 1; temp3++)
-                temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
-}
-
-void Heat::PoissonEquation(Medium * m)
+void Heat::PennesEquation(Medium * m, float arterial_temperature)
 {
 	float ***temperature_help = new float**[voxelsX];						// dynamic allocation 
 	for (int temp = 0; temp < voxelsX; temp++)
 		temperature_help[temp] = new float*[voxelsY];
 	for (int temp1 = 0; temp1 < voxelsX; temp1++)
-		for (int temp2 = 0; temp2 < voxelsX; temp2++)
+		for (int temp2 = 0; temp2 < voxelsY; temp2++)
 			temperature_help[temp1][temp2] = new float[voxelsZ];
 
 	float ***epsilon = new float**[voxelsX];					// score the difference between new and old temperature
 	for (int temp = 0; temp < voxelsX; temp++)
 		epsilon[temp] = new float*[voxelsY];
 	for (int temp1 = 0; temp1 < voxelsX; temp1++)
-		for (int temp2 = 0; temp2 < voxelsX; temp2++)
+		for (int temp2 = 0; temp2 < voxelsY; temp2++)
 			epsilon[temp1][temp2] = new float[voxelsZ];
 
 	for (int temp = 0; temp < voxelsX; temp++)					// set human body temperature
 		for (int temp2 = 0; temp2 < voxelsY; temp2++)
 			for (int temp3 = 0; temp3 < voxelsZ; temp3++)
 				temperature_help[temp][temp2][temp3] = 36.5;
-
-	float iterative_condition = JACOBI_ITERATIVE + 0.1;
-	while (iterative_condition > JACOBI_ITERATIVE)
-	{
-		for (int temp = 1; temp < voxelsX - 1; temp++)					// calculate operator
-			for (int temp2 = 1; temp2 < voxelsY - 1; temp2++)
-				for (int temp3 = 1; temp3 < voxelsZ - 1; temp3++)
-				{
-					int tempId = m->structure[temp][temp2][temp3];
-					temperature_help[temp][temp2][temp3] = (temperature[temp + 1][temp2][temp3] + temperature[temp - 1][temp2][temp3] + temperature[temp][temp2 + 1][temp3] + temperature[temp][temp2 - 1][temp3] + temperature[temp][temp2][temp3 + 1] + temperature[temp][temp2][temp3 - 1] + (m->energy[temp][temp2][temp3] / m->k[tempId])) / 6.0f;
-				}
-	
-		for (int temp = 1; temp < voxelsX - 1; temp++)					// calculate epsilon and
-			for (int temp2 = 1; temp2 < voxelsY - 1; temp2++)			// give back into main matrix
-				for (int temp3 = 1; temp3 < voxelsZ - 1; temp3++)
-				{
-					epsilon[temp][temp2][temp3] = abs((temperature[temp][temp2][temp3] - temperature_help[temp][temp2][temp3]) / temperature_help[temp][temp2][temp3]);
-					temperature[temp][temp2][temp3] = temperature_help[temp][temp2][temp3];
-					if (iterative_condition < epsilon[temp][temp2][temp3])
-						iterative_condition = epsilon[temp][temp2][temp3];
-				}
-	}
-}
-
-void Heat::PennesEquation(Medium * m, float arterial_temperature)
-{
-    float ***temperature_help = new float**[voxelsX];						// dynamic allocation 
-    for(int temp = 0; temp < voxelsX; temp++)
-        temperature_help[temp] = new float*[voxelsY];
-    for(int temp1 = 0; temp1 < voxelsX; temp1++)
-        for(int temp2 = 0; temp2 < voxelsX; temp2++)
-            temperature_help[temp1][temp2] = new float[voxelsZ];
-
-	float ***epsilon = new float**[voxelsX];					// score the difference between new and old temperature
-	for (int temp = 0; temp < voxelsX; temp++)
-		epsilon[temp] = new float*[voxelsY];
-	for (int temp1 = 0; temp1 < voxelsX; temp1++)
-		for (int temp2 = 0; temp2 < voxelsX; temp2++)
-			epsilon[temp1][temp2] = new float[voxelsZ];
-
-    for(int temp = 0; temp < voxelsX; temp++)					// set human body temperature
-        for(int temp2 = 0; temp2 < voxelsY; temp2++)
-            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
-                temperature_help[temp][temp2][temp3] = 36.5;
 
 	float iterative_condition = JACOBI_ITERATIVE + 0.1; 
 	while (iterative_condition > JACOBI_ITERATIVE)
@@ -1001,6 +955,22 @@ void Heat::PennesEquation(Medium * m, float arterial_temperature)
 				}
 		iterative_condition = iterative_condition_help;
 	}
+}
+
+void Heat::PennesEquation_time(Medium * m, float arterial_temperature)
+{
+	for (int temp4 = 0; temp4 < (h_num_time_steps - 1); temp4++)
+		for (int temp = 0; temp < voxelsX; temp++)					// set human body temperature
+			for (int temp2 = 0; temp2 < voxelsY; temp2++)
+				for (int temp3 = 0; temp3 < voxelsZ; temp3++)
+				{
+					int tempId = m->structure[temp][temp2][temp3];
+					temperature_time[temp][temp2][temp3][temp4 + 1] = temperature_time[temp][temp2][temp3][temp4] +
+						(h_timeStep / (m->rho[tempId] * m->c_h[tempId]))*(m->k[tempId] * (temperature_time[temp + 1][temp2][temp3][temp4] + temperature_time[temp - 1][temp2][temp3][temp4] +
+							temperature_time[temp][temp2 + 1][temp3][temp4] + temperature_time[temp][temp2 - 1][temp3][temp4] + temperature_time[temp][temp2][temp3 + 1][temp4] +
+							temperature_time[temp][temp2][temp3 - 1][temp4] - 6 * temperature_time[temp][temp2][temp3][temp4]) +
+							m->w_g[tempId] * BLOOD_CAPACITY * m->blood_density * (arterial_temperature - temperature_time[temp][temp2][temp3][temp4]) + m->energy_t[temp][temp2][temp3][temp4]);
+				}
 }
 
 float Heat::AproximateBloodPerfusivity(float omega0, float omega1, float omega2, float omega3, float temperature)
