@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     }
     else
     {
-        timeSelection = 2;          // 1 for steady state, 2 for time resolved
+        timeSelection = 1;          // 1 for steady state, 2 for time resolved
         numPhotons = 1000000;
         usePlatform = 1;
         openCLPlatform = 0;
