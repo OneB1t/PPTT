@@ -20,12 +20,12 @@
 #include "GLView.h"
 
 using namespace std;
-int usePlatform = 2; // 1 - openCL 2 - CPU
-int openCLPlatform = 0;
-int openCLDevice = 0;
+int usePlatform = 1; // 1 - openCL 2 - CPU
+int openCLPlatform = 2;
+int openCLDevice = 3;
 long numPhotons = 0;
 int timeSelection = 0;
-bool debugMode = 1;
+bool debugMode = 0;
 clock_t startTime, endTime, simulationStart, simulationEnd;
 
 int main(int argc, char *argv[]) {
@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
         timeSelection = 2;          // 1 for steady state, 2 for time resolved
         numPhotons = 1000000;
         usePlatform = 1;
-        openCLPlatform = 0;
-        openCLDevice = 0;
+        openCLPlatform = 2;
+        openCLDevice = 3;
     }
     startTime = clock();
     Medium * m = new Medium;
@@ -57,9 +57,9 @@ int main(int argc, char *argv[]) {
     //m->CreateCube(1, 1, 1, 1.2, 1.2, 1.2, 0.045, 89.5, 0.96, 1.37);	// breast carcinoma @ 700nm
     //m->CreateCube(6, 6, 6, 2, 2, 2, 0.08, 40.9, 0.84, 1.37);		// white-matter
 
-    h->AddThermalCoef(m, 2, 3.800, 0.001000, 0.000500, 0);                     // spinus
-    h->AddThermalCoef(m, 1, 1.590, 0.001520, 0.000650, 0);                       // bone
-    h->AddThermalCoef(m, 3, 3.680, 0.001030, 0.000565, 0);                     // grey-matter 
+    h->AddThermalCoef(m, 2, 3.800, 0.001000, 0.000500, 0.001);                     // spinus
+    h->AddThermalCoef(m, 1, 1.590, 0.001520, 0.000650, 0.001);                       // bone
+    h->AddThermalCoef(m, 3, 3.680, 0.001030, 0.000565, 0.001);                     // grey-matter 
 //	h->AddThermalCoef(m, 4, 3.600, 0.001030, 0.000505);                     // white-matter
     //m->PrintMediumProperties();
 
@@ -320,7 +320,7 @@ int main(int argc, char *argv[]) {
     cout << "Simulation duration was " << (float)(endTime - startTime) / CLOCKS_PER_SEC << " seconds." << endl;
     m->RescaleEnergy(numPhotons);
     m->RescaleEnergy_Time(numPhotons, timeStep);
-    h->PennesEquation(m, 35);
+    h->PennesEquation(m, 36);
     //m->RecordFluence();
 
     //WriteAbsorbedEnergyToFile_Time(m);

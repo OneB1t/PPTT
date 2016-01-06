@@ -14,8 +14,11 @@
 
 #include <cmath>
 #include "CL\CL.h"
-#define PHOTON_DEATH	0.0001
-#define MAX_SOURCE_SIZE (0x100000)
+#define PHOTON_DEATH		0.0001
+#define MAX_SOURCE_SIZE		(0x100000)
+#define JACOBI_ITERATIVE	0.1
+#define BLOOD_DENSITY		0.000106	// g/mm3	[wiki]
+#define BLOOD_CAPACITY		3.617		// J/g°C	[http://www.itis.ethz.ch/virtual-population/tissue-properties/database/heat-capacity/]
 
 const float PI = 3.14159265358979323846f;
 const float lightSpeed = 299.792458f;  // mm per ns
@@ -158,6 +161,7 @@ public:
     float rho[maxRegions];                                         // tissue density
     float c_h[maxRegions];                                         // specific heat of tissue
     float w_g[maxRegions];							// blood perfusivity
+	float blood_density;
 
     /////////////////////////////////////////////////////////
     //   Timing variables

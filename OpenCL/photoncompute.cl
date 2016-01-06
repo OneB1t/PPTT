@@ -6,7 +6,7 @@
 #define TIME_SEGMENTS 96
 #define UNITS 10
 #define PULSE_DURATION 0.0025f
-#define PI 3.14159265358979323846
+#define PI 3.14159265358979323846	
 
 typedef struct { uint x; uint c; } mwc64x_state_t;
 
