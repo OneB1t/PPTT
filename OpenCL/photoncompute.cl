@@ -6,9 +6,7 @@
 #define TIME_SEGMENTS 96
 #define UNITS 10
 #define PULSE_DURATION 0.0025f
-
-static const float PI     =         3.14159265358979323846;
-static const float light_speed =    299.792458;  // mm per ns
+#define PI 3.14159265358979323846
 
 typedef struct { uint x; uint c; } mwc64x_state_t;
 
