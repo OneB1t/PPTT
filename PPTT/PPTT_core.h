@@ -36,7 +36,7 @@ const float timeEnd = 0.12f;
 const float pulseDuration = 0.0025f;
 const int timeSegments = 12;
 
-typedef struct tag_my_struct {
+typedef struct medium_struct {
     float time_start;
     float time_step;
     float time_end;
@@ -61,6 +61,17 @@ typedef struct tag_my_struct {
     float surrounding_y[voxelsY][voxelsZ][2];
     float surrounding_z[voxelsX][voxelsZ][2];
 }m_str;
+
+typedef struct medium_struct_heat {
+    float energy[voxelsX][voxelsY][voxelsZ];		//	matrix with absorbed energy
+    int structure[voxelsX][voxelsY][voxelsZ];
+    float k[maxRegions];      
+    float w_g[maxRegions];
+    float energy_t[voxelsX][voxelsY][voxelsZ][timeSegments];
+
+    float temperature[voxelsX][voxelsZ][voxelsZ];
+    float temperature_t[voxelsX][voxelsZ][voxelsZ][timeSegments];
+}m_str_heat;
 
 typedef struct source_struct
 {

@@ -196,6 +196,7 @@ int main(int argc, char *argv[]) {
             // this is usable for more than 1 medium and source
             m_str* ms = new m_str[1];
             s_str * ss = new s_str[1];
+            m_str_heat* mh = new m_str_heat[1];
 
             // copy all into openCL structures
             ss[0].releaseTime = s->releaseTime;
@@ -230,6 +231,8 @@ int main(int argc, char *argv[]) {
                 ms[0].rho[temp] = m->rho[temp];
                 ms[0].c_h[temp] = m->c_h[temp];
                 ms[0].w_g[temp] = m->w_g[temp];
+                mh[0].k[temp] = m->k[temp];
+                mh[0].w_g[temp] = m->w_g[temp];
             }
 
             // this should go into another structure
@@ -255,7 +258,6 @@ int main(int argc, char *argv[]) {
 
             simulationStart = clock();
             status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, NULL, 0, NULL, NULL);
-            clEnqueueWriteBuffer(cq, randomValue, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
             simulationEnd = clock();
             cout << "Batch Simulation duration was " << (float)(simulationEnd - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
 
@@ -270,8 +272,13 @@ int main(int argc, char *argv[]) {
                     for(int temp3 = 0; temp3 < voxelsZ; temp3++)
                     {
                         m->energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
+                        mh[0].energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
+                        mh[0].structure[temp][temp2][temp3] = ms[0].structure[temp][temp2][temp3];
                         for(int temp4 = 0; temp4 < num_time_steps; temp4++)
+                        {
                             m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
+                            mh[0].energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
+                        }
                     }
             for(int side = 0; side < 2; side++)
             {
@@ -286,8 +293,67 @@ int main(int argc, char *argv[]) {
                 }
             }
 
+            size_t globalWorkItemsHeat[] = { (size_t)voxelsX - 1, (size_t)voxelsY - 1,(size_t)voxelsZ - 1 };
+            char fileNameH[] = "heatcompute.cl";
+            FILE *fph = fopen(fileNameH, "r");
+            if(!fph) {
+                fprintf(stderr, "Failed to load kernel.\n");
+            }
+            char * sourceStringH = (char*)malloc(MAX_SOURCE_SIZE);
+            srcsize = fread(sourceStringH, 1, MAX_SOURCE_SIZE, fp);
+            fclose(fp);
+
+            const char *srcptrh[] = { sourceStringH };
+            /* Submit the source code of the kernel to OpenCL, and create a program object with it */
+            prog = clCreateProgramWithSource(context, 1, srcptrh, &srcsize, &error);
+            ClErrorCheck(error);
+
+            /* Compile the kernel code (after this we could extract the compiled version) */
+            error = clBuildProgram(prog, 0, NULL, "", NULL, NULL);
+            if(error != CL_SUCCESS) {
+                printf("Error on buildProgram ");
+                printf("\n Error number %d", error);
+                fprintf(stdout, "\nRequestingInfo\n");
+                clGetProgramBuildInfo(prog, 0, CL_PROGRAM_BUILD_LOG, 8192, build_c, NULL);
+                printf("Build Log for %s_program:\n%s\n", "example", build_c);
+            }
+            else
+            {
+                printf("OpenCL kernel compile sucessfull. \n");
+            }
+            cl_kernel computeHeat = clCreateKernel(prog, "PennesEquation", &error);
+            ClErrorCheck(error);
+
+            // copy memory buffers to GPU
+            cl_mem heatMemoryBlock = clCreateBuffer(context, NULL, sizeof(mh[0]), NULL, &status);
+            clEnqueueWriteBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
+            status = clSetKernelArg(computeHeat, 0, sizeof(mh), &heatMemoryBlock);
+
+            float bloodvalue = 35;
+            cl_mem bloodValueMem = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float), NULL, &status);
+            status = clSetKernelArg(computeHeat, 1, sizeof(float), &bloodValueMem);
+
+            simulationStart = clock();
+            status = clEnqueueNDRangeKernel(cq, computeHeat, 3, NULL, globalWorkItemsHeat, NULL, 0, NULL, NULL);
+            simulationEnd = clock();
+            cout << "Batch Simulation duration was " << (float)(simulationEnd - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
+
+            status = clEnqueueReadBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
+            ClErrorCheck(error);
+            error = clFinish(cq);
+            ClErrorCheck(error);
+
+        
+            for(int temp = 0; temp < voxelsX; temp++)
+                for(int temp2 = 0; temp2 < voxelsY; temp2++)
+                    for(int temp3 = 0; temp3 < voxelsZ; temp3++)
+                    {
+                        h->temperature[temp][temp2][temp3] = mh[0].temperature[temp][temp2][temp3];
+                    }
+
 
             clReleaseMemObject(mediumMemoryBlock);
+            clReleaseMemObject(heatMemoryBlock);
             clReleaseMemObject(structureMemoryBlock);
             if(cq != 0)
                 clReleaseCommandQueue(cq);

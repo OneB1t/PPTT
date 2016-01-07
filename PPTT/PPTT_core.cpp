@@ -968,7 +968,7 @@ void Heat::PennesEquation_time(Medium * m, float arterial_temperature)
 					temperature_time[temp][temp2][temp3][temp4 + 1] = temperature_time[temp][temp2][temp3][temp4] +
 						(h_timeStep / (m->rho[tempId] * m->c_h[tempId]))*(m->k[tempId] * (temperature_time[temp + 1][temp2][temp3][temp4] + temperature_time[temp - 1][temp2][temp3][temp4] +
 							temperature_time[temp][temp2 + 1][temp3][temp4] + temperature_time[temp][temp2 - 1][temp3][temp4] + temperature_time[temp][temp2][temp3 + 1][temp4] +
-							temperature_time[temp][temp2][temp3 - 1][temp4] - 6 * temperature_time[temp][temp2][temp3][temp4]) +
+							temperature_time[temp][temp2][temp3 - 1][temp4] - 6.0f * temperature_time[temp][temp2][temp3][temp4]) +
 							m->w_g[tempId] * BLOOD_CAPACITY * m->blood_density * (arterial_temperature - temperature_time[temp][temp2][temp3][temp4]) + m->energy_t[temp][temp2][temp3][temp4]);
 				}
 }
