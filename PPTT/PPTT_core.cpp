@@ -860,9 +860,9 @@ void Medium::RecordFluence()
 
 Heat::Heat()
 {
-	h_timeStart = timeStart * TIME_SCALE;
-	h_timeEnd = timeEnd * TIME_SCALE;
-	h_timeStep = timeStep * TIME_SCALE;
+	h_timeStart = 0;
+	h_timeEnd = H_TIME_STEP;
+	h_timeStep = H_TIME_END;
 
 	h_num_time_steps = (int)ceil((h_timeEnd - h_timeStart) / h_timeStep);
 
@@ -900,12 +900,12 @@ Heat::~Heat()
 {
 }
 
-void Heat::AddThermalCoef(Medium * m, int mediumId, float specific_heat, float density, float conduction, float blood_perfusivity) // in g, mm, K
+void Heat::AddThermalCoef(Medium * m, int mediumId, float specific_heat, float density, float conduction, float blood_perfusivity) 
 {
-    m->c_h[mediumId] = specific_heat;
-    m->rho[mediumId] = density;
-    m->k[mediumId] = conduction;
-    m->w_g[mediumId] = blood_perfusivity;
+    m->c_h[mediumId] = specific_heat / 1000;				// input in [J/kg/K]
+    m->rho[mediumId] = density / (1000000 * UNITS);					// [kg/m3]
+    m->k[mediumId] = conduction / (1000 * UNITS);		// [W/m/K]
+    m->w_g[mediumId] = blood_perfusivity;			// [ml/s/ml]
 }
 
 void Heat::PennesEquation(Medium * m, float arterial_temperature)
@@ -1047,30 +1047,6 @@ void RunPhoton_time(Medium * m, Source * s)
     delete p;
 }
 
-void RunPhotonNew_secondPulse(Medium * m, Source * s)
-{
-    Photon * p = new Photon;
-    s->CollimatedGaussianBeam(5.0, 8.0, 0.0, 0.5, 0.0, 0.0, 1.0);
-    s->TimeProfile_flat(pulseDuration);
-    p->GetSourceParameters(s);
-    p->regId = m->RetRegId(p);
-    p->lastRegId = p->regId;
-    p->remStep = p->GenStep(m->invAlbedo[p->regId]);
-
-    while(p->w > PHOTON_DEATH)
-    {
-        p->Move(m);
-        if(p->CheckBoundaries(m)) break;
-        if(p->CheckTOF(timeEnd)) break;
-        p->timeId = p->GetTimeId();
-        p->lastRegId = p->regId;
-        p->regId = m->RetRegId(p);
-        m->AbsorbEnergyBeer_Time_secondPulse(p);
-    }
-
-    delete p;
-}
-
 void PrintAbsEnergy(Medium * m)
 {
     for(int temp1 = 0; temp1 < voxelsX; temp1++)
@@ -1194,13 +1170,6 @@ void CreateNewThread_steady(Medium * m, Source * s, long numPhotons)
     }
 }
 
-void CreateNewThread_secondPulse(Medium * m, Source * s, long numPhotons)
-{
-    for(long i = 0; i < numPhotons; i++)
-    {
-        RunPhotonNew_secondPulse(m, s);
-    }
-}
 float RandomNumber()
 {
     union {
@@ -1210,15 +1179,17 @@ float RandomNumber()
     u.d = (((uint32_t)rand() & 0x7fff) << 8) | 0x3f800000;
     return u.f - 1.0f;
 }
-void Prepare_SecondPulse(Medium * m, Source * s, float delay)
-{
-    float period = 1e9f / s->freq;		//	in ns
-    int pulseTimeId = (int)floor(delay / timeStep);
 
-    //	copy last matrix
-    for(int temp = 0; temp < voxelsX; temp++)
-        for(int temp2 = 0; temp2 < voxelsY; temp2++)
-            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
-                for(int temp4 = 0; temp4 < (int)floor((timeEnd - delay) / timeStep); temp4++)
-                    m->energy_next[temp][temp2][temp3][temp4] += m->energy_t[temp][temp2][temp3][pulseTimeId + temp4];
+void CreateEnviroment(Medium * m, Heat * h)
+{
+	m->CreateCube(0, 0, 0, voxelsX / units, voxelsY / units, voxelsZ / units, 0.001, 0.001, 1.0, 1.0);		// background for avoiding errors
+	
+	// Validation with MCML
+	m->CreateCube(0, 0, 0, 10, 10, 1, 1, 100, 0.9, 1.37);		// Layer 1
+	m->CreateCube(0, 0, 1, 10, 10, 1, 1, 10, 0.0, 1.37);		// Layer 2	
+	m->CreateCube(0, 0, 2, 10, 10, 2, 2, 10, 0.7, 1.37);		// Layer 3
+	
+	h->AddThermalCoef(m, 2, 2000, 1200, 0.3, 0.0);				// Layer 1
+	h->AddThermalCoef(m, 3, 3600, 1050, 0.5, 0.5);				// Layer 2
+	h->AddThermalCoef(m, 4, 2350, 900, 0.2, 0.012);				// Layer 3
 }
