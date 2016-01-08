@@ -16,16 +16,18 @@
 #include "CL\CL.h"
 #define PHOTON_DEATH		0.0001
 #define MAX_SOURCE_SIZE		(0x100000)
-#define JACOBI_ITERATIVE	0.05
+#define JACOBI_ITERATIVE	0.01
 #define BLOOD_DENSITY		0.000106	// g/mm3	[wiki]
 #define BLOOD_CAPACITY		3.617		// J/g°C	[http://www.itis.ethz.ch/virtual-population/tissue-properties/database/heat-capacity/]
-#define TIME_SCALE			1000	    // convert time-resolved heat transfer from nanoseconds to microseconds (1000) or miliseconds (1000000)
+#define H_TIME_STEP			0.1			// in seconds
+#define H_TIME_END			1.2			// in seconds
+#define UNITS				10			//
 
 const float PI = 3.14159265358979323846f;
 const float lightSpeed = 299.792458f;  // mm per ns
-const int voxelsX = 150;
-const int voxelsY = 150;
-const int voxelsZ = 150;
+const int voxelsX = 100;
+const int voxelsY = 100;
+const int voxelsZ = 40;
 const int maxRegions = 16;
 const int units = 10;               // voxels per mm
 
@@ -228,15 +230,11 @@ void WriteAbsorbedEnergyToFile_Time(Medium * m);
 void WriteAbsorbedEnergyToFile_Time_secondPulse(Medium * m);
 void CreateNewThread_time(Medium * m, Source * s, long numPhotons);
 void CreateNewThread_steady(Medium * m, Source * s, long numPhotons);
-void ClErrorCheck(cl_int error);
-
-// second pulse
-void Prepare_SecondPulse(Medium * m, Source * s, float delay);
-void CreateNewThread_secondPulse(Medium * m, Source * s, long numPhotons);
-void RunPhotonNew_secondPulse(Medium * m, Source * s);
 
 inline float RandomNumber(); // from 0 to 1
 inline int IntFloor(float x);
+
+void CreateEnviroment(Medium * m, Heat * h);
 void SelectMode();
 #endif	/* PPTT_CORE_H */
 
