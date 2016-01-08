@@ -19,6 +19,7 @@ typedef struct medium_struct_heat{
 	float w_g[MAX_REGIONS];    	// heat conduction coeficient
     float temperature[VOXELS_X][VOXELS_Y][VOXELS_Z];
 	float arterial_temperature;
+    int timeSelection;
 }m_str_h;
 
 __kernel void PennesEquation(__global m_str_h *m_str_h)

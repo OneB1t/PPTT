@@ -69,6 +69,7 @@ typedef struct medium_struct_heat {
     float w_g[maxRegions];
     float temperature[voxelsX][voxelsZ][voxelsZ];
     float arterial_temperature;
+    int timeSelection;
 }m_str_heat;
 
 typedef struct source_struct
@@ -236,5 +237,6 @@ void RunPhotonNew_secondPulse(Medium * m, Source * s);
 
 inline float RandomNumber(); // from 0 to 1
 inline int IntFloor(float x);
+void SelectMode();
 #endif	/* PPTT_CORE_H */
 

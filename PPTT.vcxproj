@@ -35,12 +35,15 @@
     <ClCompile Include="PPTT\GLview.cpp" />
     <ClCompile Include="PPTT\PPTT_core.cpp" />
     <ClCompile Include="PPTT\PPTT_io.cpp" />
+    <ClCompile Include="PPTT\PPTT_OpenCLinit.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="openCL.h" />
     <ClInclude Include="PPTT\Camera.h" />
     <ClInclude Include="PPTT\GLView.h" />
     <ClInclude Include="PPTT\PPTT_core.h" />
     <ClInclude Include="PPTT\PPTT_io.h" />
+    <ClInclude Include="PPTT\PPTT_OpenCLinit.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenCL\heatcompute.cl" />
