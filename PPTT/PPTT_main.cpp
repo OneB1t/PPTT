@@ -260,10 +260,10 @@ int main(int argc, char *argv[]) {
 
             simulationStart = clock();
             status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
+            
+            status = clEnqueueReadBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), ms, 0, NULL, NULL);
             simulationEnd = clock();
             cout << "Batch Simulation duration was " << (float)(simulationEnd - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
-
-            status = clEnqueueReadBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), ms, 0, NULL, NULL);
             ClErrorCheck(error);
             error = clFinish(cq);
             ClErrorCheck(error);
@@ -352,7 +352,7 @@ int main(int argc, char *argv[]) {
             status = clSetKernelArg(computeHeat, 0, sizeof(mh), &heatMemoryBlock);
 
             simulationStart = clock();
-            for(int i = 0; i < 10; i++)
+            for(int i = 0; i < 100; i++)
             {
                 status = clEnqueueNDRangeKernel(cq, computeHeat, 3, NULL, globalWorkItemsHeat, NULL, 0, NULL, NULL);
             }
