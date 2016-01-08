@@ -64,13 +64,11 @@ typedef struct medium_struct {
 
 typedef struct medium_struct_heat {
     float energy[voxelsX][voxelsY][voxelsZ];		//	matrix with absorbed energy
-    int structure[voxelsX][voxelsY][voxelsZ];
+    float structure[voxelsX][voxelsY][voxelsZ];
     float k[maxRegions];      
     float w_g[maxRegions];
-    float energy_t[voxelsX][voxelsY][voxelsZ][timeSegments];
-
     float temperature[voxelsX][voxelsZ][voxelsZ];
-    float temperature_t[voxelsX][voxelsZ][voxelsZ][timeSegments];
+    float arterial_temperature;
 }m_str_heat;
 
 typedef struct source_struct

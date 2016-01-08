@@ -888,7 +888,7 @@ Heat::Heat()
 		for (int temp2 = 0; temp2 < voxelsY; temp2++)
 			for (int temp3 = 0; temp3 < voxelsZ; temp3++)
 				for (int temp4 = 0; temp4 < h_num_time_steps; temp4++)
-				temperature_time[temp1][temp2][temp3][temp4] = 36.5;
+				temperature_time[temp1][temp2][temp3][temp4] = 36.5f;
 
     for(int temp = 0; temp < voxelsX; temp++)					// set human body temperature
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
@@ -927,9 +927,9 @@ void Heat::PennesEquation(Medium * m, float arterial_temperature)
 	for (int temp = 0; temp < voxelsX; temp++)					// set human body temperature
 		for (int temp2 = 0; temp2 < voxelsY; temp2++)
 			for (int temp3 = 0; temp3 < voxelsZ; temp3++)
-				temperature_help[temp][temp2][temp3] = 36.5;
+				temperature_help[temp][temp2][temp3] = 36.5f;
 
-	float iterative_condition = JACOBI_ITERATIVE + 0.1; 
+	float iterative_condition = JACOBI_ITERATIVE + 0.1f; 
 	while (iterative_condition > JACOBI_ITERATIVE)
 	{
 		float iterative_condition_help = 0;

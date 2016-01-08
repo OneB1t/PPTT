@@ -43,6 +43,7 @@
     <ClInclude Include="PPTT\PPTT_io.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="OpenCL\heatcompute.cl" />
     <None Include="OpenCL\photoncompute.cl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

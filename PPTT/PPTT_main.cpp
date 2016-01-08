@@ -25,7 +25,7 @@ int openCLPlatform = 2;
 int openCLDevice = 3;
 long numPhotons = 0;
 int timeSelection = 0;
-bool debugMode = 0;
+bool debugMode = 1;
 clock_t startTime, endTime, simulationStart, simulationEnd;
 
 int main(int argc, char *argv[]) {
@@ -39,10 +39,10 @@ int main(int argc, char *argv[]) {
     else
     {
         timeSelection = 1;          // 1 for steady state, 2 for time resolved
-        numPhotons = 1000000;
+        numPhotons = 10000000;
         usePlatform = 1;
-        openCLPlatform = 2;
-        openCLDevice = 3;
+        openCLPlatform = 0;
+        openCLDevice = 0;
     }
     startTime = clock();
     Medium * m = new Medium;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     h->AddThermalCoef(m, 2, 3.800, 0.001000, 0.000500, 0.001);                     // spinus
     h->AddThermalCoef(m, 1, 1.590, 0.001520, 0.000650, 0.001);                       // bone
     h->AddThermalCoef(m, 3, 3.680, 0.001030, 0.000565, 0.001);                     // grey-matter 
-//	h->AddThermalCoef(m, 4, 3.600, 0.001030, 0.000505);                     // white-matter
+	h->AddThermalCoef(m, 4, 3.600, 0.001030, 0.000505, 0.001);                     // white-matter
     //m->PrintMediumProperties();
 
     Source * s = new Source;
@@ -242,6 +242,7 @@ int main(int argc, char *argv[]) {
             ms[0].time_step = timeStep;
             ms[0].finished = 0;
             size_t globalWorkItems[] = { (size_t)numPhotons };
+            size_t localWorkItems[] = { 256 };
 
             // copy memory buffers to GPU
             cl_mem mediumMemoryBlock = clCreateBuffer(context, NULL, sizeof(ms[0]), NULL, &status);
@@ -254,10 +255,11 @@ int main(int argc, char *argv[]) {
 
             int random = rand();
             cl_mem randomValue = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, &status);
+            clEnqueueWriteBuffer(cq, randomValue, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
             status = clSetKernelArg(computePhoton, 2, sizeof(int), &randomValue);
 
             simulationStart = clock();
-            status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, NULL, 0, NULL, NULL);
+            status = clEnqueueNDRangeKernel(cq, computePhoton, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
             simulationEnd = clock();
             cout << "Batch Simulation duration was " << (float)(simulationEnd - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
 
@@ -272,14 +274,31 @@ int main(int argc, char *argv[]) {
                     for(int temp3 = 0; temp3 < voxelsZ; temp3++)
                     {
                         m->energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
-                        mh[0].energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
-                        mh[0].structure[temp][temp2][temp3] = ms[0].structure[temp][temp2][temp3];
+
                         for(int temp4 = 0; temp4 < num_time_steps; temp4++)
                         {
                             m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
-                            mh[0].energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
                         }
                     }
+
+
+            m->RescaleEnergy(numPhotons);
+            m->RescaleEnergy_Time(numPhotons, timeStep);
+            //h->PennesEquation(m, 36);  // uncomment this to compare results CPU vs OpenCL Heat
+            //break; // uncomment this to compare results CPU vs OpenCL Heat
+            for(int temp = 0; temp < voxelsX; temp++)
+                for(int temp2 = 0; temp2 < voxelsY; temp2++)
+                    for(int temp3 = 0; temp3 < voxelsZ; temp3++)
+                    {
+                        mh[0].energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
+                        mh[0].structure[temp][temp2][temp3] = ms[0].structure[temp][temp2][temp3];
+
+                       /* for(int temp4 = 0; temp4 < num_time_steps; temp4++)
+                        {
+                            mh[0].energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
+                        }*/
+                    }
+
             for(int side = 0; side < 2; side++)
             {
                 for(int temp1 = 0; temp1 < voxelsX; temp1++)
@@ -293,7 +312,7 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            size_t globalWorkItemsHeat[] = { (size_t)voxelsX - 1, (size_t)voxelsY - 1,(size_t)voxelsZ - 1 };
+            size_t globalWorkItemsHeat[] = { (size_t)voxelsX - 2, (size_t)voxelsY - 2,(size_t)voxelsZ - 2 };
             char fileNameH[] = "heatcompute.cl";
             FILE *fph = fopen(fileNameH, "r");
             if(!fph) {
@@ -324,26 +343,29 @@ int main(int argc, char *argv[]) {
             cl_kernel computeHeat = clCreateKernel(prog, "PennesEquation", &error);
             ClErrorCheck(error);
 
+            mh[0].arterial_temperature = 36.0f;
             // copy memory buffers to GPU
             cl_mem heatMemoryBlock = clCreateBuffer(context, NULL, sizeof(mh[0]), NULL, &status);
+
             clEnqueueWriteBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
+
             status = clSetKernelArg(computeHeat, 0, sizeof(mh), &heatMemoryBlock);
 
-            float bloodvalue = 35;
-            cl_mem bloodValueMem = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float), NULL, &status);
-            status = clSetKernelArg(computeHeat, 1, sizeof(float), &bloodValueMem);
-
             simulationStart = clock();
-            status = clEnqueueNDRangeKernel(cq, computeHeat, 3, NULL, globalWorkItemsHeat, NULL, 0, NULL, NULL);
+            for(int i = 0; i < 10; i++)
+            {
+                status = clEnqueueNDRangeKernel(cq, computeHeat, 3, NULL, globalWorkItemsHeat, NULL, 0, NULL, NULL);
+            }
             simulationEnd = clock();
             cout << "Batch Simulation duration was " << (float)(simulationEnd - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
+
 
             status = clEnqueueReadBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
             ClErrorCheck(error);
             error = clFinish(cq);
             ClErrorCheck(error);
 
-        
+
             for(int temp = 0; temp < voxelsX; temp++)
                 for(int temp2 = 0; temp2 < voxelsY; temp2++)
                     for(int temp3 = 0; temp3 < voxelsZ; temp3++)
@@ -380,13 +402,13 @@ int main(int argc, char *argv[]) {
                 break;
             }
             break;
+            m->RescaleEnergy(numPhotons);
+            m->RescaleEnergy_Time(numPhotons, timeStep);
+            h->PennesEquation(m, 36);
         }
     }
     endTime = clock();
     cout << "Simulation duration was " << (float)(endTime - startTime) / CLOCKS_PER_SEC << " seconds." << endl;
-    m->RescaleEnergy(numPhotons);
-    m->RescaleEnergy_Time(numPhotons, timeStep);
-    h->PennesEquation(m, 36);
     //m->RecordFluence();
 
     //WriteAbsorbedEnergyToFile_Time(m);

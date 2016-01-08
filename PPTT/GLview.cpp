@@ -610,7 +610,7 @@ void CreateDisplayList()
                         GetColor(size);
                         if(size > 20)
                             size = 20;
-                        glPointSize(size * 10);
+                        glPointSize(size * 2);
                         glVertex3f(x, y, z);
                         glEnd();
                     }
