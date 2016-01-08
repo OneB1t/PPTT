@@ -1,7 +1,7 @@
 #define PHOTON_DEATH	0.0001
 #define VOXELS_X 100
 #define VOXELS_Y 100
-#define VOXELS_Z 40
+#define VOXELS_Z 100
 #define MAX_REGIONS 16
 #define TIME_SEGMENTS 12
 #define UNITS 10
@@ -9,7 +9,6 @@
 #define PI 3.14159265358979323846	
 
 typedef struct { uint x; uint c; } mwc64x_state_t;
-
 
 typedef struct medium_struct{
     float time_start;
@@ -32,9 +31,9 @@ typedef struct medium_struct{
     float c_h[MAX_REGIONS];                                         // specific heat of tissue
     float w_g[MAX_REGIONS];
     float energy_t[VOXELS_X][VOXELS_Y][VOXELS_Z][TIME_SEGMENTS];
-    float surrounding_x[VOXELS_X][VOXELS_Y][2];
-    float surrounding_y[VOXELS_Y][VOXELS_Z][2];
-    float surrounding_z[VOXELS_X][VOXELS_Z][2];
+    float surrounding_x[VOXELS_Y][VOXELS_Z][2];
+    float surrounding_y[VOXELS_X][VOXELS_Z][2];
+    float surrounding_z[VOXELS_Y][VOXELS_X][2];
 }m_str;
 
 typedef struct photon_struct
@@ -270,7 +269,7 @@ void GenDir(float g,p_str *photon,mwc64x_state_t *rng)
 
 float GetTOF(__global m_str *m_str,p_str *photon, float step_size)
 {
-    return step_size * m_str[0].n[(*photon).regId] / (2997.92458);
+    return step_size * m_str[0].n[(*photon).regId] / (2997.92458f);
 }
 
 float GenStep(float invAlbedo, mwc64x_state_t *rng)
@@ -286,11 +285,17 @@ float GetReflectionCoef(__global m_str *m_str,p_str *photon)
 void Reflect(__global m_str *m_str,p_str *photon)
 {
 	if ((*photon).prevroundposition.z != (*photon).roundposition.z)
+    {
 		(*photon).vector.z = -(*photon).vector.z;
-  if ((*photon).prevroundposition.y != (*photon).roundposition.y)
+    }
+    if ((*photon).prevroundposition.y != (*photon).roundposition.y)
+    {
 		(*photon).vector.y = -(*photon).vector.y;
+    }
 	if ((*photon).prevroundposition.x != (*photon).roundposition.x)
+    {
 		(*photon).vector.x = -(*photon).vector.x;
+    }   
 }
 
 void Transmis(__global m_str *m_str,p_str *photon)
@@ -501,6 +506,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 
 	    photon.position.w = temp;        
     }
+    m_str[0].finished += 1;
 
 }
 

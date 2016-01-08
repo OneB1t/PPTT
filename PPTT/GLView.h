@@ -41,7 +41,7 @@ class GLView
 public:
     void Run();
     void Init(int argc, char ** argv);
-    void SaveMedium(Medium *m, Heat *h);
+    void SaveMedium(Medium *m, Heat *h,int viewID);
 };
 
 
@@ -49,7 +49,6 @@ void Draw();
 void DrawHelp(std::string s, float x, float y);
 void DrawColorScale();
 void DrawAxis();
-void colorPick(float intensity);
 void HandleResize(int w, int h);
 void ProcessSpecialKeys(int key, int xx, int yy);
 void ProcessNormalKeys(unsigned char key, int x, int y);

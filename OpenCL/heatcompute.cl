@@ -1,7 +1,7 @@
 #define PHOTON_DEATH	0.0001
 #define VOXELS_X 100
 #define VOXELS_Y 100
-#define VOXELS_Z 40
+#define VOXELS_Z 100
 #define MAX_REGIONS 16
 #define TIME_SEGMENTS 12
 #define UNITS 10

@@ -31,7 +31,7 @@ OpenCL::OpenCL(Medium * m, Heat * h, Source * s, bool debugMode, int openCLDevic
 
 void OpenCL::DetectOpenCLDevices()
 {
-    cout << "Detecting OpenCL platforms" << endl;
+    std::cout << "Detecting OpenCL platforms" << endl;
     char name[256];
     char version[256];
     cl_uint num_platforms;
@@ -43,10 +43,10 @@ void OpenCL::DetectOpenCLDevices()
     for(cl_uint i = 0; i < num_platforms; ++i)
     {
         const auto platform = platforms[i];
-        cout << "ID   Name" << endl;
+        std::cout << "ID   Name" << endl;
         ClErrorCheck(clGetPlatformInfo(platform, CL_PLATFORM_NAME, sizeof(name), name, NULL));
         ClErrorCheck(clGetPlatformInfo(platform, CL_PLATFORM_VERSION, sizeof(version), version, NULL));
-        cout << i << ' ' << name << ", " << version << endl;
+        std::cout << i << ' ' << name << ", " << version << endl;
         ClErrorCheck(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num_platform_devices[i]));
         num_devices += num_platform_devices[i];
     }
@@ -59,7 +59,7 @@ void OpenCL::DetectOpenCLDevices()
     {
         platform = platforms[openCLPlatform];
     }
-    cout << "Detecting OpenCL devices" << endl;
+    std::cout << "Detecting OpenCL devices" << endl;
     if(!num_devices)
     {
         cerr << "No OpenCL devices detected" << endl;
@@ -67,7 +67,7 @@ void OpenCL::DetectOpenCLDevices()
     vector<cl_device_id> devices(num_devices);
     vector<bool> cl12(num_devices);
     vector<cl_bool> host_unified_memory(num_devices);
-    cout << "ID                          Name  CL CU GMEM(MB) LMEM(KB) CMEM(KB) LMEMTYPE ECC" << endl;
+    std::cout << "ID                          Name  CL CU GMEM(MB) LMEM(KB) CMEM(KB) LMEMTYPE ECC" << endl;
     const char* local_mem_types[] = { "NONE", "LOCAL", "GLOBAL" };
     for(cl_uint i = 0, dev = 0; i < num_platforms; ++i)
     {
@@ -95,7 +95,7 @@ void OpenCL::DetectOpenCLDevices()
             cl12[dev] = version[9] > '1' || version[11] >= '2';
             const string name_str(name);
             const size_t name_len = name_str.size();
-            cout << dev << setw(31) << endl;
+            std::cout << dev << setw(31) << endl;
         }
     }
     if(!debugMode)
@@ -259,31 +259,44 @@ void OpenCL::CopyResultsPhoton()
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
             for(int temp3 = 0; temp3 < voxelsZ; temp3++)
             {
-                if(timeSelection == 1)
-                    m->energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3] / (numPhotons / powf((float)units, 3));
-                else if(timeSelection == 2)
+                m->energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
+                for(int temp4 = 0; temp4 < num_time_steps; temp4++)
                 {
-                    for(int temp4 = 0; temp4 < num_time_steps; temp4++)
-                    {
-                        m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4] / (timeStep * numPhotons / powf((float)units, 3));;
-                    }
+                    m->energy_t[temp][temp2][temp3][temp4] = ms[0].energy_t[temp][temp2][temp3][temp4];
                 }
-            }
 
+            }
+        m->RescaleEnergy(numPhotons);
+        m->RescaleEnergy_Time(numPhotons,timeStep);
+        std::cout << ms[0].finished;
     // results for surrounding matrix
     for(int side = 0; side < 2; side++)
     {
-        for(int temp1 = 0; temp1 < voxelsX; temp1++)
+        for(int temp1 = 0; temp1 < voxelsY; temp1++)
         {
-            for(int temp2 = 0; temp2 < voxelsY; temp2++)// this will stop working if medium is not square
+            for(int temp2 = 0; temp2 < voxelsZ; temp2++)// this will stop working if medium is not square
             {
                 m->surroundingX[temp1][temp2][side] = ms[0].surrounding_x[temp1][temp2][side];
+
+            }
+        }
+        for(int temp1 = 0; temp1 < voxelsX; temp1++)
+        {
+            for(int temp2 = 0; temp2 < voxelsZ; temp2++)// this will stop working if medium is not square
+            {
                 m->surroundingY[temp1][temp2][side] = ms[0].surrounding_y[temp1][temp2][side];
+
+            }
+        }
+        for(int temp1 = 0; temp1 < voxelsY; temp1++)
+        {
+            for(int temp2 = 0; temp2 < voxelsX; temp2++)// this will stop working if medium is not square
+            {
                 m->surroundingZ[temp1][temp2][side] = ms[0].surrounding_z[temp1][temp2][side];
+
             }
         }
     }
-
 }
 
 void OpenCL::CopyAndExecuteKernelParametersPhoton()
@@ -306,13 +319,13 @@ void OpenCL::CopyAndExecuteKernelParametersPhoton()
     clEnqueueWriteBuffer(cq, randomValue, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
     status = clSetKernelArg(kernel, 2, sizeof(int), &randomValue);
 
-    status = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
+    status = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, globalWorkItems, NULL, 0, NULL, NULL);
     status = clEnqueueReadBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), ms, 0, NULL, NULL);
 
     ClErrorCheck(error);
     error = clFinish(cq);
     ClErrorCheck(error);
-    cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
+    std::cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
 
 }
 
@@ -334,7 +347,7 @@ void OpenCL::CopyAndExecuteKernelParametersHeat(int iteration)
     ClErrorCheck(error);
     error = clFinish(cq);
     ClErrorCheck(error);
-    cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
+    std::cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
 }
 
 void OpenCL::CopyResultsHeat()

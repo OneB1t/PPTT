@@ -28,16 +28,17 @@ void GLView::Init(int argc, char** argv)
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glShadeModel(GL_SMOOTH);
     glutInitWindowSize(1200, 800); //Window size
-    glutCreateWindow("PPTT - matrix view"); //Create a window
+    glutCreateWindow("PPTT"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
     camera = Camera();
     DrawAxis();
 }
 
-void GLView::SaveMedium(Medium * m, Heat * h)
+void GLView::SaveMedium(Medium * m, Heat * h,int viewID)
 {
     m_draw = m;
     h_draw = h;
+    viewSelector = viewID;
 }
 
 //Called when the window is resized
@@ -545,29 +546,53 @@ void CreateDisplayList()
 
         break;
         case 5: // temperature slices
-        for(int temp1 = 0; temp1 < voxelsX; temp1++)
-        {
-            for(int temp2 = 0; temp2 < voxelsY; temp2++)
-            {
-                float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize - 36;
-                float size2 = h_draw->temperature[temp1][sliceY][temp2] * adjustSize - 36;
-                float size3 = h_draw->temperature[sliceX][temp1][temp2] * adjustSize - 36;
 
-                if(size >= 0.1f)
+            for(int temp1 = 0; temp1 < voxelsY; temp1++)
+            {
+                for(int temp2 = 0; temp2 < voxelsZ; temp2++)
                 {
-                    glBegin(GL_POINTS);
-                    glPointSize(15);
-                    GetColor(size);
-                    glVertex3f(temp1, temp2, sliceZ);
-                    GetColor(size2);
-                    glVertex3f(temp1, sliceY, temp2);
-                    GetColor(size3);
-                    glVertex3f(sliceX, temp1, temp2);
-                    glEnd();
+                    float size = h_draw->temperature[sliceX][temp1][temp2] * adjustSize;
+                    
+                    if(size >= 0.1)
+                    {
+                        glBegin(GL_POINTS);
+                        GetColor(size);
+                        glPointSize(15);
+                        glVertex3f(sliceX, temp1, temp2);
+                    }
                 }
             }
-        }
+            for(int temp1 = 0; temp1 < voxelsX; temp1++)
+            {
+                for(int temp2 = 0; temp2 < voxelsZ; temp2++)
+                {
+                    float size = h_draw->temperature[temp1][sliceY][temp2] * adjustSize;
+
+                    if(size >= 0.1)
+                    {
+                        GetColor(size);
+                        glPointSize(15);
+                        glVertex3f(temp1, sliceY, temp2);
+                    }
+                }
+            }
+            for(int temp2 = 0; temp2 < voxelsY; temp2++)
+            {
+                for(int temp1 = 0; temp1 < voxelsX; temp1++)
+                {
+                    float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize;
+
+                    if(size >= 0.1)
+                    {
+                        GetColor(size);
+                        glPointSize(15);
+                        glVertex3f(temp2, temp1, sliceZ);
+                    }
+                }
+            }
+            glEnd();
         break;
+
         case 6: // draw energy for steady simulation
 
         for(int x = 0; x < voxelsX; x++)
@@ -624,9 +649,9 @@ void CreateDisplayList()
 
         for(int side = 0; side < 2; side++)
         {
-            for(int temp1 = 0; temp1 < voxelsX; temp1++)
+            for(int temp1 = 0; temp1 < voxelsY; temp1++)
             {
-                for(int temp2 = 0; temp2 < voxelsY; temp2++)
+                for(int temp2 = 0; temp2 < voxelsZ; temp2++)
                 {
                     float size = m_draw->surroundingX[temp1][temp2][side] * adjustSize;
                     glBegin(GL_POINTS);
@@ -634,29 +659,40 @@ void CreateDisplayList()
                     {
                         GetColor(size);
                         glPointSize(15);
-                        glVertex3f(temp1, temp2, side * voxelsX);
-                    }
-                    size = m_draw->surroundingY[temp1][temp2][side] * adjustSize;
 
-                    if(size >= 0.1)
-                    {
-                        GetColor(size);
-                        glVertex3f(temp1, side * voxelsY, temp2);
-
-                    }
-                    size = m_draw->surroundingZ[temp1][temp2][side] * adjustSize;
-
-                    if(size >= 0.1)
-                    {
-                        GetColor(size);
                         glVertex3f(side * voxelsZ, temp1, temp2);
                     }
-                    glEnd();
-
                 }
             }
-        }
+            for(int temp1 = 0; temp1 < voxelsX; temp1++)
+            {
+                for(int temp2 = 0; temp2 < voxelsZ; temp2++)
+                {
+                    float size = m_draw->surroundingY[temp1][temp2][side] * adjustSize;
 
+                    if(size >= 0.1)
+                    {
+                        GetColor(size);
+                        glVertex3f(temp1, side * voxelsX, temp2);
+                    }
+                }
+            }
+            for(int temp1 = 0; temp1 < voxelsY; temp1++)
+            {
+                for(int temp2 = 0; temp2 < voxelsX; temp2++)
+                {
+                    float size = m_draw->surroundingZ[temp1][temp2][side] * adjustSize;
+
+                    if(size >= 0.1)
+                    {
+                        GetColor(size);
+                        glVertex3f(temp2, temp1, side * voxelsX);
+                    }
+                }
+            }
+            glEnd();
+
+        }
         break;
     }
     glEndList();

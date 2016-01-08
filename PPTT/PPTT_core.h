@@ -27,7 +27,7 @@ const float PI = 3.14159265358979323846f;
 const float lightSpeed = 299.792458f;  // mm per ns
 const int voxelsX = 100;
 const int voxelsY = 100;
-const int voxelsZ = 40;
+const int voxelsZ = 100;
 const int maxRegions = 16;
 const int units = 10;               // voxels per mm
 
@@ -59,9 +59,9 @@ typedef struct medium_struct {
     float c_h[maxRegions];                                         // specific heat of tissue
     float w_g[maxRegions];
     float energy_t[voxelsX][voxelsY][voxelsZ][timeSegments];
-    float surrounding_x[voxelsX][voxelsY][2];
-    float surrounding_y[voxelsY][voxelsZ][2];
-    float surrounding_z[voxelsX][voxelsZ][2];
+    float surrounding_x[voxelsY][voxelsZ][2];
+    float surrounding_y[voxelsX][voxelsZ][2];
+    float surrounding_z[voxelsY][voxelsX][2];
 }m_str;
 
 typedef struct medium_struct_heat {
@@ -69,7 +69,7 @@ typedef struct medium_struct_heat {
     float structure[voxelsX][voxelsY][voxelsZ];
     float k[maxRegions];      
     float w_g[maxRegions];
-    float temperature[voxelsX][voxelsZ][voxelsZ];
+    float temperature[voxelsX][voxelsY][voxelsZ];
     float arterial_temperature;
     int timeSelection;
 }m_str_heat;
