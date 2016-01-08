@@ -25,7 +25,7 @@ int openCLPlatform = 2;
 int openCLDevice = 3;
 long numPhotons = 0;
 int timeSelection = 0;
-bool debugMode = 1;
+bool debugMode = 0;
 clock_t startTime, endTime, simulationStart, simulationEnd;
 
 int main(int argc, char *argv[]) {
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     else
     {
         timeSelection = 1;          // 1 for steady state, 2 for time resolved
-        numPhotons = 10000000;
+        numPhotons = 1000000;
         usePlatform = 1;
         openCLPlatform = 0;
         openCLDevice = 0;
@@ -47,24 +47,10 @@ int main(int argc, char *argv[]) {
     startTime = clock();
     Medium * m = new Medium;
     Heat * h = new Heat;
-
-    //  inserting brain layers
-    m->CreateCube(0, 0, 0, 15, 15, 15, 0.07, 37.4, 0.977, 1.37);		// adipose tissue @ 700 nm
-    m->CreateBall(1, 1, 1, 0.5, 0.02, 9.0, 0.89, 1.37);
-
-    //m->CreateCube(1, 1, 0, 8, 8, 8, 0.15, 1.67, 0.7, 1.37);		// AuNR in intralipid
-    //m->CreateCube(1, 2.5, 1, 2.8, 2.8, 2.8, 0.045, 89.5, 0.96, 1.37);	// breast carcinoma @ 700nm
-    //m->CreateCube(1, 1, 1, 1.2, 1.2, 1.2, 0.045, 89.5, 0.96, 1.37);	// breast carcinoma @ 700nm
-    //m->CreateCube(6, 6, 6, 2, 2, 2, 0.08, 40.9, 0.84, 1.37);		// white-matter
-
-    h->AddThermalCoef(m, 2, 3.800, 0.001000, 0.000500, 0.001);                     // spinus
-    h->AddThermalCoef(m, 1, 1.590, 0.001520, 0.000650, 0.001);                       // bone
-    h->AddThermalCoef(m, 3, 3.680, 0.001030, 0.000565, 0.001);                     // grey-matter 
-	h->AddThermalCoef(m, 4, 3.600, 0.001030, 0.000505, 0.001);                     // white-matter
-    //m->PrintMediumProperties();
+	CreateEnviroment(m, h);
 
     Source * s = new Source;
-    s->CollimatedGaussianBeam(0.0, 2.0, 2.5, 5.0, 0.0, 1.0, 0.0); // this causing crash with big number of photons if used for each of them so moved back to main
+    s->Collimated_launch(4,4,0,0,0,1); // this causing crash with big number of photons if used for each of them so moved back to main
     cl_int error = 0;
     cl_platform_id platform = 0;
     cl_device_id device = 0;
