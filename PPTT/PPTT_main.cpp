@@ -36,8 +36,8 @@ void SelectMode()
     }
     else
     {
-        timeSelection = 1;          // 1 for steady state, 2 for time resolved
-        numPhotons = 5000;
+        timeSelection = 2;          // 1 for steady state, 2 for time resolved
+        numPhotons = 1000000;
         usePlatform = 1;  // 1 - openCL 2 - CPU
         openCLPlatform = 0;
         openCLDevice = 0;
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     Medium * m = new Medium;
     Heat * h = new Heat;
     Source * s = new Source;
-    s->Collimated_launch(4, 4, 0.1, 0, 0, 1); // this causing crash with big number of photons if used for each of them so moved back to main
+    s->Collimated_launch(4, 4, 1, 0, 0, 1); // this causing crash with big number of photons if used for each of them so moved back to main
     CreateEnviroment(m, h);
 
     switch(usePlatform)

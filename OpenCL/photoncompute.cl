@@ -428,6 +428,20 @@ void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
     }
 }
 
+inline void AtomicAdd(volatile __global float *source, const float operand) {
+    union {
+        unsigned int intVal;
+        float floatVal;
+    } newVal;
+    union {
+        unsigned int intVal;
+        float floatVal;
+    } prevVal;
+    do {
+        prevVal.floatVal = *source;
+        newVal.floatVal = prevVal.floatVal + operand;
+    } while (atomic_cmpxchg((volatile __global unsigned int *)source, prevVal.intVal, newVal.intVal) != prevVal.intVal);
+}
 
 __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int random)
 {
@@ -497,16 +511,15 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 	    float temp = photon.position.w * (1 - (m_str[0].ua[photon.regId] * photon.step) + (m_str[0].ua[photon.regId] * m_str[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
         if(source[0].simulationType == 1) // steady
         {
-            m_str[0].energy[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z] += (photon.position.w - temp);
+            AtomicAdd(&m_str[0].energy[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z],photon.position.w - temp);
         }
         else
         {   
-            m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += (photon.position.w - temp);
+            AtomicAdd(&m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId],photon.position.w - temp);
         }
-
 	    photon.position.w = temp;        
     }
-    m_str[0].finished += 1;
-
+        //float troo = RandomNumber(&rng);
+        //printf("%f\n", troo);  
 }
 

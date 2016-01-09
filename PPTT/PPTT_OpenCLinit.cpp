@@ -303,7 +303,7 @@ void OpenCL::CopyAndExecuteKernelParametersPhoton()
 {
     clock_t simulationStart = clock();
     size_t globalWorkItems[] = { (size_t)numPhotons };
-    size_t localWorkItems[] = { 256 };
+    size_t localWorkItems[] = { 64 };
 
     // copy memory buffers to GPU
     cl_mem mediumMemoryBlock = clCreateBuffer(context, NULL, sizeof(ms[0]), NULL, &status);
@@ -319,7 +319,7 @@ void OpenCL::CopyAndExecuteKernelParametersPhoton()
     clEnqueueWriteBuffer(cq, randomValue, CL_TRUE, 0, sizeof(int), &random, 0, NULL, NULL);
     status = clSetKernelArg(kernel, 2, sizeof(int), &randomValue);
 
-    status = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, globalWorkItems, NULL, 0, NULL, NULL);
+    status = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, globalWorkItems, localWorkItems, 0, NULL, NULL);
     status = clEnqueueReadBuffer(cq, mediumMemoryBlock, CL_TRUE, 0, sizeof(ms[0]), ms, 0, NULL, NULL);
 
     ClErrorCheck(error);
