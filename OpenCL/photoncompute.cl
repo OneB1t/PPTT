@@ -1,7 +1,7 @@
 #define PHOTON_DEATH	0.0001
 #define VOXELS_X 100
 #define VOXELS_Y 100
-#define VOXELS_Z 100
+#define VOXELS_Z 40
 #define MAX_REGIONS 16
 #define TIME_SEGMENTS 12
 #define UNITS 10
@@ -364,32 +364,32 @@ void RoundPosition(p_str *photon)
 }
 bool CheckBoundaries(__global m_str *m_str,p_str *photon)
 {
-    if((*photon).position.z < 1)
+    if((*photon).position.z < 0.00001f)
     {
         m_str[0].surrounding_z[(*photon).roundposition.x][(*photon).roundposition.y][0] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.z >= VOXELS_Z - 1)
+    if((*photon).position.z >= VOXELS_Z - 0.00001f)
     {
         m_str[0].surrounding_z[(*photon).roundposition.x][(*photon).roundposition.y][1] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.y < 1)
+    if((*photon).position.y < 0.00001f)
     {
         m_str[0].surrounding_y[(*photon).roundposition.x][(*photon).roundposition.z][0] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.y >= VOXELS_Y- 1)
+    if((*photon).position.y >= VOXELS_Y - 0.00001f)
     {
         m_str[0].surrounding_y[(*photon).roundposition.x][(*photon).roundposition.z][1] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.x < 1)
+    if((*photon).position.x < 0.00001f)
     {
         m_str[0].surrounding_x[(*photon).roundposition.y][(*photon).roundposition.z][0] += (*photon).position.w;
         return true;
     }
-    if((*photon).position.x >= VOXELS_X - 1)
+    if((*photon).position.x >= VOXELS_X - 0.00001f)
     {
         m_str[0].surrounding_x[(*photon).roundposition.y][(*photon).roundposition.z][1] += (*photon).position.w;
         return true;

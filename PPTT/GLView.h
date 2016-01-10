@@ -23,6 +23,7 @@ static float adjustSize = 1;
 static int viewSelector = 0; // selected view
 static int xOrigin = -1;
 static bool viewChanged = true;
+static float maxTemp = 0;
 static GLuint voxelsList;
 
 
@@ -33,6 +34,7 @@ static int sliceZ = 0;
 
 static Medium * m_draw;
 static Heat * h_draw;
+static Source * s_draw;
 static Camera camera;
 
 class GLView;
@@ -41,12 +43,13 @@ class GLView
 public:
     void Run();
     void Init(int argc, char ** argv);
-    void SaveMedium(Medium *m, Heat *h,int viewID);
+    void SaveMedium(Medium *m, Heat *h,Source *s, int viewID);
 };
 
 
 void Draw();
 void DrawHelp(std::string s, float x, float y);
+void DrawText(std::string s, float x, float y);
 void DrawColorScale();
 void DrawAxis();
 void HandleResize(int w, int h);

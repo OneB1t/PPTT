@@ -27,7 +27,7 @@ const float PI = 3.14159265358979323846f;
 const float lightSpeed = 299.792458f;  // mm per ns
 const int voxelsX = 100;
 const int voxelsY = 100;
-const int voxelsZ = 100;
+const int voxelsZ = 40;
 const int maxRegions = 16;
 const int units = 10;               // voxels per mm
 
@@ -48,7 +48,7 @@ typedef struct medium_struct {
     // medium struct
     int structure[voxelsX][voxelsY][voxelsZ];	//	matrix with id of every media, air = 0
     float energy[voxelsX][voxelsY][voxelsZ];		//	matrix with absorbed energy
-    float fluence[voxelsX][voxelsZ][voxelsZ];            //      matrix with photon fluence
+    float fluence[voxelsX][voxelsY][voxelsZ];            //      matrix with photon fluence
     float ua[maxRegions];							//	absorption coef by id
     float us[maxRegions];							//  scattering coef by id
     float inv_albedo[maxRegions];					//  1 / (ua + us)
