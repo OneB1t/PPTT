@@ -24,6 +24,7 @@ static int viewSelector = 0; // selected view
 static int xOrigin = -1;
 static bool viewChanged = true;
 static float maxTemp = 0;
+static float maxEnergy = 0;
 static GLuint voxelsList;
 
 

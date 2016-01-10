@@ -279,10 +279,11 @@ void Draw()
         break;
         case 6:
         DrawHelp("View mode: Energy for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("Maximum Energy: " + std::to_string(maxEnergy), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 7:
         DrawHelp("View mode: Temperature for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("Maximum temperature:" + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelp("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 8:
         DrawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
@@ -362,7 +363,10 @@ void DrawColorScale()
     glPopMatrix();
     glEnable(GL_TEXTURE_2D);
     glutPostRedisplay();
-    DrawText(std::to_string(maxTemp) + "°C", 35, glutGet(GLUT_WINDOW_HEIGHT) - 20);
+    if(viewSelector == 7)
+        DrawText(std::to_string(maxTemp) + "°C", 35, glutGet(GLUT_WINDOW_HEIGHT) - 20);
+    else if(viewSelector == 6)
+        DrawText(std::to_string(maxEnergy) + "", 35, glutGet(GLUT_WINDOW_HEIGHT) - 20);
 }
 
 
@@ -628,7 +632,7 @@ void CreateDisplayList()
         break;
 
         case 6: // draw energy for steady simulation
-
+        maxEnergy = 0;
         for(int x = 0; x < voxelsX; x++)
         {
             for(int y = 0; y < voxelsY; y++)
@@ -636,7 +640,10 @@ void CreateDisplayList()
                 for(int z = 0; z < voxelsZ; z++)
                 {
                     float size = m_draw->energy[x][y][z] * adjustSize;
-
+                    if(maxEnergy < m_draw->energy[x][y][z])
+                    {
+                        maxEnergy = m_draw->energy[x][y][z];
+                    }
                     if(size >= 0.1f)
                     {
                         GetColor(size);
@@ -655,6 +662,7 @@ void CreateDisplayList()
         }
         break;
         case 7: // draw temperature for steady simulation
+        maxTemp = 0;
         for(int x = 0; x < voxelsX; x++)
         {
             for(int y = 0; y < voxelsY; y++)
@@ -662,9 +670,9 @@ void CreateDisplayList()
                 for(int z = 0; z < voxelsZ; z++)
                 {
                     float temperature = h_draw->temperature[x][y][z] * adjustSize / 40;
-                    if(maxTemp < temperature)
+                    if(maxTemp < h_draw->temperature[x][y][z])
                     {
-                        maxTemp = temperature;
+                        maxTemp = h_draw->temperature[x][y][z];
                     }
                     if(temperature >= 1.0f)
                     {
