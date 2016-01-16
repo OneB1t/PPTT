@@ -511,10 +511,12 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
 	    float temp = photon.position.w * (1 - (m_str[0].ua[photon.regId] * photon.step) + (m_str[0].ua[photon.regId] * m_str[0].ua[photon.regId] * photon.step * photon.step / 2)); // Taylor expansion series of Lambert-Beer law
         if(source[0].simulationType == 1) // steady
         {
+            //m_str[0].energy[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z] += (photon.position.w - temp);
             AtomicAdd(&m_str[0].energy[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z],photon.position.w - temp);
         }
         else
         {   
+            //m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId] += (photon.position.w - temp);
             AtomicAdd(&m_str[0].energy_t[photon.roundposition.x][photon.roundposition.y][photon.roundposition.z][photon.timeId],photon.position.w - temp);
         }
 	    photon.position.w = temp;        

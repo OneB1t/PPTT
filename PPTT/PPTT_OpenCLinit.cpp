@@ -330,23 +330,22 @@ void OpenCL::CopyAndExecuteKernelParametersPhoton()
 
 void OpenCL::CopyAndExecuteKernelParametersHeat(int iteration)
 {
-    clock_t simulationStart = clock();
+    
     // copy memory buffers to GPU
     size_t globalWorkItemsHeat[] = { (size_t)voxelsX - 2, (size_t)voxelsY - 2,(size_t)voxelsZ - 2 };
     cl_mem heatMemoryBlock = clCreateBuffer(context, NULL, sizeof(mh[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
     status = clSetKernelArg(kernel, 0, sizeof(mh), &heatMemoryBlock);
-
+    clock_t simulationStart = clock();
     for(int i = 0; i < iteration; i++)
     {
         status = clEnqueueNDRangeKernel(cq, kernel, 3, NULL, globalWorkItemsHeat, NULL, 0, NULL, NULL);
     }
-
     status = clEnqueueReadBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
+    std::cout << "Heat Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
     ClErrorCheck(error);
     error = clFinish(cq);
     ClErrorCheck(error);
-    std::cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
 }
 
 void OpenCL::CopyResultsHeat()

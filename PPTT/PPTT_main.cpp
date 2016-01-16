@@ -37,10 +37,10 @@ void SelectMode()
     else
     {
         timeSelection = 1;          // 1 for steady state, 2 for time resolved
-        numPhotons = 10000;
+        numPhotons = 100000;
         usePlatform = 1;  // 1 - openCL 2 - CPU
         openCLPlatform = 0;
-        openCLDevice = 0;
+        openCLDevice = 1;
         viewID = 6;
     }
 }
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     Medium * m = new Medium;
     Heat * h = new Heat;
     Source * s = new Source;
-    s->Collimated_launch(4, 4, 0, 0, 0, 1); // this causing crash with big number of photons if used for each of them so moved back to main
+    s->Collimated_launch(4, 4, 1.0, 0, 0, 1); // this causing crash with big number of photons if used for each of them so moved back to main
     CreateEnviroment(m, h);
 
     switch(usePlatform)
@@ -83,12 +83,18 @@ int main(int argc, char *argv[]) {
             switch(timeSelection)
             {
                 case 1:
+                simulationStart = clock();
                 CreateNewThread_steady(m, s, numPhotons);
+                std::cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
                 m->RescaleEnergy(numPhotons);
+                simulationStart = clock();
                 h->PennesEquation(m, 36);
+                std::cout << "Heat Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
                 break;
                 case 2:
+                simulationStart = clock();
                 CreateNewThread_time(m, s, numPhotons);
+                std::cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
                 m->RescaleEnergy_Time(numPhotons, timeStep);
                 break;
             }
