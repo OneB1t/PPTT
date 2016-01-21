@@ -331,15 +331,32 @@ void OpenCL::CopyAndExecuteKernelParametersPhoton()
 void OpenCL::CopyAndExecuteKernelParametersHeat(int iteration)
 {
     
+    for(int temp = 0; temp < voxelsX; temp++)
+        for(int temp2 = 0; temp2 < voxelsY; temp2++)
+            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
+            {
+                mh[0].temperature[temp][temp2][temp3] = 36.0;
+            }
+
+
     // copy memory buffers to GPU
     size_t globalWorkItemsHeat[] = { (size_t)voxelsX - 2, (size_t)voxelsY - 2,(size_t)voxelsZ - 2 };
     cl_mem heatMemoryBlock = clCreateBuffer(context, NULL, sizeof(mh[0]), NULL, &status);
     clEnqueueWriteBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
     status = clSetKernelArg(kernel, 0, sizeof(mh), &heatMemoryBlock);
     clock_t simulationStart = clock();
+
     for(int i = 0; i < iteration; i++)
     {
         status = clEnqueueNDRangeKernel(cq, kernel, 3, NULL, globalWorkItemsHeat, NULL, 0, NULL, NULL);
+        status = clEnqueueReadBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
+        for(int temp = 0; temp < voxelsX; temp++)
+            for(int temp2 = 0; temp2 < voxelsY; temp2++)
+                for(int temp3 = 0; temp3 < voxelsZ; temp3++)
+                {
+                    mh[0].temperature[temp][temp2][temp3] = mh[0].temperature_help[temp][temp2][temp3];
+                }
+        clEnqueueWriteBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
     }
     status = clEnqueueReadBuffer(cq, heatMemoryBlock, CL_TRUE, 0, sizeof(mh[0]), mh, 0, NULL, NULL);
     std::cout << "Heat Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;

@@ -70,6 +70,7 @@ typedef struct medium_struct_heat {
     float k[maxRegions];      
     float w_g[maxRegions];
     float temperature[voxelsX][voxelsY][voxelsZ];
+    float temperature_help[voxelsX][voxelsY][voxelsZ];
     float arterial_temperature;
     int timeSelection;
 }m_str_heat;
