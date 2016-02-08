@@ -76,7 +76,7 @@ void ProcessSpecialKeys(int key, int xx, int yy)
             stepCounter = 0;
         break;
         case GLUT_KEY_F3:
-        adjustSize += 10;
+        adjustSize += 0.2;
         break;
         case GLUT_KEY_F4:
         {
@@ -704,7 +704,7 @@ void CreateDisplayList()
                         GetColor(size);
                         glBegin(GL_POINTS);
                         glPointSize(15);
-                        glVertex3f(side * voxelsZ, temp1, temp2);
+                        glVertex3f(side * voxelsX, temp1, temp2);
                         glEnd();
                     }
                 }
@@ -736,7 +736,7 @@ void CreateDisplayList()
                         GetColor(size);
                         glBegin(GL_POINTS);
                         glPointSize(15);
-                        glVertex3f(temp2, temp1, side * voxelsX);
+                        glVertex3f(temp2, temp1, side * voxelsZ);
                         glEnd();
                     }
                 }

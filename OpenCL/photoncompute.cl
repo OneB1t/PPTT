@@ -39,14 +39,14 @@ typedef struct medium_struct{
 typedef struct photon_struct
 {
     float4 position;  // this also implements photon weight
-    int3 roundposition;
-    int3 prevroundposition;
+    short3 roundposition;
+    short3 prevroundposition;
     float3 vector;
-	int regId, lastRegId;						// regionId position of the photon
+	short regId, lastRegId;						// regionId position of the photon
 	float step, remStep, stepToNextVoxel;			// photon generated step and remaing step
 	float cosTheta, phi;
 	float time_of_flight;				// in nanoseconds
-	int timeId;
+	short timeId;
 }p_str;
 
 typedef struct source_struct

@@ -7,9 +7,10 @@
 /* PPTT_main is a main source file calling the whole      */
 /* program												  */
 /**********************************************************/
+#include <iomanip> 
 #include <iostream>
 #include <vector>
-#include <iomanip> 
+#include <string>
 #include "CL\CL.h"
 #include "PPTT_OpenCLinit.h"
 #include "PPTT_io.h"
@@ -95,7 +96,7 @@ void OpenCL::DetectOpenCLDevices()
             cl12[dev] = version[9] > '1' || version[11] >= '2';
             const string name_str(name);
             const size_t name_len = name_str.size();
-            std::cout << dev << setw(31) << endl;
+            cout << dev << setw(31) << (name_len <= 30 ? name_str : name_str.substr(name_str.find(' ', name_len - 31) + 1)) << ' ' << version[9] << '.' << version[11] << setw(3) << max_compute_units << setw(9) << global_mem_size / 1048576 << setw(9) << local_mem_size / 1024 << setw(9) << max_constant_buffer_size / 1024 << setw(9) << local_mem_types[local_mem_type] << setw(4) << error_correction_support << endl;
         }
     }
     if(!debugMode)
@@ -237,6 +238,8 @@ void OpenCL::CopyIntoOpenCLStructuresHeat()
             {
                 mh[0].structure[temp][temp2][temp3] = ms[0].structure[temp][temp2][temp3];
                 mh[0].energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
+                mh[0].temperature[temp][temp2][temp3] = 36.5f;
+                mh[0].temperature_help[temp][temp2][temp3] = 0;
             }
 
     for(int temp = 0; temp < maxRegions; temp++)
