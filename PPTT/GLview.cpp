@@ -98,7 +98,7 @@ void ProcessSpecialKeys(int key, int xx, int yy)
         break;
         case GLUT_KEY_F6:
         viewSelector++;
-        if(viewSelector > 8)
+        if(viewSelector > 9)
             viewSelector = 0;
         break;
         case GLUT_KEY_F7:
@@ -286,6 +286,10 @@ void Draw()
         DrawHelp("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 8:
+        DrawHelp("View mode: Temperature over 60C", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelp("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        break;
+        case 9:
         DrawHelp("View mode: Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
         break;
     }
@@ -690,7 +694,32 @@ void CreateDisplayList()
             }
         }
         break;
-        case 8: // boundary matrix
+        case 8: // draw temperature over 60
+        maxTemp = 0;
+        for(int x = 0; x < voxelsX; x++)
+        {
+            for(int y = 0; y < voxelsY; y++)
+            {
+                for(int z = 0; z < voxelsZ; z++)
+                {
+                    float temperature = h_draw->temperature[x][y][z];
+                    if(maxTemp < h_draw->temperature[x][y][z])
+                    {
+                        maxTemp = h_draw->temperature[x][y][z];
+                    }
+                    if(temperature >= 60.0f)
+                    {
+                        glBegin(GL_POINTS);
+                        GetColor(temperature - 60);
+                        glPointSize(temperature / 10);
+                        glVertex3f(x, y, z);
+                        glEnd();
+                    }
+                }
+            }
+        }
+        break;
+        case 9: // boundary matrix
 
         for(int side = 0; side < 2; side++)
         {
