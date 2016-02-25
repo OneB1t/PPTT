@@ -15,7 +15,7 @@
 
 typedef struct medium_struct_heat{
     float energy[VOXELS_X][VOXELS_Y][VOXELS_Z];		//	matrix with absorbed energy
-    float structure[VOXELS_X][VOXELS_Y][VOXELS_Z];
+    int structure[VOXELS_X][VOXELS_Y][VOXELS_Z];
     float k[MAX_REGIONS];					// heat conduction coeficient
 	float w_g[MAX_REGIONS];    	
     float temperature[VOXELS_X][VOXELS_Y][VOXELS_Z];

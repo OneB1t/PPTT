@@ -14,13 +14,13 @@
 
 #include <cmath>
 #include "CL\CL.h"
-#define PHOTON_DEATH		0.0001
+#define PHOTON_DEATH		0.0001f
 #define MAX_SOURCE_SIZE		(0x100000)
-#define JACOBI_ITERATIVE	0.01
-#define BLOOD_DENSITY		0.000106	// g/mm3	[wiki]
-#define BLOOD_CAPACITY		3.617		// J/g°C	[http://www.itis.ethz.ch/virtual-population/tissue-properties/database/heat-capacity/]
-#define H_TIME_STEP			0.1			// in seconds
-#define H_TIME_END			1.2			// in seconds
+#define JACOBI_ITERATIVE	0.01f
+#define BLOOD_DENSITY		0.000106f	// g/mm3	[wiki]
+#define BLOOD_CAPACITY		3.617f		// J/g°C	[http://www.itis.ethz.ch/virtual-population/tissue-properties/database/heat-capacity/]
+#define H_TIME_STEP			0.1f			// in seconds
+#define H_TIME_END			1.2f			// in seconds
 #define UNITS				10			//
 
 const float PI = 3.14159265358979323846f;
@@ -66,7 +66,7 @@ typedef struct medium_struct {
 
 typedef struct medium_struct_heat {
     float energy[voxelsX][voxelsY][voxelsZ];		//	matrix with absorbed energy
-    float structure[voxelsX][voxelsY][voxelsZ];
+    int structure[voxelsX][voxelsY][voxelsZ];
     float k[maxRegions];      
     float w_g[maxRegions];
     float temperature[voxelsX][voxelsY][voxelsZ];
@@ -206,7 +206,8 @@ public:
     Heat();
     ~Heat();
 
-    float h_timeStart, h_timeStep, h_timeEnd, h_num_time_steps;
+    float h_timeStart, h_timeStep, h_timeEnd;
+    int h_num_time_steps;
     float ***temperature;
 	float ****temperature_time;
     void AddThermalCoef(Medium * m, int mediumId, float specific_heat, float density, float conduction, float blood_perfusivity);

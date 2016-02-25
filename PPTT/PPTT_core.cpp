@@ -640,7 +640,7 @@ Medium::Medium()
         c_h[temp] = 0;
     for(int temp = 0; temp < maxRegions; temp++)
         w_g[temp] = 0;
-	blood_density = BLOOD_DENSITY / pow(units, 3);
+	blood_density = BLOOD_DENSITY / powf(units, 3);
 
     // Preparing array for time-resolved simulations
     num_time_steps = (int)ceil((timeEnd - timeStart) / timeStep);
@@ -1182,14 +1182,14 @@ float RandomNumber()
 
 void CreateEnviroment(Medium * m, Heat * h)
 {
-	m->CreateCube(0, 0, 0, voxelsX / units, voxelsY / units, voxelsZ / units, 0.001, 0.001, 1.0, 1.0);		// background for avoiding errors
+	m->CreateCube(0, 0, 0, voxelsX / units, voxelsY / units, voxelsZ / units, 0.001f, 0.001f, 1.0f, 1.0f);		// background for avoiding errors
 	
 	// Validation with MCML
-	m->CreateCube(0, 0, 0, 10, 10, 1, 1, 100, 0.9, 1.37);		// Layer 1
-	m->CreateCube(0, 0, 1, 10, 10, 1, 1, 10, 0.0, 1.37);		// Layer 2	
-	m->CreateCube(0, 0, 2, 10, 10, 2, 2, 10, 0.7, 1.37);		// Layer 3
+	m->CreateCube(0, 0, 0, 10, 10, 1, 1, 100, 0.9f, 1.37f);		// Layer 1
+	m->CreateCube(0, 0, 1, 10, 10, 1, 1, 10, 0.0f, 1.37f);		// Layer 2	
+	m->CreateCube(0, 0, 2, 10, 10, 2, 2, 10, 0.7f, 1.37f);		// Layer 3
 	
-	h->AddThermalCoef(m, 2, 2000, 1200, 0.3, 0.0);				// Layer 1
-	h->AddThermalCoef(m, 3, 3600, 1050, 0.5, 0.5);				// Layer 2
-	h->AddThermalCoef(m, 4, 2350, 900, 0.2, 0.012);				// Layer 3
+	h->AddThermalCoef(m, 2, 2000, 1200, 0.3f, 0.0f);				// Layer 1
+	h->AddThermalCoef(m, 3, 3600, 1050, 0.5f, 0.5f);				// Layer 2
+	h->AddThermalCoef(m, 4, 2350, 900, 0.2f, 0.012f);				// Layer 3
 }
