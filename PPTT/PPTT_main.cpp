@@ -37,7 +37,7 @@ void SelectMode()
     else
     {
         timeSelection = 1;          // 1 for steady state, 2 for time resolved
-        numPhotons = 10000000;
+        numPhotons = 100000000;
         usePlatform = 1;  // 1 - openCL 2 - CPU
         openCLPlatform = 0;
         openCLDevice = 0;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
             // compute Heat Transfer
             cl->InitHeatCompute();
             cl->CopyIntoOpenCLStructuresHeat();       
-            cl->CopyAndExecuteKernelParametersHeat(800);
+            cl->CopyAndExecuteKernelParametersHeat(1);
             cl->CopyResultsHeat();
 
             // cleanup

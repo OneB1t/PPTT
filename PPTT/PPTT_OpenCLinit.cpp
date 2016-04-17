@@ -142,7 +142,7 @@ void OpenCL::InitPhotonCompute()
     }
     else
     {
-        printf("OpenCL kernel compile sucessfull. \n");
+        printf("OpenCL code for Photon propagation compile sucessfull. \n");
     }
     kernel = clCreateKernel(prog, "computePhoton", &error);
     ClErrorCheck(error);
@@ -175,7 +175,7 @@ void OpenCL::InitHeatCompute()
     }
     else
     {
-        printf("OpenCL kernel compile sucessfull. \n");
+        printf("OpenCL code for Heat transfer compile sucessfull. \n");
     }
     kernel = clCreateKernel(prog, "PennesEquation", &error);
     ClErrorCheck(error);

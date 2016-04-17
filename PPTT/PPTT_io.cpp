@@ -11,6 +11,22 @@
 
 void Introduction()
 {
+    cout << "PPPPPPPPPPPPPPPPP   PPPPPPPPPPPPPPPPP   TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" << endl;
+    cout << "P::::::::::::::::P  P::::::::::::::::P  T:::::::::::::::::::::TT:::::::::::::::::::::T" << endl;
+    cout << "P::::::PPPPPP:::::P P::::::PPPPPP:::::P T:::::::::::::::::::::TT:::::::::::::::::::::T" << endl;
+    cout << "PP:::::P     P:::::PPP:::::P     P:::::PT:::::TT:::::::TT:::::TT:::::TT:::::::TT:::::T" << endl;
+    cout << "  P::::P     P:::::P  P::::P     P:::::PTTTTTT  T:::::T  TTTTTTTTTTTT  T:::::T  TTTTTT" << endl;
+    cout << "  P::::P     P:::::P  P::::P     P:::::P        T:::::T                T:::::T        " << endl;
+    cout << "  P::::PPPPPP:::::P   P::::PPPPPP:::::P         T:::::T                T:::::T        " << endl;
+    cout << "  P:::::::::::::PP    P:::::::::::::PP          T:::::T                T:::::T        " << endl;
+    cout << "  P::::PPPPPPPPP      P::::PPPPPPPPP            T:::::T                T:::::T        " << endl;
+    cout << "  P::::P              P::::P                    T:::::T                T:::::T        " << endl;
+    cout << "PP::::::PP          PP::::::PP                TT:::::::TT            TT:::::::TT      " << endl;
+    cout << "P::::::::P          P::::::::P                T:::::::::T            T:::::::::T      " << endl;
+    cout << "P::::::::P          P::::::::P                T:::::::::T            T:::::::::T      " << endl;
+    cout << "PPPPPPPPPP          PPPPPPPPPP                TTTTTTTTTTT            TTTTTTTTTTT       " << endl;
+    cout << " " << endl;
+
     cout << "============================================================" << endl;
     cout << "          Welcome to Planning Photothermal Therapy          " << endl;
     cout << "                     simulation software		             " << endl;
@@ -20,6 +36,7 @@ void Introduction()
     cout << "                 University of Hradec Kralove               " << endl;
     cout << "                                                            " << endl;
     cout << "                   jakub.mesicek(at)uhk.cz					 " << endl;
+    cout << "                     jan(at)zdarsky.org   					 " << endl;
     cout << "============================================================" << endl;
     cout << "                                                            " << endl;
 }

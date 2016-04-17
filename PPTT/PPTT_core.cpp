@@ -1172,6 +1172,7 @@ void CreateNewThread_steady(Medium * m, Source * s, long numPhotons)
 
 float RandomNumber()
 {
+    // fast way to generate random number 
     union {
         uint32_t d;
         float f;
@@ -1187,9 +1188,9 @@ void CreateEnviroment(Medium * m, Heat * h)
 	// Validation with MCML
 	m->CreateCube(0, 0, 0, 10, 10, 1, 1, 100, 0.9f, 1.37f);		// Layer 1
 	m->CreateCube(0, 0, 1, 10, 10, 1, 1, 10, 0.0f, 1.37f);		// Layer 2	
-	m->CreateCube(0, 0, 2, 10, 10, 2, 2, 10, 0.7f, 1.37f);		// Layer 3
+	m->CreateCube(0, 0, 2, 10, 10, 2, 5, 10, 0.7f, 1.37f);		// Layer 3
 	
 	h->AddThermalCoef(m, 2, 2000, 1200, 0.3f, 0.0f);				// Layer 1
 	h->AddThermalCoef(m, 3, 3600, 1050, 0.5f, 0.5f);				// Layer 2
-	h->AddThermalCoef(m, 4, 2350, 900, 0.2f, 0.012f);				// Layer 3
+	h->AddThermalCoef(m, 4, 2350, 900, 1.2f, 0.012f);				// Layer 3
 }
