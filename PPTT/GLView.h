@@ -27,6 +27,7 @@ static bool viewChanged = true;
 static float maxTemp = 0;
 static float maxEnergy = 0;
 static GLuint voxelsList;
+static GLuint axisList;
 
 
 // slice view parameters

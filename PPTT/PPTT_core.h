@@ -23,6 +23,13 @@
 #define H_TIME_END			1.2f			// in seconds
 #define UNITS				10			//
 
+#define OPENCL_MODE 1
+#define C_MODE 2
+
+#define STEADY_STATE 1
+#define TIME_RESOLVED 2
+
+
 const float PI = 3.14159265358979323846f;
 const float lightSpeed = 299.792458f;  // mm per ns
 const int voxelsX = 100;
@@ -31,7 +38,7 @@ const int voxelsZ = 40;
 const int maxRegions = 16;
 const int units = 10;               // voxels per mm
 
-
+// time settings
 const float timeStart = 0;
 const float timeStep = 0.01f;	// in ns
 const float timeEnd = 0.12f;

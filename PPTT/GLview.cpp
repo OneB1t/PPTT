@@ -31,7 +31,7 @@ void GLView::Init(int argc, char** argv)
     glutCreateWindow("PPTT"); //Create a window
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
     camera = Camera();
-    DrawAxis();
+
     // set slice to half of calculated medium
     sliceX = floor(voxelsX / 2);
     sliceY = floor(voxelsY / 2);
@@ -231,10 +231,12 @@ void Draw()
     glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
     glLoadIdentity(); //Reset the drawing perspective   
     gluLookAt(camera.from.x, camera.from.y, camera.from.z, camera.from.x + camera.to.x, camera.from.y + camera.to.y, camera.from.z + camera.to.z, camera.upV.x, camera.upV.y, camera.upV.z);
-    DrawAxis();
     if(viewChanged)
     {
+        glDeleteLists(voxelsList, 10);
+        glDeleteLists(axisList, 10);
         CreateDisplayList();
+        DrawAxis();
         viewChanged = false;
     }
     else
@@ -410,8 +412,8 @@ void DrawColorScale()
 void DrawAxis()
 {
     /* Create a display list for drawing axes */
-    GLuint axes_list = glGenLists(1);
-    glNewList(axes_list, GL_COMPILE_AND_EXECUTE);
+    axisList = glGenLists(1);
+    glNewList(axisList, GL_COMPILE_AND_EXECUTE);
 
     glColor4ub(0, 255, 0, 255);
     glBegin(GL_LINE_STRIP);
@@ -811,4 +813,5 @@ void CreateDisplayList()
 void DrawDisplayList()
 {
     glCallList(voxelsList);
+    glCallList(axisList);
 }

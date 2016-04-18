@@ -38,9 +38,9 @@ void SelectMode()
     }
     else
     {
-        timeSelection = 1;          // 1 for steady state, 2 for time resolved
+        timeSelection = STEADY_STATE;          // 1 for steady state, 2 for time resolved
         numPhotons = 1000000;
-        usePlatform = 1;  // 1 - openCL 2 - CPU
+        usePlatform = OPENCL_MODE;  // 1 - openCL 2 - CPU
         openCLPlatform = 0;
         openCLDevice = 0;
     }
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 
     switch(usePlatform)
     {
-        case 1: // OpenCL
+        case OPENCL_MODE: // OpenCL
         {
 
             OpenCL *cl = new OpenCL(m, h, s, debugMode, openCLDevice, openCLPlatform, numPhotons, timeSelection);
@@ -88,11 +88,11 @@ int main(int argc, char *argv[]) {
             cl->ReleaseOpenCLStructures();
         }
         break;
-        case 2: // CPU
+        case C_MODE: // CPU
         {
             switch(timeSelection)
             {
-                case 1:
+                case STEADY_STATE:
                 simulationStart = clock();
                 CreateNewThread_steady(m, s, numPhotons);
                 std::cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
                 h->PennesEquation(m, 36);
                 std::cout << "Heat Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
                 break;
-                case 2:
+                case TIME_RESOLVED:
                 simulationStart = clock();
                 CreateNewThread_time(m, s, numPhotons);
                 std::cout << "Photon Simulation duration was " << (float)(clock() - simulationStart) / CLOCKS_PER_SEC << " seconds." << endl;
