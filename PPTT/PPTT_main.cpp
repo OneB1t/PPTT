@@ -25,6 +25,7 @@ long numPhotons = 0;
 int timeSelection = 0;
 bool debugMode = 1;
 int viewID = 0;
+bool saveResultsToFile = false;
 clock_t startTime, endTime, simulationStart, simulationEnd;
 void SelectMode()
 {
@@ -33,15 +34,24 @@ void SelectMode()
         timeSelection = ChooseSteadyOrTime();          // 1 for steady state, 2 for time resolved
         numPhotons = HowManyPhotons();
         usePlatform = OpenCLOrCPU();
+        saveResultsToFile = SaveFile();
     }
     else
     {
         timeSelection = 1;          // 1 for steady state, 2 for time resolved
-        numPhotons = 100000000;
+        numPhotons = 1000000;
         usePlatform = 1;  // 1 - openCL 2 - CPU
         openCLPlatform = 0;
         openCLDevice = 0;
+    }
+    switch(timeSelection)
+    {
+        case 1: // steady state
         viewID = 6;
+        break;
+        case 2: // time resolved
+        viewID = 1;
+        break;
     }
 }
 
@@ -52,15 +62,15 @@ int main(int argc, char *argv[]) {
     Medium * m = new Medium;
     Heat * h = new Heat;
     Source * s = new Source;
-    s->Collimated_launch(4, 4, 1.0, 0, 0, 1); // this causing crash with big number of photons if used for each of them so moved back to main
+    s->Collimated_launch(4, 4, 1.0, 0, 0, 1);
     CreateEnviroment(m, h);
 
     switch(usePlatform)
     {
         case 1: // OpenCL
         {
-            
-            OpenCL *cl = new OpenCL(m,h,s,debugMode,openCLDevice,openCLPlatform,numPhotons,timeSelection);
+
+            OpenCL *cl = new OpenCL(m, h, s, debugMode, openCLDevice, openCLPlatform, numPhotons, timeSelection);
             cl->DetectOpenCLDevices();
             // compute Photons travel
             cl->InitPhotonCompute();
@@ -70,7 +80,7 @@ int main(int argc, char *argv[]) {
 
             // compute Heat Transfer
             cl->InitHeatCompute();
-            cl->CopyIntoOpenCLStructuresHeat();       
+            cl->CopyIntoOpenCLStructuresHeat();
             cl->CopyAndExecuteKernelParametersHeat(1);
             cl->CopyResultsHeat();
 
@@ -99,20 +109,23 @@ int main(int argc, char *argv[]) {
                 break;
             }
             break;
-            
-            
-            
+
+
+
         }
     }
     endTime = clock();
     cout << "Simulation duration was " << (float)(endTime - startTime) / CLOCKS_PER_SEC << " seconds." << endl;
-    //m->RecordFluence();
 
-    //WriteAbsorbedEnergyToFile_Time(m);
-    // WritePhotonFluenceToFile(m);
+    if(saveResultsToFile)
+    {
+        m->RecordFluence();
+        WriteAbsorbedEnergyToFile_Time(m);
+        WritePhotonFluenceToFile(m);
+    }
 
     GLView * view = new GLView();
-    view->SaveMedium(m, h,s,viewID);
+    view->SaveMedium(m, h, s, viewID, timeSelection);
     view->Init(argc, argv); //Initialize rendering
     view->Run();
     delete s;

@@ -22,6 +22,7 @@ char OpenCLOrCPU();
 char OpenCLPlatform();
 char OpenCLDevice();
 long HowManyPhotons();
+bool SaveFile();
 
 void WriteTemperature(Medium * m, Heat * h);
 

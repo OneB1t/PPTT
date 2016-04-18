@@ -32,14 +32,19 @@ void GLView::Init(int argc, char** argv)
     glEnable(GL_DEPTH_TEST); //Make sure 3D drawing works when one object is in front of another
     camera = Camera();
     DrawAxis();
+    // set slice to half of calculated medium
+    sliceX = floor(voxelsX / 2);
+    sliceY = floor(voxelsY / 2);
+    sliceZ = floor(voxelsZ / 2);
 }
 
-void GLView::SaveMedium(Medium * m, Heat * h, Source * s, int viewID)
+void GLView::SaveMedium(Medium * m, Heat * h, Source * s, int viewID,int timeSelection)
 {
     m_draw = m;
     h_draw = h;
     s_draw = s;
     viewSelector = viewID;
+    timeSelectionGL = timeSelection;
 }
 
 //Called when the window is resized
@@ -60,8 +65,6 @@ void HandleResize(int w, int h)
 
 void ProcessSpecialKeys(int key, int xx, int yy)
 {
-    float fraction = 10.0f;
-
     switch(key) {
         case GLUT_KEY_F1:
         stepCounter = stepCounter + 1;
@@ -248,55 +251,62 @@ void Draw()
     DrawHelp("F5 - reset energy size", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 150);
     DrawHelp("F6 - next mode", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 170);
     DrawHelp("F7 - show boundary energy matrix", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 190);
+    DrawHelp("Slice | X: U & I | Y: J & K | Z, N & M", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 210);
+    DrawHelpYellow("Voxel Energy/Heat multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
+    switch(timeSelectionGL)
+    {
+        case 2: // time resolved
+        DrawHelpYellow("Simulation step counter: " + std::to_string(stepCounter + 1) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
+        DrawHelpYellow("Time per step: " + std::to_string(timeStep) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 300);
+        break;
+    }
 
-    DrawHelp("Simulation step counter: " + std::to_string(stepCounter + 1) + "/" + std::to_string(timeSegments), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 250);
-    DrawHelp("Voxel Energy multiplicator: " + std::to_string(adjustSize), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 270);
-    DrawHelp("Time per step: " + std::to_string(timeStep) + "ms", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 290);
     switch(viewSelector)
     {
         case 0:
-        DrawHelp("View mode: 1 - Basic", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelpYellow("View mode: 1 - Energy time step", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 1:
-        DrawHelp("View mode: 2 - Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelpYellow("View mode: 2 - Energy X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
         break;
         case 2:
-        DrawHelp("View mode: 3 - X axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("View mode: 3 - Energy Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
         break;
         case 3:
-        DrawHelp("View mode: 4 - Y axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("View mode: 4 - Energy Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
         break;
         case 4:
-        DrawHelp("View mode: 5 - Z axis slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("View mode: 5 - Medium properties", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
         case 5:
-        DrawHelp("View mode: 6 - Temperature slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
-        DrawHelp("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
-        DrawHelp("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 370);
+        DrawHelpYellow("View mode: 6 - Temperature slice", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
+        DrawHelpYellow("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 370);
+        DrawHelpYellow("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 400);
         break;
         case 6:
-        DrawHelp("View mode: 7 - Energy for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("Maximum Energy: " + std::to_string(maxEnergy), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("View mode: 7 - Energy for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("Maximum Energy: " + std::to_string(maxEnergy), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
         break;
         case 7:
-        DrawHelp("View mode: 8 - Temperature for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("View mode: 8 - Temperature for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
         break;
         case 8:
-        DrawHelp("View mode: 9 - Temperature over 60C", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
-        DrawHelp("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("View mode: 9 - Temperature over 60C", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
+        DrawHelpYellow("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
         break;
         case 9:
-        DrawHelp("View mode: 10 - Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 310);
+        DrawHelpYellow("View mode: 10 - Escaped energy", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
         break;
     }
+
     DrawColorScale();
     glEnd();
-    glutSwapBuffers(); //Send scene to the screen to be shown
+    glutSwapBuffers(); //Send scene to the screen
 }
 
 
@@ -320,6 +330,28 @@ void DrawHelp(std::string s, float x, float y)
     glEnable(GL_TEXTURE_2D);
     glutPostRedisplay();
 }
+
+void DrawHelpYellow(std::string s, float x, float y)
+{
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT));
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glColor3f(1.0f, 1.0f, 0.0f);//needs to be called before RasterPos
+    glRasterPos2i(x - 300, y);
+    for(int i = 0; i < s.length(); i++)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i]);
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glutPostRedisplay();
+}
+
 
 
 void DrawText(std::string s, float x, float y)
@@ -356,7 +388,7 @@ void DrawColorScale()
     float colorScale = glutGet(GLUT_WINDOW_HEIGHT) / 25;
     for(int i = 0; i < glutGet(GLUT_WINDOW_HEIGHT); i++)
     {
-        GetColor(i / colorScale);
+        GetColorForScale(i / colorScale);
         glBegin(GL_LINES);
         glVertex2i(0, i);
         glVertex2i(25, i);
@@ -426,7 +458,7 @@ void DrawAxis()
 
 }
 
-void GetColor(float t)
+void GetColorForScale(float t)
 {
     float invMaxH = 1.0f / (255);
     float zRel = (t * 10) * invMaxH;
@@ -466,7 +498,7 @@ void CreateDisplayList()
     glNewList(voxelsList, GL_COMPILE_AND_EXECUTE);
     glColor3f(1.0f, 1.0f, 1.0f);
     glBegin(GL_LINE_STRIP);
-    glVertex3f(s_draw->x,s_draw->y,s_draw->z);
+    glVertex3f(s_draw->x, s_draw->y, s_draw->z);
     glVertex3f(s_draw->x + s_draw->ux * 10, s_draw->y + s_draw->uy * 10, s_draw->z + s_draw->uz * 10);
     glEnd();
     glBegin(GL_POINTS);
@@ -490,7 +522,7 @@ void CreateDisplayList()
                         glBegin(GL_POINTS);
                         if(size > 20)
                             size = 20;
-                        GetColor(size);
+                        GetColorForScale(size);
                         glPointSize(size);
                         glVertex3f(x, y, z);
                         glEnd();
@@ -500,29 +532,7 @@ void CreateDisplayList()
         }
 
         break;
-        case 1: // structure view
-
-        for(int temp1 = 0; temp1 < voxelsX; temp1++)
-        {
-            for(int temp2 = 0; temp2 < voxelsY; temp2++)
-            {
-                for(int temp3 = 0; temp3 < voxelsZ; temp3++)
-                {
-                    float color2 = m_draw->structure[temp1][temp2][temp3] * adjustSize;
-                    if(color2 > 5.0)
-                    {
-                        glBegin(GL_POINTS);
-                        GetColor(color2);
-                        glPointSize(15);
-                        glVertex3f(temp1, temp2, temp3);
-                        glEnd();
-                    }
-                }
-            }
-        }
-
-        break;
-        case 2: // sliceX
+        case 1: // sliceX
 
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
         {
@@ -533,7 +543,7 @@ void CreateDisplayList()
                 if(size != 0)
                 {
                     glBegin(GL_POINTS);
-                    GetColor(size);
+                    GetColorForScale(size);
                     if(size > 20)
                         size = 20;
                     glPointSize(size * 5);
@@ -545,7 +555,7 @@ void CreateDisplayList()
             }
         }
         break;
-        case 3: // sliceY
+        case 2: // sliceY
 
         for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
@@ -556,7 +566,7 @@ void CreateDisplayList()
                 if(size != 0)
                 {
                     glBegin(GL_POINTS);
-                    GetColor(size);
+                    GetColorForScale(size);
                     if(size > 20)
                         size = 20;
                     glPointSize(size * 5);
@@ -567,7 +577,7 @@ void CreateDisplayList()
         }
 
         break;
-        case 4: // sliceZ
+        case 3: // sliceZ
 
         for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
@@ -578,9 +588,10 @@ void CreateDisplayList()
                 if(size != 0)
                 {
                     glBegin(GL_POINTS);
-                    GetColor(size);
+                    GetColorForScale(size);
                     if(size > 20)
                         size = 20;
+                    glPointSize(size * 5);
                     glVertex3f(temp1, temp2, sliceZ);
                     glEnd();
                 }
@@ -588,8 +599,30 @@ void CreateDisplayList()
         }
 
         break;
-        case 5: // temperature slices
+        case 4: // structure view
 
+        for(int temp1 = 0; temp1 < voxelsX; temp1++)
+        {
+            for(int temp2 = 0; temp2 < voxelsY; temp2++)
+            {
+                for(int temp3 = 0; temp3 < voxelsZ; temp3++)
+                {
+                    float color2 = m_draw->structure[temp1][temp2][temp3] * adjustSize;
+                    if(color2 > 5.0)
+                    {
+                        glBegin(GL_POINTS);
+                        GetColorForScale(color2);
+                        glPointSize(15);
+                        glVertex3f(temp1, temp2, temp3);
+                        glEnd();
+                    }
+                }
+            }
+        }
+
+        break;
+        case 5: // temperature slices
+        glPointSize(15);
         for(int temp1 = 0; temp1 < voxelsY; temp1++)
         {
             for(int temp2 = 0; temp2 < voxelsZ; temp2++)
@@ -599,8 +632,7 @@ void CreateDisplayList()
                 if(size >= 0.1)
                 {
                     glBegin(GL_POINTS);
-                    GetColor(size);
-                    glPointSize(15);
+                    GetColorForScale(size);
                     glVertex3f(sliceX, temp1, temp2);
                 }
             }
@@ -613,8 +645,7 @@ void CreateDisplayList()
 
                 if(size >= 0.1)
                 {
-                    GetColor(size);
-                    glPointSize(15);
+                    GetColorForScale(size);
                     glVertex3f(temp1, sliceY, temp2);
                 }
             }
@@ -627,8 +658,7 @@ void CreateDisplayList()
 
                 if(size >= 0.1)
                 {
-                    GetColor(size);
-                    glPointSize(15);
+                    GetColorForScale(size);
                     glVertex3f(temp2, temp1, sliceZ);
                 }
             }
@@ -651,7 +681,7 @@ void CreateDisplayList()
                     }
                     if(size >= 0.1f)
                     {
-                        GetColor(size);
+                        GetColorForScale(size);
                         glBegin(GL_POINTS);
                         if(size > 20)
                             size = 20;
@@ -682,7 +712,7 @@ void CreateDisplayList()
                     if(temperature >= 1.0f)
                     {
                         glBegin(GL_POINTS);
-                        GetColor(temperature);
+                        GetColorForScale(temperature);
                         if(temperature > 20)
                             temperature = 20;
                         glPointSize(temperature * 2);
@@ -711,7 +741,7 @@ void CreateDisplayList()
                     if(temperature >= 60.0f)
                     {
                         glBegin(GL_POINTS);
-                        GetColor(temperature - 60);
+                        GetColorForScale(temperature - 60);
                         glPointSize(temperature / 10);
                         glVertex3f(x, y, z);
                         glEnd();
@@ -731,7 +761,7 @@ void CreateDisplayList()
                     float size = m_draw->surroundingX[temp1][temp2][side] * adjustSize;
                     if(size >= 0.1)
                     {
-                        GetColor(size);
+                        GetColorForScale(size);
                         glBegin(GL_POINTS);
                         glPointSize(15);
                         glVertex3f(side * voxelsX, temp1, temp2);
@@ -747,7 +777,7 @@ void CreateDisplayList()
 
                     if(size >= 0.1)
                     {
-                        GetColor(size);
+                        GetColorForScale(size);
                         glBegin(GL_POINTS);
                         glPointSize(15);
                         glVertex3f(temp1, side * voxelsX, temp2);
@@ -763,7 +793,7 @@ void CreateDisplayList()
 
                     if(size >= 0.1)
                     {
-                        GetColor(size);
+                        GetColorForScale(size);
                         glBegin(GL_POINTS);
                         glPointSize(15);
                         glVertex3f(temp2, temp1, side * voxelsZ);

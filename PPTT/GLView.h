@@ -21,6 +21,7 @@ static int fullscreen = 0;
 static bool showboundary = true;
 static float adjustSize = 1;
 static int viewSelector = 0; // selected view
+static int timeSelectionGL = 0;
 static int xOrigin = -1;
 static bool viewChanged = true;
 static float maxTemp = 0;
@@ -44,12 +45,13 @@ class GLView
 public:
     void Run();
     void Init(int argc, char ** argv);
-    void SaveMedium(Medium *m, Heat *h,Source *s, int viewID);
+    void SaveMedium(Medium *m, Heat *h,Source *s, int viewID,int timeSelection);
 };
 
 
 void Draw();
 void DrawHelp(std::string s, float x, float y);
+void DrawHelpYellow(std::string s, float x, float y);
 void DrawText(std::string s, float x, float y);
 void DrawColorScale();
 void DrawAxis();
@@ -58,7 +60,7 @@ void ProcessSpecialKeys(int key, int xx, int yy);
 void ProcessNormalKeys(unsigned char key, int x, int y);
 void MouseButton(int button, int state, int x, int y);
 void MouseMove(int x, int y);
-void GetColor(float t);
+void GetColorForScale(float t);
 void CreateDisplayList();
 void DrawDisplayList();
 #endif	/* GLVIEW_H */

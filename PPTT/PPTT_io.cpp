@@ -94,6 +94,14 @@ long HowManyPhotons()
     return selection;
 }
 
+bool SaveFile()
+{
+    cout << "Save result to file? 0/1 " << endl;
+    bool selection;
+    cin >> selection;
+    return selection;
+}
+
 void WriteTemperature(Medium * m, Heat * h)
 {
     ofstream myFile;
