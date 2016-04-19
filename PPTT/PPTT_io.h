@@ -23,6 +23,7 @@ char OpenCLPlatform();
 char OpenCLDevice();
 long HowManyPhotons();
 bool SaveFile();
+float LaserPower();
 
 void WriteTemperature(Medium * m, Heat * h);
 

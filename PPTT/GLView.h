@@ -25,7 +25,9 @@ static int timeSelectionGL = 0;
 static int xOrigin = -1;
 static bool viewChanged = true;
 static float maxTemp = 0;
+static float avgTemp = 0;
 static float maxEnergy = 0;
+static float avgEnergy = 0;
 static GLuint voxelsList;
 static GLuint axisList;
 

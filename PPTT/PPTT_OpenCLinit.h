@@ -38,7 +38,7 @@ public:
     void DetectOpenCLDevices();
     void ClErrorCheck(cl_int error);
     void CopyIntoOpenCLStructuresPhoton();
-    void CopyIntoOpenCLStructuresHeat();
+    void CopyIntoOpenCLStructuresHeat(float power);
     void CopyResultsPhoton();
     void CopyAndExecuteKernelParametersPhoton();
     void CopyAndExecuteKernelParametersHeat(int iteration);

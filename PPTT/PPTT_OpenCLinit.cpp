@@ -229,15 +229,15 @@ void OpenCL::CopyIntoOpenCLStructuresPhoton()
 
 }
 
-void OpenCL::CopyIntoOpenCLStructuresHeat()
+void OpenCL::CopyIntoOpenCLStructuresHeat(float power)
 {
 
     for(int temp = 0; temp < voxelsX; temp++)			// matrix with fluence inicialization
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
             for(int temp3 = 0; temp3 < voxelsZ; temp3++)
             {
-                mh[0].structure[temp][temp2][temp3] = ms[0].structure[temp][temp2][temp3];
-                mh[0].energy[temp][temp2][temp3] = ms[0].energy[temp][temp2][temp3];
+                mh[0].structure[temp][temp2][temp3] = m->structure[temp][temp2][temp3];
+                mh[0].energy[temp][temp2][temp3] = m->energy[temp][temp2][temp3];
                 mh[0].temperature[temp][temp2][temp3] = 36.5f;
                 mh[0].temperature_help[temp][temp2][temp3] = 0;
             }
@@ -250,6 +250,7 @@ void OpenCL::CopyIntoOpenCLStructuresHeat()
 
     mh[0].arterial_temperature = 36.0f;
     mh[0].timeSelection = timeSelection;
+    mh[0].power = power;
 
 
 }
@@ -269,8 +270,17 @@ void OpenCL::CopyResultsPhoton()
                 }
 
             }
+    switch(timeSelection)
+    {
+        case STEADY_STATE:
         m->RescaleEnergy(numPhotons);
-        m->RescaleEnergy_Time(numPhotons,timeStep);
+        break;
+        case TIME_RESOLVED:
+        m->RescaleEnergy_Time(numPhotons, timeStep);
+        break;
+    }
+
+
 
     // results for surrounding matrix
     for(int side = 0; side < 2; side++)
@@ -333,7 +343,7 @@ void OpenCL::CopyAndExecuteKernelParametersPhoton()
 
 void OpenCL::CopyAndExecuteKernelParametersHeat(int iteration)
 {
-    
+
     for(int temp = 0; temp < voxelsX; temp++)
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
             for(int temp3 = 0; temp3 < voxelsZ; temp3++)

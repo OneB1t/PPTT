@@ -19,30 +19,33 @@
 
 using namespace std;
 int usePlatform = 1; // 1 - openCL 2 - CPU
-int openCLPlatform;
-int openCLDevice;
+int openCLPlatform = 0;
+int openCLDevice = 0;
 long numPhotons = 0;
 int timeSelection = 0;
 bool debugMode = 1;
 int viewID = 0;
 bool saveResultsToFile = false;
+float power = 0; // laser power
 clock_t startTime, endTime, simulationStart, simulationEnd;
 void SelectMode()
 {
     if(!debugMode)
     {
-        timeSelection = ChooseSteadyOrTime();          // 1 for steady state, 2 for time resolved
+        timeSelection = ChooseSteadyOrTime();
         numPhotons = HowManyPhotons();
         usePlatform = OpenCLOrCPU();
         saveResultsToFile = SaveFile();
+        power = LaserPower();
     }
     else
     {
-        timeSelection = STEADY_STATE;          // 1 for steady state, 2 for time resolved
+        timeSelection = STEADY_STATE;
         numPhotons = 1000000;
+        power = 10000; //  now this is bulgarian constant representing power of laser
         usePlatform = OPENCL_MODE;  // 1 - openCL 2 - CPU
-        openCLPlatform = 0;
-        openCLDevice = 0;
+        openCLPlatform = 0; // preselect platform 
+        openCLDevice = 0; // preselect device
     }
     switch(timeSelection)
     {
@@ -80,7 +83,7 @@ int main(int argc, char *argv[]) {
 
             // compute Heat Transfer
             cl->InitHeatCompute();
-            cl->CopyIntoOpenCLStructuresHeat();
+            cl->CopyIntoOpenCLStructuresHeat(power);
             cl->CopyAndExecuteKernelParametersHeat(1);
             cl->CopyResultsHeat();
 

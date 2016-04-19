@@ -837,15 +837,6 @@ void Medium::RescaleEnergy_Time(long num_photons, float time_min_step)
                     energy_t[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / powf((float)units, 3));
 }
 
-void Medium::RescaleEnergy_Time_secondPulse(long num_photons, float time_min_step)
-{
-    for(int temp = 0; temp < voxelsX; temp++)			// structure Ids inicialization
-        for(int temp2 = 0; temp2 < voxelsY; temp2++)
-            for(int temp3 = 0; temp3 < voxelsZ; temp3++)
-                for(int temp4 = 0; temp4 < num_time_steps; temp4++)
-                    energy_next[temp][temp2][temp3][temp4] /= (time_min_step * num_photons / pow((float)units, 3));
-}
-
 void Medium::RecordFluence()
 {
     for(int temp = 0; temp < voxelsX; temp++)			// structure Ids inicialization

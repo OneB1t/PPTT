@@ -80,6 +80,7 @@ typedef struct medium_struct_heat {
     float temperature_help[voxelsX][voxelsY][voxelsZ];
     float arterial_temperature;
     int timeSelection;
+    float power; // laser power
 }m_str_heat;
 
 typedef struct source_struct
@@ -200,7 +201,6 @@ public:
     void AbsorbEnergyBeer_Time_secondPulse(Photon * p);		//  absorb energy for second pulse
     void RescaleEnergy(long num_photons);                                  //  rescale absorbed energy 
     void RescaleEnergy_Time(long num_photons, float time_min_step);                                  //  rescale absorbed energy 
-    void RescaleEnergy_Time_secondPulse(long num_photons, float time_min_step);                      //  rescale absorbed energy for second pulse 
     void RecordFluence();                                  //  record photon fluence in a voxel
     void CreateCube(int start_x, int start_y, int start_z, int dim_x, int dim_y, int dim_z, float ua, float us, float g, float n);	// create cube with specfied properties in mm	
     void CreateBall(int center_x, int center_y, int center_z, int radius, float ua, float us, float g, float n);

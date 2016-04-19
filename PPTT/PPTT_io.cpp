@@ -102,6 +102,14 @@ bool SaveFile()
     return selection;
 }
 
+float LaserPower()
+{
+    cout << "Laser power? (mW)" << endl;
+    float powa;
+    cin >> powa;
+    return powa;
+}
+
 void WriteTemperature(Medium * m, Heat * h)
 {
     ofstream myFile;

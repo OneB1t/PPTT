@@ -22,6 +22,7 @@ typedef struct medium_struct_heat{
     float temperature_help[VOXELS_X][VOXELS_Y][VOXELS_Z];
 	float arterial_temperature;
     int timeSelection;
+    float power;
 }m_str_h;
 
 __kernel void PennesEquation(__global m_str_h *m_str_h)
@@ -31,12 +32,12 @@ __kernel void PennesEquation(__global m_str_h *m_str_h)
 	ushort temp3 = get_global_id(2);
 
 	int tempId = m_str_h[0].structure[temp][temp2][temp3];
-    for(ushort i = 0;i < 250; i++)
+    for(ushort i = 0;i < 2500; i++)
     {
         m_str_h[0].temperature_help[temp][temp2][temp3] = ((m_str_h[0].temperature[temp + 1][temp2][temp3] + m_str_h[0].temperature[temp - 1][temp2][temp3] + 
 			m_str_h[0].temperature[temp][temp2 + 1][temp3] + m_str_h[0].temperature[temp][temp2 - 1][temp3] + m_str_h[0].temperature[temp][temp2][temp3 + 1] + 
 			m_str_h[0].temperature[temp][temp2][temp3 - 1]) / 6.0f)
-            + (m_str_h[0].energy[temp][temp2][temp3] * m_str_h[0].k[tempId])
+            + (m_str_h[0].energy[temp][temp2][temp3] * m_str_h[0].power *  m_str_h[0].k[tempId])
             + (m_str_h[0].w_g[tempId] * BLOOD_CAPACITY * BLOOD_DENSITY * 10 * (m_str_h[0].arterial_temperature - m_str_h[0].temperature[temp][temp2][temp3]) * m_str_h[0].k[tempId]);
         m_str_h[0].temperature[temp][temp2][temp3] =  m_str_h[0].temperature_help[temp][temp2][temp3];
         barrier(CLK_GLOBAL_MEM_FENCE);
