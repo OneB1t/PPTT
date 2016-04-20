@@ -640,7 +640,7 @@ Medium::Medium()
         c_h[temp] = 0;
     for(int temp = 0; temp < maxRegions; temp++)
         w_g[temp] = 0;
-	blood_density = BLOOD_DENSITY / powf(units, 3);
+	blood_density = BLOOD_DENSITY / powf((float)units, 3.0f);
 
     // Preparing array for time-resolved simulations
     num_time_steps = (int)ceil((timeEnd - timeStart) / timeStep);

@@ -1,4 +1,4 @@
-#include "Camera.h";
+#include "Camera.h"
 #include "PPTT_core.h"
 #include <cmath>
 
