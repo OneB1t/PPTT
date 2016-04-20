@@ -884,7 +884,7 @@ Heat::Heat()
     for(int temp = 0; temp < voxelsX; temp++)					// set human body temperature
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
             for(int temp3 = 0; temp3 < voxelsZ; temp3++)
-                temperature[temp][temp2][temp3] = 36.5;
+                temperature[temp][temp2][temp3] = 36.5f;
 }
 
 Heat::~Heat()

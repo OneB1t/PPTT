@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     Medium * m = new Medium;
     Heat * h = new Heat;
     Source * s = new Source;
-    s->Collimated_launch(4, 4, 1.0, 0, 0, 1);
+    s->Collimated_launch(5, 4, 1.0, 0, 1, 0);
     CreateEnviroment(m, h);
 
     switch(usePlatform)

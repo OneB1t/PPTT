@@ -27,9 +27,9 @@ typedef struct medium_struct_heat{
 
 __kernel void PennesEquation(__global m_str_h *m_str_h)
 {
-    ushort temp = get_global_id(0);
-	ushort temp2 = get_global_id(1);
-	ushort temp3 = get_global_id(2);
+    __private ushort temp = get_global_id(0);
+	__private ushort temp2 = get_global_id(1);
+	__private ushort temp3 = get_global_id(2);
 
 	int tempId = m_str_h[0].structure[temp][temp2][temp3];
     for(ushort i = 0;i < 2500; i++)
@@ -38,25 +38,11 @@ __kernel void PennesEquation(__global m_str_h *m_str_h)
 			m_str_h[0].temperature[temp][temp2 + 1][temp3] + m_str_h[0].temperature[temp][temp2 - 1][temp3] + m_str_h[0].temperature[temp][temp2][temp3 + 1] + 
 			m_str_h[0].temperature[temp][temp2][temp3 - 1]) / 6.0f)
             + (m_str_h[0].energy[temp][temp2][temp3] * m_str_h[0].power *  m_str_h[0].k[tempId])
-            + (m_str_h[0].w_g[tempId] * BLOOD_CAPACITY * BLOOD_DENSITY * 10 * (m_str_h[0].arterial_temperature - m_str_h[0].temperature[temp][temp2][temp3]) * m_str_h[0].k[tempId]);
+            + (m_str_h[0].w_g[tempId] * BLOOD_CAPACITY * BLOOD_DENSITY * (m_str_h[0].arterial_temperature - m_str_h[0].temperature[temp][temp2][temp3]) * m_str_h[0].k[tempId]);
+      
         m_str_h[0].temperature[temp][temp2][temp3] =  m_str_h[0].temperature_help[temp][temp2][temp3];
         barrier(CLK_GLOBAL_MEM_FENCE);
     }
     m_str_h[0].temperature_help[temp][temp2][temp3] = m_str_h[0].temperature[temp][temp2][temp3];
     
-}
-
-__kernel void PennesEquation_Time(__global m_str_h *m_str_h)  // just stub
-{
-   
-	ushort temp = get_global_id(0) + 1;
-	ushort temp2 = get_global_id(1) + 1;
-	ushort temp3 = get_global_id(2) + 1;
-
-	int tempId = m_str_h[0].structure[temp][temp2][temp3];
-
-		m_str_h[0].temperature[temp][temp2][temp3] = (m_str_h[0].temperature[temp + 1][temp2][temp3] + m_str_h[0].temperature[temp - 1][temp2][temp3] + 
-			m_str_h[0].temperature[temp][temp2 + 1][temp3] + m_str_h[0].temperature[temp][temp2 - 1][temp3] + m_str_h[0].temperature[temp][temp2][temp3 + 1] + 
-			m_str_h[0].temperature[temp][temp2][temp3 - 1] + (m_str_h[0].energy[temp][temp2][temp3] / m_str_h[0].k[tempId]) + 
-			m_str_h[0].w_g[tempId] * BLOOD_CAPACITY * BLOOD_DENSITY * (m_str_h[0].arterial_temperature - m_str_h[0].temperature[temp][temp2][temp3]) / m_str_h[0].k[tempId]) / 6.0f;
 }

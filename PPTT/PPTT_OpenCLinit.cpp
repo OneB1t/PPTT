@@ -239,7 +239,7 @@ void OpenCL::CopyIntoOpenCLStructuresHeat(float power)
                 mh[0].structure[temp][temp2][temp3] = m->structure[temp][temp2][temp3];
                 mh[0].energy[temp][temp2][temp3] = m->energy[temp][temp2][temp3];
                 mh[0].temperature[temp][temp2][temp3] = 36.5f;
-                mh[0].temperature_help[temp][temp2][temp3] = 0;
+                mh[0].temperature_help[temp][temp2][temp3] = 36.5f;
             }
 
     for(int temp = 0; temp < maxRegions; temp++)
@@ -248,7 +248,7 @@ void OpenCL::CopyIntoOpenCLStructuresHeat(float power)
         mh[0].w_g[temp] = m->w_g[temp];
     }
 
-    mh[0].arterial_temperature = 36.0f;
+    mh[0].arterial_temperature = 36.5f;
     mh[0].timeSelection = timeSelection;
     mh[0].power = power;
 

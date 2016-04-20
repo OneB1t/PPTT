@@ -149,7 +149,7 @@ float timeProfileSech(float pulse_duration,mwc64x_state_t *rng)
     return 1 / cosh(RandomNumber(rng));
 }
 
-float FindEdgeDistance(p_str *photon,mwc64x_state_t *rng)
+float FindEdgeDistance(__private p_str *photon,mwc64x_state_t *rng)
 {
 	__private float3 temp;
 	
@@ -258,7 +258,7 @@ float FindEdgeDistance(p_str *photon,mwc64x_state_t *rng)
     }
 }
 
-void GenDir(float g,p_str *photon,mwc64x_state_t *rng)
+void GenDir(float g,__private p_str *photon,mwc64x_state_t *rng)
 {
     if(g != 0)
         (*photon).cosTheta = 1.0 / (2.0 * g) * (1 + g*g - pow((1 - g*g) / (1 - g + 2 * g * RandomNumber(rng)), 2));
@@ -267,7 +267,7 @@ void GenDir(float g,p_str *photon,mwc64x_state_t *rng)
     (*photon).phi = 2 * PI * RandomNumber(rng);
 }
 
-float GetTOF(__global m_str *m_str,p_str *photon, float step_size)
+float GetTOF(__global m_str *m_str,__private p_str *photon, float step_size)
 {
     return step_size * m_str[0].n[(*photon).regId] / (2997.92458f);
 }
@@ -277,12 +277,12 @@ float GenStep(float invAlbedo, mwc64x_state_t *rng)
     return(-log(RandomNumber(rng)) * invAlbedo);
 }
 
-float GetReflectionCoef(__global m_str *m_str,p_str *photon)
+float GetReflectionCoef(__global m_str *m_str,__private p_str *photon)
 {
 	return ((m_str[0].n[(*photon).lastRegId] - m_str[0].n[(*photon).regId])*(m_str[0].n[(*photon).lastRegId] - m_str[0].n[(*photon).regId])) / ((m_str[0].n[(*photon).lastRegId] + m_str[0].n[(*photon).regId])*(m_str[0].n[(*photon).lastRegId] + m_str[0].n[(*photon).regId]));
 }
 
-void Reflect(__global m_str *m_str,p_str *photon)
+void Reflect(__global m_str *m_str,__private p_str *photon)
 {
 	if ((*photon).prevroundposition.z != (*photon).roundposition.z)
     {
@@ -298,7 +298,7 @@ void Reflect(__global m_str *m_str,p_str *photon)
     }   
 }
 
-void Transmis(__global m_str *m_str,p_str *photon)
+void Transmis(__global m_str *m_str,__private p_str *photon)
 {
   if ((*photon).prevroundposition.z != (*photon).roundposition.z)
 	{
@@ -327,14 +327,14 @@ void Transmis(__global m_str *m_str,p_str *photon)
 	}
 }
 
-bool CheckRefIndexMismatch(__global m_str *m_str,p_str *photon)
+bool CheckRefIndexMismatch(__global m_str *m_str,__private p_str *photon)
 {
 	if (m_str[0].n[(*photon).regId] - m_str[0].n[(*photon).lastRegId])
 		return false;
 	return true;
 }
 
-void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
+void UpdateDir(__global m_str *m_str,__private p_str *photon,mwc64x_state_t *rng)
 {
 	GenDir(m_str[0].g[(*photon).regId],photon,rng);
 	__private float sinTheta = sin(acos((*photon).cosTheta));
@@ -355,14 +355,14 @@ void UpdateDir(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
 	}
 }
 
-void RoundPosition(p_str *photon)
+void RoundPosition(__private p_str *photon)
 {
     (*photon).prevroundposition = (*photon).roundposition;
     (*photon).roundposition.x = (int)floor((*photon).position.x);
     (*photon).roundposition.y = (int)floor((*photon).position.y);
     (*photon).roundposition.z = (int)floor((*photon).position.z);
 }
-bool CheckBoundaries(__global m_str *m_str,p_str *photon)
+bool CheckBoundaries(__global m_str *m_str,__private p_str *photon)
 {
     if((*photon).position.z < 0.00001f)
     {
@@ -398,7 +398,7 @@ bool CheckBoundaries(__global m_str *m_str,p_str *photon)
 }
 
 
-void Move(__global m_str *m_str,p_str *photon,mwc64x_state_t *rng)
+void Move(__global m_str *m_str,__private p_str *photon,mwc64x_state_t *rng)
 {
     float temp_step = FindEdgeDistance(photon,rng);
     (*photon).remStep = (*photon).remStep * (m_str[0].us[(*photon).lastRegId] / m_str[0].us[(*photon).regId]);
@@ -449,7 +449,7 @@ __kernel void computePhoton(__global m_str *m_str,__global s_str *source,int ran
     mwc64x_state_t rng;
 	seed(&rng, 0, random);
 	// create new photon
-    __private p_str photon;     
+    p_str photon;     
     photon.timeId = 0;
 
     photon.position.x = source[0].x;
