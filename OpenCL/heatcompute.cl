@@ -40,6 +40,8 @@ __kernel void PennesEquation(__global m_str_h *m_str_h)
             + (m_str_h[0].energy[temp][temp2][temp3] * m_str_h[0].power *  m_str_h[0].k[tempId])
             + (m_str_h[0].w_g[tempId] * BLOOD_CAPACITY * BLOOD_DENSITY * (m_str_h[0].arterial_temperature - m_str_h[0].temperature[temp][temp2][temp3]) * m_str_h[0].k[tempId]);
       
+        if(m_str_h[0].temperature_help[temp][temp2][temp3] < 36.5f)
+            m_str_h[0].temperature_help[temp][temp2][temp3] = 36.5f;
         m_str_h[0].temperature[temp][temp2][temp3] =  m_str_h[0].temperature_help[temp][temp2][temp3];
         barrier(CLK_GLOBAL_MEM_FENCE);
     }

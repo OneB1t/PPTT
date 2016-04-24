@@ -38,7 +38,7 @@ void GLView::Init(int argc, char** argv)
     sliceZ = floor(voxelsZ / 2);
 }
 
-void GLView::SaveMedium(Medium * m, Heat * h, Source * s, int viewID,int timeSelection)
+void GLView::SaveMedium(Medium * m, Heat * h, Source * s, int viewID, int timeSelection)
 {
     m_draw = m;
     h_draw = h;
@@ -285,6 +285,7 @@ void Draw()
         DrawHelpYellow("sliceX: " + std::to_string(sliceX), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 350);
         DrawHelpYellow("sliceY: " + std::to_string(sliceY), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 370);
         DrawHelpYellow("sliceZ: " + std::to_string(sliceZ), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 400);
+        DrawHelpYellow("Maximum temperature: " + std::to_string(maxTemp), glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 430);
         break;
         case 6:
         DrawHelpYellow("View mode: 7 - Energy for whole simulation", glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT) - 330);
@@ -623,45 +624,48 @@ void CreateDisplayList()
 
         break;
         case 5: // temperature slices
+        maxTemp = 0;
+        for(int x = 0; x < voxelsX; x++)
+        {
+            for(int y = 0; y < voxelsY; y++)
+            {
+                for(int z = 0; z < voxelsZ; z++)
+                {
+                    if(maxTemp < h_draw->temperature[x][y][z])
+                    {
+                        maxTemp = h_draw->temperature[x][y][z];
+                    }
+                }
+            }
+        }
+        glBegin(GL_POINTS);
         glPointSize(15);
         for(int temp1 = 0; temp1 < voxelsY; temp1++)
         {
             for(int temp2 = 0; temp2 < voxelsZ; temp2++)
             {
-                float size = h_draw->temperature[sliceX][temp1][temp2] * adjustSize;
+                float temp = h_draw->temperature[sliceX][temp1][temp2] - 36.5f;
+                GetColorForScale(temp / maxTemp * 255);
+                glVertex3f(sliceX, temp1, temp2);
 
-                if(size >= 0.1)
-                {
-                    glBegin(GL_POINTS);
-                    GetColorForScale(size);
-                    glVertex3f(sliceX, temp1, temp2);
-                }
             }
         }
         for(int temp1 = 0; temp1 < voxelsX; temp1++)
         {
             for(int temp2 = 0; temp2 < voxelsZ; temp2++)
             {
-                float size = h_draw->temperature[temp1][sliceY][temp2] * adjustSize;
-
-                if(size >= 0.1)
-                {
-                    GetColorForScale(size);
-                    glVertex3f(temp1, sliceY, temp2);
-                }
+                float temp = h_draw->temperature[temp1][sliceY][temp2] - 36.5f;
+                GetColorForScale(temp / maxTemp * 255);
+                glVertex3f(temp1, sliceY, temp2);
             }
         }
         for(int temp2 = 0; temp2 < voxelsY; temp2++)
         {
             for(int temp1 = 0; temp1 < voxelsX; temp1++)
             {
-                float size = h_draw->temperature[temp1][temp2][sliceZ] * adjustSize;
-
-                if(size >= 0.1)
-                {
-                    GetColorForScale(size);
-                    glVertex3f(temp2, temp1, sliceZ);
-                }
+                float temp = h_draw->temperature[temp1][temp2][sliceZ] - 36.5f;
+                GetColorForScale(temp / maxTemp * 255);
+                glVertex3f(temp1, temp2, sliceZ);
             }
         }
         glEnd();
@@ -689,7 +693,6 @@ void CreateDisplayList()
                         if(size > 20)
                             size = 20;
                         glPointSize(size);
-
                         glVertex3f(x, y, z);
                         glEnd();
                     }
@@ -756,7 +759,6 @@ void CreateDisplayList()
         }
         break;
         case 9: // boundary matrix
-
         for(int side = 0; side < 2; side++)
         {
             for(int temp1 = 0; temp1 < voxelsY; temp1++)
@@ -801,7 +803,7 @@ void CreateDisplayList()
                         GetColorForScale(size);
                         glBegin(GL_POINTS);
                         glPointSize(15);
-                        glVertex3f(temp2, temp1, side * voxelsZ);
+                        glVertex3f(temp1, temp2, side * voxelsZ);
                         glEnd();
                     }
                 }

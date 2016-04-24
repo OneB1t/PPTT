@@ -50,7 +50,7 @@ void SelectMode()
     switch(timeSelection)
     {
         case 1: // steady state
-        viewID = 6;
+        viewID = 5;
         break;
         case 2: // time resolved
         viewID = 1;
